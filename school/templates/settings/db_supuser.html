@@ -1,0 +1,592 @@
+
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Tableau de bord {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+{% if request.session.group_name == "Super user" or request.session.group_name == "Super admin" %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Tableau de bord</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'index' %}">Accueil</a></li>
+          <li class="breadcrumb-item active">Tableau de bord</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section dashboard">
+      <div class="row">
+
+        <!-- Left side columns -->
+        <div class="col-lg-8">
+          <div class="row">
+
+            <!-- Sales Card -->
+            <div class="col-xxl-4 col-xl-6 col-md-6">
+              <div class="card info-card sales-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">Sup Admin <span>| Cette année</span></h5>
+
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-people"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ nombre_supadmin }}</h6>
+                      <a href="#"  data-bs-toggle="modal" data-bs-target="#adminModal">
+                        <span class="text-success small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                      </a>
+                      <!-- Start de delete Modal -->
+                      <div class="modal fade" id="adminModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                          <div class="modal-content">
+                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                              <h5 class="modal-title">Liste des super user</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <br>
+                                <div class="card">
+                                  <div class="card-body">
+                                    <div class="table-responsive">
+                                      <table class="table">
+                                        <tr>
+                                          <th>Id</th>
+                                          <th>Noms</th>
+                                          <th>Prénoms</th>
+                                          <th>Sexe</th>
+                                          <th>Groupes</th>
+                                          <th>Permission</th>
+                                          <th>Actions</th>
+                                        </tr>
+                                        {% for s in super_admin %}
+                                        <tr>
+                                          <td>{{ user.id }}</td>
+                                          <td>{{ s.user.last_name|title }}</td>
+                                          <td>{{ s.user.first_name|title }}</td>
+                                          <td>{{ s.user.profile.gender }}</td>
+                                          <td>
+                                            <button class="btn btn-default btn-sm hovergroup" id="{{ s.user.id }}"> <span class="badge rounded-pill bg-secondary"><i class="bi bi-eye"></i> {{ s.nombre_groupes }}</span> </button>
+                                          </td>
+                                          <td>
+                                            <a href="{% url 'user/permission' s.user.id|crypter_id %}" class="btn btn-primary btn-sm">Permission</a>
+                                          </td>
+                                          <td>
+                                            <a href="{% url 'user/detail_supuser' s.user.id|crypter_id %}" title="Detail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                          </td>
+                                        </tr>
+                                        {% endfor%}
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div><!-- Fin de delete Modal-->
+
+                        <!-- Start groupe Modal -->
+                        <div class="modal fade" id="content_admin" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                              <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                <h5 class="modal-title"><i class="bi bi-info-circle"></i> Liste des groupes</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" class="badge bg-dark">x</span>
+                                </button>
+                              </div>
+                              <div class="modal-body" id="content-group-admin"></div>
+                            </div>
+                          </div>
+                        </div><!-- End group Modal-->
+                        
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div><!-- End Sales Card -->
+
+
+
+            <!-- Customers Card -->
+            <div class="col-xxl-4 col-xl-6">
+
+              <div class="card info-card customers-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">Super utilisateurs <span>| Cette année</span></h5>
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-people"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ nombre_supadmin }}</h6>
+                      <a href="#">
+                      <span class="text-danger small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                      </a>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div><!-- End Customers Card -->
+            
+            <!-- Sales Card -->
+            <div class="col-xxl-4 col-xl-6 col-md-6">
+              <div class="card info-card sales-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">Promoteurs <span>| Cette année</span></h5>
+
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-people"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ nombre_promoteurs }}</h6>
+                      <a href="#"  data-bs-toggle="modal" data-bs-target="#promoteurModal">
+                        <span class="text-success small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                      </a>
+                      <!-- Start de delete Modal -->
+                      <div class="modal fade" id="promoteurModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                          <div class="modal-content">
+                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                              <h5 class="modal-title">Liste des promoteurs</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <br>
+                                <div class="card">
+                                  <div class="card-body">
+                                    <div class="table-responsive">
+                                      <table class="table">
+                                        <tr>
+                                          <th>Id</th>
+                                          <th>Noms</th>
+                                          <th>Prénoms</th>
+                                          <th>Email</th>
+                                          <th>Sexe</th>
+                                          <th>Action</th>
+                                        </tr>
+                                        {% for promoteur in promoteurs %}
+                                        <tr>
+                                          <td>{{ promoteur.id }}</td>
+                                          <td>{{ promoteur.last_name|title }}</td>
+                                          <td>{{ promoteur.first_name|title }}</td>
+                                          <td>{{ promoteur.email }}</td>
+                                          <td>{{ promoteur.profile.gender }}</td>
+                                          <td><a href="#" class="btn btn-danger btn-sm delete-new-user" id="{{ promoteur.id }}"><i class="bi bi-trash"></i></a></td>
+                                        </tr>
+                                        {% endfor%}
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div><!-- Fin de delete Modal-->
+
+                        <!-- Start groupe Modal -->
+                        <div class="modal fade" id="content_admin" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                              <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                <h5 class="modal-title"><i class="bi bi-info-circle"></i> Liste des groupes</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" class="badge bg-dark">x</span>
+                                </button>
+                              </div>
+                              <div class="modal-body" id="content-group-admin"></div>
+                            </div>
+                          </div>
+                        </div><!-- End group Modal-->
+                        
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div><!-- End Sales Card -->
+
+            <!-- Revenue Card -->
+            <div class="col-xxl-4 col-xl-6 col-md-6">
+              <div class="card info-card revenue-card">
+
+                <div class="card-body">
+
+                  
+                  <h5 class="card-title">Etablissements <span>| Cette année</span></h5>
+
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-house"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ total_etablissements }}</h6>
+                      <a href="#"  data-bs-toggle="modal" data-bs-target="#etablissementModal">
+                        <span class="text-success small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                      </a>
+                      <!-- Start enseignant Modal -->
+                      <div class="modal fade" id="etablissementModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+                          <div class="modal-content">
+                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                              <h5 class="modal-title">Liste des établissements</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <br>
+                                <div class="card">
+                                  <div class="card-body">
+                                    <div class="table-responsive">
+                                      <table class="table">
+                                        <tr>
+                                          <th>Nom</th>
+                                          <th>Promoteur</th>
+                                          <th>NombreElèves</th>
+                                          <th>Action</th>
+                                        </tr>
+                                        {% for e in etablissements %}
+                                        <tr>
+                                          <td>{{ e.etablissement.name }}</td>
+                                          <td>{{ e.etablissement.promoteur.last_name|title }} {{ e.etablissement.promoteur.first_name|title }}</td>
+                                          <td><span class="badge rounded-pill bg-secondary">{{ e.nombre_eleves }}</span></td>
+                                          <td><a href="#" class="btn btn-info btn-sm button-salle" id="{{ e.etablissement.id }}"><i class="bi bi-eye"></i></a></td>
+                                        </tr>
+                                        {% endfor%}
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div><!-- Fin de enseignant Modal-->
+
+                        <!-- Start content salle Modal -->
+                        <div class="modal fade" id="content-salle" tabindex="-1">
+                          <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                              <div class="modal-header bg-info">
+                                <h5 class="modal-title">Liste des salles</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" class="badge bg-dark">x</span>
+                                </button>
+                              </div>
+                              <div class="modal-body" id="content-salle-etablissement"></div>
+                            </div>
+                          </div>
+                        </div><!-- End content salle Modal-->
+
+                        <!-- Start content salle Modal -->
+                        <div class="modal fade" id="content-student" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                              <div class="modal-header bg-info">
+                                <h5 class="modal-title">Liste des élèves</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" class="badge bg-dark">x</span>
+                                </button>
+                              </div>
+                              <div class="modal-body" id="content-student-etablissement"></div>
+                            </div>
+                          </div>
+                        </div><!-- End content salle Modal-->
+
+                        <!-- Start content salle Modal -->
+                        <div class="modal fade" id="content-block-student" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                              <div class="modal-header bg-info">
+                                <h5 class="modal-title">Blocage du compte</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" class="badge bg-dark">x</span>
+                                </button>
+                              </div>
+                              <div class="modal-body" id="content-block-student-etablissement"></div>
+                            </div>
+                          </div>
+                        </div><!-- End content salle Modal-->
+
+                        <!-- Start groupe Modal -->
+                        <div class="modal fade" id="content_teacher" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                              <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                <h5 class="modal-title"><i class="bi bi-info-circle"></i> Liste des groupes</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" class="badge bg-dark">x</span>
+                                </button>
+                              </div>
+                              <div class="modal-body" id="content-group-teacher"></div>
+                            </div>
+                          </div>
+                        </div><!-- End group Modal-->
+
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div><!-- End Revenue Card -->
+
+            <!-- Sales Card -->
+            <div class="col-xxl-4 col-xl-6 col-md-6">
+              <div class="card info-card sales-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">Nouv utilisateurs <span>| Cette année</span></h5>
+
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-people"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ nombre_newusers }}</h6>
+                      <a href="#"  data-bs-toggle="modal" data-bs-target="#newuserModal">
+                        <span class="text-success small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                      </a>
+                      <!-- Start new user Modal -->
+                      <div class="modal fade" id="newuserModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                          <div class="modal-content">
+                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                              <h5 class="modal-title">Liste des nouveaux utilisateurs</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <br>
+                                <div class="card">
+                                  <div class="card-body">
+                                    <div class="table-responsive">
+                                      <table class="table">
+                                        <tr>
+                                          <th>Noms</th>
+                                          <th>Prénoms</th>
+                                          <th>Email</th>
+                                          <th>Rôle</th>
+                                          <th>Action</th>
+                                        </tr>
+                                        {% for new_user in news_users %}
+                                        <tr>
+                                          <td>{{ new_user.last_name|title }}</td>
+                                          <td>{{ new_user.first_name|title }}</td>
+                                          <td>{{ new_user.email }}</td>
+                                          <td><a href="#" class="btn btn-primary btn-sm group-new-user" id="{{ new_user.id }}"><i class="bi bi-list"></i></a></td>
+                                          <td><a href="#" class="btn btn-danger btn-sm delete-new-user" id="{{ new_user.id }}"><i class="bi bi-trash"></i></a></td>
+                                        </tr>
+                                        {% endfor%}
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div><!-- Fin new user Modal-->
+
+                        <!-- Start groupe Modal -->
+                        <div class="modal fade" id="content_delete" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered modal-sm">
+                            <div class="modal-content">
+                              <div class="modal-header bg-danger text-light">
+                                <h5 class="modal-title">Suppression</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" class="badge bg-dark">x</span>
+                                </button>
+                              </div>
+                              <div class="modal-body" id="content-delete-item"></div>
+                            </div>
+                          </div>
+                        </div><!-- End group Modal-->
+
+                        <!-- Start groupe Modal -->
+                        <div class="modal fade" id="content_group" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                              <div class="modal-header bg-primary text-light">
+                                <h5 class="modal-title">Associer au groupe</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" class="badge bg-dark">x</span>
+                                </button>
+                              </div>
+                              <div class="modal-body" id="content-group-item"></div>
+                            </div>
+                          </div>
+                        </div><!-- End group Modal-->
+
+                        <!-- Start groupe Modal -->
+                        <div class="modal fade" id="content_admin" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                              <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                <h5 class="modal-title"><i class="bi bi-info-circle"></i> Liste des groupes</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" class="badge bg-dark">x</span>
+                                </button>
+                              </div>
+                              <div class="modal-body" id="content-group-admin"></div>
+                            </div>
+                          </div>
+                        </div><!-- End group Modal-->
+                        
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div><!-- End Sales Card -->
+
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Récette mensuelle ({{ setting.devise }})</h5>
+    
+                  <!-- Bar Chart -->
+                  <canvas id="barChart" style="max-height: 400px;"></canvas>
+                  <script>
+                    document.addEventListener("DOMContentLoaded", () => {
+                      new Chart(document.querySelector('#barChart'), {
+                        type: 'bar',
+                        data: {
+                          labels: [
+                          {% for p in payments %}
+                          '{{ p.month }}', 
+                          {% endfor %}],
+                          datasets: [{
+                            label: 'Recette',
+                            data: [
+                            {% for p in payments %}
+                              {{ p.somme_totale|floatformat:0 }},
+                            {% endfor %}
+                            ],
+                            backgroundColor: [
+                              'rgba(255, 99, 132, 0.2)',
+                              'rgba(255, 159, 64, 0.2)',
+                              'rgba(255, 205, 86, 0.2)',
+                              'rgba(75, 192, 192, 0.2)',
+                              'rgba(54, 162, 235, 0.2)',
+                              'rgba(153, 102, 255, 0.2)',
+                              'rgba(201, 203, 207, 0.2)'
+                            ],
+                            borderColor: [
+                              'rgb(255, 99, 132)',
+                              'rgb(255, 159, 64)',
+                              'rgb(255, 205, 86)',
+                              'rgb(75, 192, 192)',
+                              'rgb(54, 162, 235)',
+                              'rgb(153, 102, 255)',
+                              'rgb(201, 203, 207)'
+                            ],
+                            borderWidth: 1
+                          }]
+                        },
+                        options: {
+                          scales: {
+                            y: {
+                              beginAtZero: true
+                            }
+                          }
+                        }
+                      });
+                    });
+                  </script>
+                  <!-- End Bar CHart -->
+    
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Selling -->
+
+          </div>
+        </div><!-- End Left side columns -->
+
+        <!-- Right side columns -->
+        <div class="col-lg-4">
+
+          <!-- Website Traffic -->
+          <div class="card">
+
+            <div class="card-body pb-0">
+              <h5 class="card-title">Récette annuelle <span>| Aujourd'hui</span></h5>
+
+              <div id="trafficChart" style="min-height: 400px;" class="echart"></div>
+
+              <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                  echarts.init(document.querySelector("#trafficChart")).setOption({
+                    tooltip: {
+                      trigger: 'item'
+                    },
+                    legend: {
+                      top: '5%',
+                      left: 'center'
+                    },
+                    series: [{
+                      name: 'Année scolaire',
+                      type: 'pie',
+                      radius: ['40%', '70%'],
+                      avoidLabelOverlap: false,
+                      label: {
+                        show: false,
+                        position: 'center'
+                      },
+                      emphasis: {
+                        label: {
+                          show: true,
+                          fontSize: '18',
+                          fontWeight: 'bold'
+                        }
+                      },
+                      labelLine: {
+                        show: false
+                      },
+                      data: [
+                        {% for a in anneeacademiques %}
+                        {
+                          value: {{ a.somme_totale_an }},
+                          name: '{{ a.anneeacademique }}'
+                        },
+                        {% endfor %}
+                      ]
+                    }]
+                  });
+                });
+              </script>
+
+            </div>
+          </div><!-- End Website Traffic -->
+
+        </div><!-- End Right side columns -->
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endif %}
+{% endblock %}
+
+ 

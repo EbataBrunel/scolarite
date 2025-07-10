@@ -1,0 +1,307 @@
+<div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+      <!-- Bordered Tabs -->
+      <ul class="nav nav-tabs nav-tabs-bordered">
+
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Liste des élèves</button>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Statuts</button>
+        </li>
+
+      </ul>
+    </div>
+    <div class="col-md-4"></div>
+  </div>
+  <div class="tab-content pt-2">
+
+    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+        <div id="deliberation-title">
+            {% if deliberation %}
+                {% if deliberation.status %}
+                    <h5 class="card-title text-center">Liste definitive des résultats <b>du {{ trimestre }}</b> de la <b>{{ salle.classe }} {{ salle.serie }}{{ salle.number }}</b> </h5>
+                {% else %}
+                    <h5 class="card-title text-center">Liste provisoire des résultats du <b>{{ trimestre }}</b> de la <b>{{ salle.classe }} {{ salle.serie }}{{ salle.number }}</b> </h5>
+                {% endif %}
+            {% else %}
+            <h5 class="card-title text-center">Liste provisoire des résultats du <b>{{ trimestre }}</b> de la <b>{{ salle.classe }} {{ salle.serie }}{{ salle.number }}</b> </h5>
+            {% endif %}
+        </div>
+        <!-- debut content student -->
+        <div id="content_student_composer">
+            <div class="text-center">
+                
+                {% if deliberation %}
+                <a href="#" id="all" data-trim="{{ trimestre }}" data-salle="{{ salle.id }}"  class="btn btn-outline-primary btn-sm tri_student"><i class="bi bi-plus-circle"></i> Tous</a>&nbsp;
+                <a href="#" id="admis" data-trim="{{ trimestre }}" data-salle="{{ salle.id }}" class="btn btn-outline-secondary btn-sm tri_student"><i class="bi bi-plus-circle"></i> Liste des admis</a>&nbsp;
+                <a href="#" id="ajournee" data-trim="{{ trimestre }}" data-salle="{{ salle.id }}" class="btn btn-outline-secondary btn-sm tri_student"><i class="bi bi-plus-circle"></i> Liste des ajournés</a>
+                {% endif %}
+            </div>
+            <br>
+            <!-- Table with stripped rows -->
+            <div class="table-responsive">
+                <br>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="bg-secondary">Rang</th>
+                            <th class="bg-secondary">Noms</th>
+                            <th class="bg-secondary">Prénoms</th>
+                            <th class="bg-secondary">Moyenne</th>
+                            <th class="bg-secondary">Mention</th>
+                            {% if deliberation %}
+                            <th class="bg-secondary">Décision du jury</th>
+                            {% endif %}
+                            <th class="bg-secondary"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for moyenne in moyenne_students %}
+                        <tr>
+                            <td>{{ moyenne.rang }}</td>
+                            <td>{{ moyenne.student.lastname|title }}</td>
+                            <td>{{ moyenne.student.firstname|title }}</td>
+                            <td>{{ moyenne.moyenne|floatformat:2 }}</td>
+                            <td>{{ moyenne.mention }}</td>
+                            {% if deliberation %}
+                                {% if moyenne.moyenne >= deliberation.moyennevalidation %}
+                                    {% if moyenne.student.gender == 'Masculin' %}
+                                    <td class="text-success">Admis</td>
+                                    {% else %}
+                                    <td class="text-success">Admise</td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if moyenne.student.gender == 'Masculin' %}
+                                    <td class="text-danger">Ajourné</td>
+                                    {% else %}
+                                    <td class="text-danger">Ajournée</td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %} 
+                            <td>
+                                <!-- Large Modal -->
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#largeModal{{ moyenne.student.id }}">
+                                    Détail
+                                </button>
+
+                                <div class="modal fade" id="largeModal{{ moyenne.student.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="text-center">
+                                            <div class="row">
+                                                <div class="col-md-3"></div>
+                                                <div class="col-md-6 bg-secondary" style="border-radius:20px">
+                                                    <h4 class="text-center"><b>Rélevé de notes du {{ trimestre }}</b></h4>
+                                                    <h5 class="text-center">Année scolaire : {{ request.session.annee_debut }} {{ request.session.separateur }} {{ request.session.annee_fin }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="col-md-3"></div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h3 class="text-center">{{ moyenne.student.lastname|title }} {{ moyenne.student.firstname|title }}</h3>
+                                            <hr>
+                                            <div class="text-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead class="bg-secondary">
+                                                        <tr>
+                                                            <th rowspan="2" class="item-table-center bg-secondary">Matières</th>
+                                                            <th class="text-center bg-secondary" colspan="3">Notes</th>
+                                                            <th rowspan="2" class="item-table-center bg-secondary">Min<br>Max</th>
+                                                            <th rowspan="2" class="item-table-center bg-secondary">Coefficients</th>
+                                                            <th rowspan="2" class="item-table-center bg-secondary">Observations</th>
+                                                        </tr>
+                                                        <tr>
+                                                            <th class="text-center bg-secondary">M. Classe</th>
+                                                            <th class="text-center bg-secondary">M. Comp</th>
+                                                            <th class="text-center bg-secondary">M. Gle</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for d in moyenne.details %}
+                                                        <tr>
+                                                            <td>
+                                                                {{ d.matiere }}<br>
+                                                                <span style="float:right">{{ d.enseignant.last_name|title }}</span>
+                                                            </td>
+                                                            <td class="item-table-center">{{ d.moyenne_controle|floatformat:2 }}</td>
+                                                            <td class="item-table-center">{{ d.note_examen|floatformat:2 }}</td>
+                                                            <td class="item-table-center">{{ d.moyenne_finale_matiere|floatformat:2 }}</td>
+                                                            <td class="text-center">{{ d.note_minimale|floatformat:2 }}<br>{{ d.note_maximale|floatformat:2 }}</td>
+                                                            <td class="item-table-center">{{ d.coefficient }}</td>
+                                                            <td class="item-table-center">{{ d.mention_note_matiere }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                    <tfooter>
+                                                        <tr>
+                                                            <td colspan="3" class="text-center">Total : </td>
+                                                            <td class="text-center">{{ moyenne.somme_totale_notes }}</td>
+                                                            <td></td>
+                                                            <td class="text-center">{{ somme_coefficient }}</td>
+                                                            <td></td>
+                                                        <tr>
+                                                        <tr>
+                                                            <td colspan="5" class="text-center"><b>Moyenne : </b></td>
+                                                            <td class="text-center text-light bg-secondary"><b>{{ moyenne.moyenne|floatformat:2 }}</b></td>
+                                                            <td class="text-center">{{ moyenne.mention }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="5"></td>
+                                                            <td class="text-center">Rang : </td>
+                                                            <td class="text-center text-light bg-secondary"><b>{{ moyenne.rang }}</b></td>
+                                                        </tr>
+                                                    </tfooter>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer text-center">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div><!-- End Large Modal-->
+                            </td>  
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if nombre_total_students > 1 %}
+            <p class="text-center">La présente liste se termine avec un effectif de <b>{{ nombre_total_students }}</b> élèves.</p>
+            {% else %}
+            <p class="text-center">La présente liste se termine avec un effectif de <b>{{ nombre_total_students }}</b> élève.</p>
+            {% endif %}
+        </div><!-- fin content student -->
+        <!-- End Table with stripped rows -->
+    </div>
+
+
+
+
+    <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+        <h5 class="card-title text-center">Statut de délibération</h5>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- On inclut l'image de chargement -->
+                        {% include 'global/_loading.html' %}
+                        <!-- Vertical Form -->
+                        <form method="post" action="" id="formValidationMoyenne" class="row g-3">
+                            {% csrf_token %}
+                            <div class="col-12">
+                                <input type="text" name="salle_id" value="{{ salle.id }}" hidden>
+                                <input type="text" name="trimestre" value="{{ trimestre }}" hidden>
+                                <label for="moyenne" class="form-label">Moyenne de validation : </label>
+                                {% if deliberation %}
+                                    {% if deliberation.status %}
+                                    <input type="text" name="id" value="{{ deliberation.id }}" hidden>
+                                    <input type="text" name="moyenne" value="{{ deliberation.moyennevalidation }}" class="form-control" id="moyenne" required disabled = "true">
+                                    <br>
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-primary btn-sm" disabled="true"><i class="bi bi-check-circle"></i> Valider </button>
+                                    </div>
+                                    {% else %}
+                                    <input type="text" name="id" value="{{ deliberation.id }}" hidden>
+                                    <input type="text" name="moyenne" value="{{ deliberation.moyennevalidation }}" class="form-control" id="moyenne" required>
+                                    <br>
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                                    </div>
+                                    {% endif %}
+                                {% else %}
+                                <input type="text" name="id" value="0" hidden>
+                                <input type="number" name="moyenne" class="form-control" id="moyenne" required>
+                                <br>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </form>
+                        <!-- End Vertical Form-->
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                      <h5 class="card-title">Statut de validation</h5>
+        
+                      <!-- Default Accordion -->
+                      <div class="accordion" id="accordionExample">
+                        <div class="status_content">                
+                        {% if deliberation %}
+                            {% if deliberation.status %}
+                            <h3 class="text-center"><span class="text-success"><i class="bi bi-circle-fill"></i></span> Les résultats sont déjà disponibles.</h3>
+                            {% else %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    Cliquez ici pour procéder à la publication des résultats
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+                                    <div class="accordion-body">
+                                        <!-- On inclut l'image de chargement -->
+                                        {% include 'global/_loading.html' %}
+                                        <!-- Vertical Form -->
+                                        <form method="post" action="" id="formPublicationResultat" class="row g-3">
+                                            {% csrf_token %}
+                                            <input type="text" name="salle" id="salle" value="{{ salle.classe }} {{ salle.serie }}{{ salle.number }}" hidden>
+                                            <input type="text" name="trimestre" id="trimestre" value="{{ trimestre }}" hidden>
+                                            <input type="text" name="id" value="{{ deliberation.id }}" hidden>
+                                            <div class="col-12">
+                                                <label for="password" class="form-label">Tapez votre mot de passe : </label>
+                                                <input type="password" name="password" class="form-control" id="password" required>
+                                            </div>
+                                            <div class="text-center">
+                                                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                                            </div>
+                                        </form>
+                                        <!-- End Vertical Form-->
+                                        <!-- Start message Modal -->
+                                        <div class="modal fade" id="message" tabindex="-1">
+                                            <div class="modal-dialog modal-sm">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true" class="badge bg-dark">x</span>
+                                                </button>
+                                                </div>
+                                                <div class="modal-body" id="content-message"></div>
+                                            </div>
+                                            </div>
+                                        </div><!-- End message Modal-->
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Cliquez ici pour procéder à la publication des résultats
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <h4 class="text-center"><span class="text-warning"><i class="bi bi-circle-fill"></i></span> Enregistrer d'abord une moyenne de validation avant de passer à la publication des résultats.</h4>
+                            </div>
+                        </div>
+                        {% endif %}
+                        </div>
+                      </div><!-- End Default Accordion Example -->
+        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div><!-- End Bordered Tabs -->

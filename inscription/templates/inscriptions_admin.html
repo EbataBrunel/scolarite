@@ -1,0 +1,98 @@
+{% extends template %}
+{% block title %} {{ setting.appname }} | Inscriptions {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Inscriptions</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Inscriptions</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des salles</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Salles</th>
+                                <th>NombreEtudiants</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in salles %}
+                            <tr>
+                                <td class="white-space">{{ s.salle }}</td>
+                                <td><span class="badge rounded-pill bg-secondary">{{ s.nombre_students }}</span></td>
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#detailModal{{ s.salle.id }}" title="Plus d'info" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="detailModal{{ s.salle.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                                          <div class="modal-content">
+                                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                              <h5 class="modal-title">Liste des élèves </h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <h5 class="text-center"><b>Salle : </b>{{ s.salle }}</h5>
+                                                <br>
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="table-responsive">
+                                                            <table class="table">
+                                                                <tr>
+                                                                    <th>Noms</th>
+                                                                    <th>Prénoms</th>
+                                                                    <th>Sexe</th>
+                                                                </tr>
+                                                                {% for inscription in s.inscriptions %}
+                                                                <tr>
+                                                                    <td class="white-space">{{ inscription.student.lastname|title }}</td>
+                                                                    <td class="white-space">{{ inscription.student.firstname|title }}</td>
+                                                                    <td>{{ inscription.student.gender }}</td>
+                                                                </tr>
+                                                                {% endfor%}
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <th><b>Total</b></th>
+                                <th colspan="2"><span class="badge rounded-pill bg-success">{{ student_total }}</span></th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,398 @@
+{% load crypto_filters %}
+<!-- Table with stripped rows -->
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th class="text-center bg-secondary">Horaires</th>
+                <th class="text-center bg-secondary">Lundi</th>
+                <th class="text-center bg-secondary">Mardi</th>
+                <th class="text-center bg-secondary">Mercredi</th>
+                <th class="text-center bg-secondary">Jeudi</th>
+                <th class="text-center bg-secondary">Vendredi</th>
+                {% if count_emploi_samedi %}
+                <th class="text-center bg-secondary">Samedi</th>
+                {% endif %}
+                {% if count_emploi_dimanche %}
+                <th class="text-center bg-secondary">Dimanche</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for emploi in emploitemps %}
+            <tr>
+                <td class="text-center item-table-center bg-secondary white-space">{{ emploi.horaire }}</td>
+                <td class="{{ emploi.lundi.matiere.theme }} {{ emploi.lundi.matiere.text_color }} min-height-cellule-table">
+                    {% if emploi.lundi.id %}
+                        <p class="text-center">
+                            <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.lundi.id }}" title="Supprimer" class="{{ emploi.lundi.matiere.text_color }}">
+                            {{ emploi.lundi.matiere }}<br>
+                            {{ emploi.lundi.enseignant.last_name|title }}
+                            </a>
+                        </p>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="deleteModal{{ emploi.lundi.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                        <h5 class="text-center"> Détail de l'emploi du temps </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="table-responsive">
+                                            <table class="text-dark table">
+                                                <tr>
+                                                    <th> Jour <span class="float-right">:</span> </th><td> {{ emploi.lundi.jour }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Horaire <span class="float-right">:</span> </th><td class="white-space"> {{ emploi.horaire }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Matière <span class="float-right">:</span> </th><td class="white-space"> {{ emploi.lundi.matiere }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Enseignant <span class="float-right">:</span> </th><td class="white-space"> {{ emploi.lundi.enseignant.last_name|title }} {{ emploi.lundi.enseignant.first_name|title }}</td>
+                                                </tr>
+                                                {% if request.session.group_name in permission_directeur_etudes and anneeacademique.status_cloture %}
+                                                        <tr>
+                                                            <td><a href="{% url 'save_absence' emploi.lundi.id|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-gem"></i> Enregistrer une absence de l'enseignant </a></td>
+                                                            <td><a href="{% url 'add_emargement' emploi.lundi.id|crypter_id %}" class="btn btn-success btn-sm"><i class="bi bi-gem"></i> Ajouter un émargement à l'enseignant </a><br></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><a href="{% url 'edit_emploitemps' emploi.lundi.id|crypter_id %}"class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier l'emploi du temps </a></td>
+                                                            <td><a href="{% url 'del_emploitemps' emploi.lundi.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a></td>
+                                                        </tr>
+                                                {% endif %}
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary btn-sm float-right" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- Fin de delete Modal-->
+                    {% endif %}
+                </td>
+                <td class="{{ emploi.mardi.matiere.theme }} {{ emploi.mardi.matiere.text_color }}">
+                    {% if emploi.mardi.id %}
+                        <p class="text-center">
+                            <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.mardi.id }}" title="Supprimer" class="{{ emploi.mardi.matiere.text_color }}">
+                            {{ emploi.mardi.matiere }}<br>
+                            {{ emploi.mardi.enseignant.last_name|title }}
+                            </a>
+                        </p>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="deleteModal{{ emploi.mardi.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                        <h5 class="text-center"> Détail de l'emploi du temps </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="table-responsive">
+                                            <table class="text-dark table">
+                                                <tr>
+                                                    <th> Jour</th><td>: {{ emploi.mardi.jour }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Matière</th><td class="white-space">: {{ emploi.mardi.matiere }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Enseignant</th><td class="white-space">: {{ emploi.mardi.enseignant.last_name|title }} {{ emploi.mardi.enseignant.first_name|title }}</td>
+                                                </tr>
+                                                    {% if request.session.group_name in permission_directeur_etudes and anneeacademique.status_cloture %}
+                                                        <tr>
+                                                            <td><a href="{% url 'save_absence' emploi.mardi.id|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-gem"></i> Enregistrer une absence de l'enseignant </a></td>
+                                                            <td><a href="{% url 'add_emargement' emploi.mardi.id|crypter_id %}" class="btn btn-success btn-sm"><i class="bi bi-gem"></i> Ajouter un émargement à l'enseignant </a><br></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><a href="{% url 'edit_emploitemps' emploi.mardi.id|crypter_id %}"class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier l'emploi du temps </a></td>
+                                                            <td><a href="{% url 'del_emploitemps' emploi.mardi.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a></td>
+                                                        </tr>
+                                                    {% endif %}
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer text-center">
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- Fin de delete Modal-->
+                    {% endif %}
+                </td>
+                <td class="{{ emploi.mercredi.matiere.theme }} {{ emploi.mercredi.matiere.text_color }}">
+                    {% if emploi.mercredi.id %}
+                        <p class="text-center">
+                            <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.mercredi.id }}" title="Supprimer" class="{{ emploi.mercredi.matiere.text_color }}">
+                            {{ emploi.mercredi.matiere }}<br>
+                            {{ emploi.mercredi.enseignant.last_name|title }}
+                            </a>
+                        </p>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="deleteModal{{ emploi.mercredi.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                        <h5 class="text-center"> Détail de l'emploi du temps </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="table-responsive">
+                                            <table class="text-dark table">
+                                                <tr>
+                                                    <th> Jour</th><td>: {{ emploi.mercredi.jour }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Matière</th><td class="white-space">: {{ emploi.mercredi.matiere }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Enseignant</th><td class="white-space">: {{ emploi.mercredi.enseignant.last_name|title }} {{ emploi.mercredi.enseignant.first_name|title }}</td>
+                                                </tr>
+                                                    {% if request.session.group_name in permission_directeur_etudes and anneeacademique.status_cloture %}
+                                                        <tr>
+                                                            <td><a href="{% url 'save_absence' emploi.mercredi.id|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-gem"></i> Enregistrer une absence de l'enseignant </a></td>
+                                                            <td><a href="{% url 'add_emargement' emploi.mercredi.id|crypter_id %}" class="btn btn-success btn-sm"><i class="bi bi-gem"></i> Ajouter un émargement à l'enseignant </a><br></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><a href="{% url 'edit_emploitemps' emploi.mercredi.id|crypter_id %}"class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier l'emploi du temps </a></td>
+                                                            <td><a href="{% url 'del_emploitemps' emploi.mercredi.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a></td>
+                                                        </tr>
+                                                    {% endif %}
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer text-center">
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- Fin de delete Modal-->
+                    {% endif %}
+                </td>
+                <td class="{{ emploi.jeudi.matiere.theme }} {{ emploi.jeudi.matiere.text_color }}">
+                    {% if emploi.jeudi.id %}
+                        <p class="text-center">
+                            <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.jeudi.id }}" title="Supprimer" class="{{ emploi.jeudi.matiere.text_color }}">
+                            {{ emploi.jeudi.matiere }}<br>
+                            {{ emploi.jeudi.enseignant.last_name|title }}
+                            </a>
+                        </p>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="deleteModal{{ emploi.jeudi.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                        <h5 class="text-center"> Détail de l'emploi du temps </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="table-responsive">
+                                            <table class="text-dark table">
+                                                <tr>
+                                                    <th> Jour</th><td>: {{ emploi.jeudi.jour }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Matière</th><td class="white-space">: {{ emploi.jeudi.matiere }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Enseignant</th><td class="white-space">: {{ emploi.jeudi.enseignant.last_name|title }} {{ emploi.jeudi.enseignant.first_name|title }}</td>
+                                                </tr>
+                                                    {% if request.session.group_name in permission_directeur_etudes and anneeacademique.status_cloture %}
+                                                        <tr>
+                                                            <td><a href="{% url 'save_absence' emploi.jeudi.id|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-gem"></i> Enregistrer une absence de l'enseignant </a></td>
+                                                            <td><a href="{% url 'add_emargement' emploi.jeudi.id|crypter_id %}" class="btn btn-success btn-sm"><i class="bi bi-gem"></i> Ajouter un émargement à l'enseignant </a><br></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><a href="{% url 'edit_emploitemps' emploi.jeudi.id|crypter_id %}"class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier l'emploi du temps </a></td>
+                                                            <td><a href="{% url 'del_emploitemps' emploi.jeudi.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a></td>
+                                                        </tr>
+                                                    {% endif %}
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer text-center">
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- Fin de delete Modal-->
+                    {% endif %}
+                </td>
+                <td class="{{ emploi.vendredi.matiere.theme }} {{ emploi.vendredi.matiere.text_color }}">
+                    {% if emploi.vendredi.id %}
+                        <p class="text-center">
+                            <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.vendredi.id }}" title="Supprimer" class="{{ emploi.vendredi.matiere.text_color }}">
+                            {{ emploi.vendredi.matiere }}<br>
+                            {{ emploi.vendredi.enseignant.last_name|title }}
+                            </a>
+                        </p>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="deleteModal{{ emploi.vendredi.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                        <h5 class="text-center"> Détail de l'emploi du temps </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="table-responsive">
+                                            <table class="text-dark table">
+                                                <tr>
+                                                    <th> Jour</th><td>: {{ emploi.vendredi.jour }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Matière</th><td class="white-space">: {{ emploi.vendredi.matiere }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Enseignant</th><td class="white-space">: {{ emploi.vendredi.enseignant.last_name|title }} {{ emploi.vendredi.enseignant.first_name|title }}</td>
+                                                </tr>
+                                                    {% if request.session.group_name in permission_directeur_etudes and anneeacademique.status_cloture %}
+                                                        <tr>
+                                                            <td><a href="{% url 'save_absence' emploi.vendredi.id|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-gem"></i> Enregistrer une absence de l'enseignant </a></td>
+                                                            <td><a href="{% url 'add_emargement' emploi.vendredi.id|crypter_id %}" class="btn btn-success btn-sm"><i class="bi bi-gem"></i> Ajouter un émargement à l'enseignant </a><br></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><a href="{% url 'edit_emploitemps' emploi.vendredi.id|crypter_id %}"class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier l'emploi du temps </a></td>
+                                                            <td><a href="{% url 'del_emploitemps' emploi.vendredi.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a></td>
+                                                        </tr>
+                                                    {% endif %}
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer text-center">
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- Fin de delete Modal-->
+                    {% endif %}
+                </td>
+                {% if count_emploi_samedi %}
+                <td class="{{ emploi.samedi.matiere.theme }} {{ emploi.samedi.matiere.text_color }}">
+                    {% if emploi.vendredi.id %}
+                        <p class="text-center">
+                            <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.samedi.id }}" title="Supprimer" class="{{ emploi.vendredi.matiere.text_color }}">
+                            {{ emploi.vendredi.matiere }}<br>
+                            {{ emploi.vendredi.enseignant.last_name|title }}
+                            </a>
+                        </p>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="deleteModal{{ emploi.samedi.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                        <h5 class="text-center"> Détail de l'emploi du temps </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="table-responsive">
+                                            <table class="text-dark table">
+                                                <tr>
+                                                    <th> Jour</th><td>: {{ emploi.samedi.jour }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Matière</th><td class="white-space">: {{ emploi.samedi.matiere }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Enseignant</th><td class="white-space">: {{ emploi.samedi.enseignant.last_name|title }} {{ emploi.samedi.enseignant.first_name|title }}</td>
+                                                </tr>
+                                                    {% if request.session.group_name in permission_directeur_etudes and anneeacademique.status_cloture %}
+                                                        <tr>
+                                                            <td><a href="{% url 'save_absence' emploi.samedi.id|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-gem"></i> Enregistrer une absence de l'enseignant </a></td>
+                                                            <td><a href="{% url 'add_emargement' emploi.samedi.id|crypter_id %}" class="btn btn-success btn-sm"><i class="bi bi-gem"></i> Ajouter un émargement à l'enseignant </a><br></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><a href="{% url 'edit_emploitemps' emploi.samedi.id|crypter_id %}"class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier l'emploi du temps </a></td>
+                                                            <td><a href="{% url 'del_emploitemps' emploi.samedi.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a></td>
+                                                        </tr>
+                                                    {% endif %}
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer text-center">
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- Fin de delete Modal-->
+                    {% endif %}
+                </td>
+                {% endif %}
+                {% if count_emploi_dimanche %}
+                <td class="{{ emploi.dimanche.matiere.theme }} {{ emploi.dimanche.matiere.text_color }} white-space">
+                    {% if emploi.dimanche.id %}
+                        <p class="text-center">
+                            <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.dimanche.id }}" title="Supprimer" class="{{ emploi.dimanche.matiere.text_color }}">
+                            {{ emploi.dimanche.matiere }}<br>
+                            {{ emploi.dimanche.enseignant.last_name|title }}
+                            </a>
+                        </p>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="deleteModal{{ emploi.dimanche.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                        <h5 class="text-center"> Détail de l'emploi du temps </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="table-responsive">
+                                            <table class="text-dark table">
+                                                <tr>
+                                                    <th> Jour</th><td>: {{ emploi.dimanche.jour }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Matière</th><td class="white-space">: {{ emploi.dimanche.matiere }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th> Enseignant</th><td class="white-space">: {{ emploi.dimanche.enseignant.last_name|title }} {{ emploi.dimanche.enseignant.first_name|title }}</td>
+                                                </tr>
+                                                    {% if request.session.group_name in permission_directeur_etudes and anneeacademique.status_cloture %}
+                                                        <tr>
+                                                            <td><a href="{% url 'save_absence' emploi.dimanche.id|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-gem"></i> Enregistrer une absence de l'enseignant </a></td>
+                                                            <td><a href="{% url 'add_emargement' emploi.dimanche.id|crypter_id %}" class="btn btn-success btn-sm"><i class="bi bi-gem"></i> Ajouter un émargement à l'enseignant </a><br></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><a href="{% url 'edit_emploitemps' emploi.dimanche.id|crypter_id %}"class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier l'emploi du temps </a></td>
+                                                            <td><a href="{% url 'del_emploitemps' emploi.dimanche.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a></td>
+                                                        </tr>
+                                                    {% endif %}
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer text-center">
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- Fin de delete Modal-->
+                    {% endif %}
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- End Table with stripped rows -->

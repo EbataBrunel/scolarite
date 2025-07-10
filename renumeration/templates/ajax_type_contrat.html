@@ -1,0 +1,11 @@
+{% if type_contrat == "Admin" %}
+    <div class="col-12">
+        <label for="Amount" class="form-label">Montant ({{ setting.devise }}): </label>
+        <input type="number" name="amount" class="form-control" id="Amount" required>
+    </div>
+{% else %}
+    <div class="col-12">
+        <label for="Amount" class="form-label">Coût par heure ({{ setting.devise }}): </label>
+        <input type="number" name="amount" class="form-control" id="Amount" required>
+    </div>
+{% endif %}

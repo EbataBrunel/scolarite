@@ -1,0 +1,90 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Détails des messages{% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Tableau de bord</h1>
+      <nav>
+        <ol class="breadcrumb">
+          {% if request.session.group_name == "Enseignant" or request.session.group_name == "Surveillant Général" %}
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          {% else %}
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          {% endif %}
+          <li class="breadcrumb-item"><a href="{% url 'messages' %}">Messages</a></li>
+          <li class="breadcrumb-item active">Discutions</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+
+                <h5 class="card-title">Discutions</h5> 
+                <div class="card">
+                  <div class="card-body">
+                    <br>
+                    {% if user.profile.photo %}
+                        <h3 class="card-title"><img src="{{ user.profile.photo.url }}" width="50" height="50" alt="Profil" class="rounded-circle img-responsive"> {{ user.first_name|title }} {{ user.last_name|title }}</h3>
+                    {% else %}
+                        <h3 class="card-title"><img class="rounded-circle img-responsive" src="{% static 'assets/img/user.png' %}" width="50" height="50" alt="Profil"> {{ user.first_name|title }} {{ user.last_name|title }}</h3>
+                    {% endif %}   
+                    <div class="chat-container" id="defiler-vers-bas">
+                      <div class="content-message-user">
+                        {% for message in messages %}
+                          {% if message.expediteur.id == request.user.id %}
+                            <div class="message incoming">
+                              <div class="bubble incoming">
+                                {% if message.reading_status == 0 %}
+                                    <i class="bi bi-circle text-secondary"></i>
+                                {% else %}
+                                    <i class="bi bi-circle-fill text-secondary"></i>
+                                {% endif %}
+                                <span>{{ message.content }}</span>
+                              </div>
+                            </div>
+                            <div class="timestamp">{{ message.datemessage|date:"d/m/Y h:m" }}</div>
+                          {% else %}
+                            <div class="message outgoing">
+                              <div class="bubble outgoing">
+                                <span>{{ message.content }}</span>
+                              </div>
+                            </div>
+                            <div class="timestamp">{{ message.datemessage|date:"d/m/Y h:m" }}</div>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                      <br>
+                      <!-- On inclut l'image de chargement -->
+                      {% include 'global/_loading.html' %}
+                      <!-- Vertical Form -->
+                      <form method="post" action="" id="formMessageUser" class="row g-3">
+                        {% csrf_token %}
+                        <input type="text" name="user" value="{{ user.id }}" hidden="True" required="True">
+                        <div class="input-group">
+                          <textarea name="content" id="content" class="form-control" rows="1" aria-label="With textarea"></textarea>
+                          <span class="input-group-text">
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i></button>
+                          </span>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Liste des délibérations {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Délibération</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Délibérations</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des salles</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Salles</th>
+                                <th>NbTrimestres</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in deliberations %}
+                            <tr>
+                                <td>{{ d.salle }}</td>
+                                <td><span class="badge rounded-pill bg-secondary">{{ d.nombre_trimestres }}</span></td>
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ d.salle.id }}" title="Supprimer" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ d.salle.id}}" tabindex="-1">
+                                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                                          <div class="modal-content">
+                                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                              <h5 class="modal-title">Liste des trimestres de <b>{{ d.salle }}</b></h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <!-- Table with stripped rows -->
+                                                <div class="table-responsive">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Id</th>
+                                                                <th>Trimestre</th>
+                                                                <th>MoyenneValidation</th>
+                                                                <th>Clôture</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for deliberation in d.deliberations %}
+                                                            <tr>
+                                                                <td>{{ deliberation.id }}</td>
+                                                                <td>{{ deliberation.trimestre }}</td>
+                                                                <td>{{ deliberation.moyennevalidation }}</td>
+                                                                <td>
+                                                                    {% if deliberation.status_cloture %}
+                                                                      <a href="{% url 'deliberation/detail_deliberation' deliberation.id %}" class="btn btn-success btn-sm">Activé</a>
+                                                                    {% else %}
+                                                                      <a href="{% url 'deliberation/detail_deliberation' deliberation.id %}" class="btn btn-danger btn-sm">Désactivé</a>
+                                                                    {% endif %}
+                                                                </td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <!-- End Table with stripped rows -->
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

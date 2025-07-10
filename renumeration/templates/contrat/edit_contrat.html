@@ -1,0 +1,116 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'un contrat {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Rénumerations</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'contrat/contrats' %}" > Contrats </a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-md-12">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'un contrat</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdateContrat" class="row g-3">
+                {% csrf_token %}
+                <div class="row">
+                  <div class="col-md-6">
+                    <input type="text" name="id" value="{{ contrat.id }}" hidden>
+                    <div class="col-12">
+                        <label for="type_contrat" class="form-label">Type contrat : </label>
+                        <select name="type_contrat" id="type_contrat" class="form-select" aria-label="Default select example" required>
+                          <option value="{{ contrat.type_contrat }}">{{ contrat.type_contrat }}</option>
+                          {% for type_contrat in types_contrat %}
+                          <option value="{{ type_contrat }}">{{ type_contrat }}</option>
+                          {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="user" class="form-label">Utilisateur</label>
+                        <select name="user" id="user" class="form-select" aria-label="Default select example" required>
+                            <option value="{{ contrat.user.id }}">{{ contrat.user.last_name|title }} {{ contrat.user.first_name|title }}</option>
+                            {% for user in users %}
+                            <option value="Enseignant">{{ user.last_name|title }} {{ user.first_name|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                      <label for="poste" class="form-label">Poste : </label>
+                      <input type="text" name="poste" value="{{ contrat.poste }}" class="form-control" id="poste" required>
+                    </div>
+                    <div class="col-12">
+                      <label for="description" class="form-label">Description : </label>
+                      <textarea class="form-control" name="description" id="description" style="height: 50px;">{{ contrat.description }}</textarea>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div id="amountview_contrat">
+                        {% if type_contrat == "Admin" %}
+                        <div class="col-12">
+                            <label for="Amount" class="form-label">Montant ({{ setting.devise }}): </label>
+                            <input type="text" name="amount" value="{{ contrat.amount }}" class="form-control" id="Amount" required>
+                        </div>
+                        {% else %}
+                        <div class="col-12">
+                            <label for="Amount" class="form-label">Coût par heure ({{ setting.devise }}): </label>
+                            <input type="text" name="amount" value="{{ contrat.amount }}" class="form-control" id="Amount" required>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label for="date_debut" class="form-label">Date début : </label>
+                        <input type="date" name="date_debut" value="{{ contrat.date_debut|date:"Y-m-d" }}" class="form-control" id="date_debut" required>
+                    </div>
+                    <div class="col-12">
+                        <label for="date_fin" class="form-label">Date fin : </label>
+                        <input type="date" name="date_fin" value="{{ contrat.date_fin|date:"Y-m-d" }}" class="form-control" id="date_fin" required>
+                    </div>
+                  </div>
+                </div>
+                <br>
+                <div class="text-center">
+                  <a href="{% url 'contrat/contrats' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

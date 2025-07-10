@@ -1,0 +1,167 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Contrats {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Gestion des rénumerations</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Contrats</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste de mes contrats</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Nature</th>
+                                <th>DateContrat</th>
+                                <th>Statut</th>
+                                <th>Détail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in contrats %}
+                            <tr>
+                                <td>{{ c.contrat.type_contrat }}</td>
+                                <td>{{ c.contrat.date_contrat|date:"d/m/Y" }}</td>
+                                {% if c.status == "En attente" %}
+                                  <td><span class="badge rounded-pill bg-secondary">{{ c.status }}</span></td>
+                                {% elif c.status == "En cours" %}
+                                  <td><span class="badge rounded-pill bg-success">{{ c.status }}</span></td>
+                                {% else %}
+                                  <td><span class="badge rounded-pill bg-danger">{{ c.status }}</span></td>
+                                {% endif %}
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#detailModal{{ c.contrat.id }}" title="Plus d'info" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="detailModal{{ c.contrat.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                                          <div class="modal-content">
+                                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                              <h5 class="modal-title">Détail de mes contrats</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <br>
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <h5 class="card-title">Contrat du {{ c.contrat.date_contrat|date:"d/m/Y" }} </h5>
+                                                    <table class="table">
+                                                      <tr>
+                                                        <th>TypeContrat</th><td> : {{ c.contrat.type_contrat }}</td>
+                                                      </tr>
+                                                      <tr>
+                                                        <th>Poste</th> <td> : {{ c.contrat.poste }}</td>
+                                                      </tr>
+                                                      <tr>
+                                                        <th>Description</th><td> : {{ c.contrat.description }}</td>
+                                                      </tr>
+                                                      <tr>
+                                                        <th>DateDébut/DateFin</th><td> : {{ c.contrat.date_debut|date:"d/m/Y" }} / {{ c.contrat.date_fin|date:"d/m/Y" }}</td> 
+                                                      </tr>
+                                                      {% if c.contrat.type_contrat == "Admin" %}
+                                                      <tr>
+                                                        <th>Montant ({{ setting.devise }})</th> <td> : {{ c.contrat.amount }}</td>
+                                                      </tr>
+                                                      <tr>
+                                                        {% if c.status == "En attente" %}
+                                                        <th>Statut</th><td> : <span class="badge rounded-pill bg-secondary">{{ c.status }}</span></td>
+                                                        {% elif c.status == "En cours" %}
+                                                        <th>Statut</th><td> : <span class="badge rounded-pill bg-success">{{ c.status }}</span></td>
+                                                        {% else %}
+                                                        <th>Statut</th><td> : <span class="badge rounded-pill bg-danger">{{ c.status }}</span></td>
+                                                        {% endif %}
+                                                      </tr>
+                                                      {% else %}
+                                                      <tr>
+                                                        <th>Coût par heure ({{ setting.devise }})</th><td>  : {{ c.contrat.amount }}</td>
+                                                      </tr>
+                                                      <tr>
+                                                        {% if c.status == "En attente" %}
+                                                        <th>Statut</th><td> : <span class="badge rounded-pill bg-secondary">{{ c.status }}</span></td>
+                                                        {% elif c.status == "En cours" %}
+                                                        <th>Statut</th><td> : <span class="badge rounded-pill bg-success">{{ c.status }}</span></td>
+                                                        {% else %}
+                                                        <th>Statut</th><td> : <span class="badge rounded-pill bg-danger">{{ c.status }}</span></td>
+                                                        {% endif %}
+                                                      </tr>
+                                                      {% endif %}
+                                                    </table>
+                                                  </div>
+                                                </div>
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">Signatures</h5>
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="card">
+                                                                    <div class="card-body">
+                                                                        <br>
+                                                                        <h5>{{ c.contrat.admin.last_name|title }} {{ c.contrat.admin.first_name|title }}</h5>
+                                                                        <p>Date : {{ c.contrat.date_signature|date:"d/m/Y" }}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            {% if c.contrat.status_signature %}
+                                                              <div class="col-md-6">
+                                                                <div class="card">
+                                                                    <div class="card-body">
+                                                                        <br>
+                                                                        <h5>{{ c.contrat.user.last_name|title }} {{ c.contrat.user.first_name|title }}</h5>
+                                                                        <p>Date : {{ c.contrat.date_signature|date:"d/m/Y" }}</p>
+                                                                    </div>
+                                                                </div>
+                                                              </div>
+                                                            {% else %}
+                                                              <div class="col-md-6">
+                                                                <div class="card">
+                                                                  <div class="card-body">
+                                                                    <br>
+                                                                    <div id="content-signature-contrat{{ c.contrat.id }}">
+                                                                      <p class="text-center">
+                                                                        <a href="#" class="btn btn-primary btn-sm signer-contrat" id="{{ c.contrat.id }}">Je signe ce contrat</a>
+                                                                      </b>
+                                                                    </div>
+                                                                  </div>
+                                                                </div>
+                                                              </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

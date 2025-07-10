@@ -1,0 +1,70 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Années académiques {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Années académiques</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Années scolaires</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des années scolaires</h5>
+                
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>AnnéeDébut</th>
+                                <th>AnnéeFin</th>
+                                <th>Séparateur</th>
+                                <th>DateDébut</th>
+                                <th>DateFin</th>
+                                <th>Cloture</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for anneeacademique in anneeacademiques %}
+                            <tr>
+                                <td>{{ anneeacademique.id }}</td>
+                                <td>{{ anneeacademique.annee_debut }}</td>
+                                <td>{{ anneeacademique.annee_fin }}</td>
+                                <td>{{ anneeacademique.separateur }}</td>
+                                <td>{{ anneeacademique.start_date|date:"d/m/Y" }}</td>
+                                <td>{{ anneeacademique.end_date|date:"d/m/Y" }}</td>
+                                <td>
+                                  {% if anneeacademique.status_cloture %}
+                                    <a href="{% url 'cloture_anneeacademique' anneeacademique.id|crypter_id %}" class="btn btn-success btn-sm">Activé</a>
+                                  {% else %}
+                                    <a href="{% url 'cloture_anneeacademique' anneeacademique.id|crypter_id %}" class="btn btn-danger btn-sm">Désactivé</a>
+                                  {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

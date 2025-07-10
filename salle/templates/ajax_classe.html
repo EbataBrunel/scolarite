@@ -1,0 +1,49 @@
+{% if cycle.libelle == "Lycée" %}
+    {% if classes %}
+    <div class="col-12 margin-bottom">
+        <label for="classe" class="form-label">Classe : </label>
+        <select name="classe" id="classe" class="form-select" aria-label="Default select example" required>
+            <option value="">-- Selectionnez --</option>
+            {% for classe in classes %}
+                <option value="{{ classe.id }}">{{ classe }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% else %}
+    <div class="col-12 margin-bottom">
+        <label for="classe" class="form-label">Classe : </label>
+        <select name="classe" id="classe" class="form-select" aria-label="Default select example" required>
+            <option value="">Aucune donnée n'a été enregistrée</option>
+        </select>
+    </div>
+    {% endif %}
+
+    <div class="col-12">
+        <label for="Serie" class="form-label">Série : </label>
+        <select name="serie" id="Serie" class="form-select" aria-label="Default select example" required>
+            <option value="">-- Selectionnez --</option>
+            {% for serie in series %}
+            <option value="{{ serie.id }}">{{ serie.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+{% else %}
+    {% if classes %}
+    <div class="col-12 margin-bottom">
+        <label for="classe" class="form-label">Classe : </label>
+        <select name="classe" id="classe" class="form-select" aria-label="Default select example" required>
+            <option value="">-- Selectionnez --</option>
+            {% for classe in classes %}
+                <option value="{{ classe.id }}">{{ classe }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% else %}
+    <div class="col-12 margin-bottom">
+        <label for="classe" class="form-label">Classe : </label>
+        <select name="classe" id="classe" class="form-select" aria-label="Default select example" required>
+            <option value="">Aucune donnée n'a été enregistrée</option>
+        </select>
+    </div>
+    {% endif %}
+{% endif %}

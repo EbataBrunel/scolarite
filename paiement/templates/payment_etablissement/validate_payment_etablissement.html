@@ -1,0 +1,106 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Paiements établissement {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Paiements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'payment_etablissement/mes_payment_etablissement' %}" >Paiements</a></li>
+          <li class="breadcrumb-item active">Validation</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Détail du paiement de l'établissement</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th class="white-space">Montant élève ({{ setting.devise }})</th>
+                                <th class="white-space">Nombre élèves</th>
+                                <th>Montant ({{ setting.devise }})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ month }}</td>
+                                <td>{{ amount_student|floatformat:2 }}</td>
+                                <td>{{ number_student }}</td>
+                                <td>{{ amount|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+                <p class="text-center">
+                    <a href="#"  data-bs-toggle="modal" data-bs-target="#payeModal" title="Ajout" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Payer maintenant</a>
+                    <!-- Start addContact Modal -->
+                    <div class="modal fade" id="payeModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                          <div class="row">
+                                              <div class="col-md-3">
+                                                <img class="img-responsive border-radius" width="70px" height="70px" src="{% static 'assets/img/MTN-MOMO.jpg' %}">
+                                              </div>
+                                              <div class="col-md-9">
+                                                <h4 class="text-center">Effectuer la paye</h4>
+                                              </div>
+                                          </div>
+                                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                          <div class="card">
+                                            <div class="card-body">
+                                              <br>
+                                              <form action="" method="post">
+                                                {% csrf_token %}
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <h4 class="card-title"><i class="bi bi-info-circle"></i> Veuillez entrer le numéro de téléphone associé à votre compte Mobile Money pour effectuer le paiement de <b class="text-danger">{{ amount }} {{ setting.devise }}</b>.</h4>
+                                                    <div class="row gy-4">
+                                                      <input type="text" name="month" value="{{ month }}"  required hidden>
+                                                      <input type="text" name="amount" value="{{ amount }}" required hidden>
+                                                      <div class="col-12">
+                                                        <label for="phone" class="form-label"><i class="bi bi-phone"></i> Téléphone : </label>
+                                                        <input type="phone" name="phone" class="form-control" id="phone" required>
+                                                      </div>
+                                                      <div class="col-md-12 text-center">
+                                                          <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-check"></i> Valider le paiement de <span class="text-warning"> {{ amount }} {{ setting.devise }}</span></button>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </form>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                        </div>
+                                      </div>
+                        </div>
+                    </div><!-- Fin addContact Modal-->
+                </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

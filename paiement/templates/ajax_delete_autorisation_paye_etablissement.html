@@ -1,0 +1,6 @@
+{% load crypto_filters %}
+<div class="text-center">
+    <p>Voulez-vous vraiment supprimer cet element ?</p>
+    <p>Id : {{ autorisation.id }}</p>
+    <a href="{% url 'del_autorisation_paye_etablissement' autorisation.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer </b>
+</div>

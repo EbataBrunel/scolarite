@@ -1,0 +1,91 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Ajout d'une publication {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Publications</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'publications' %}" > Publications </a></li>
+          <li class="breadcrumb-item active">Ajout</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Enregistrer une publication</h5>
+              {% if salles %}
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formPublication" class="row g-3">
+                {% csrf_token %}
+                <div class="col-12">
+                    <label for="Salle" class="form-label">Salle : *</label>
+                    <select name="salle" id="Salle" class="form-select" aria-label="Default select example">
+                        <option value="">-- Selectionnez --</option>
+                        {% for salle in salles %}
+                        <option value="{{ salle.id }}">{{ salle }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label for="title" class="form-label">Titre : *</label>
+                    <input type="text" name="title" class="form-control" id="Coefficient" required>
+                </div>
+                <div class="col-12">
+                    <label for="file" class="form-label"> Fichier : *</label>
+                    <input type="file" name="file" class="form-control" id="Coefficient" required>
+                </div>
+                <div class="col-12">
+                    <label for="comment" class="form-label">Commentaire : </label>
+                    <textarea class="form-control" name="comment" id="comment" style="height: 50px;"></textarea>
+                </div>
+            
+                <div class="text-center">
+                    <a href="{% url 'publications' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+              {% else %}
+              <div class="card">
+                <div class="card-body">
+                  <br>
+                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord enregistrer une salle, si elle n'a pas encore été créée, avant d'enregistrer une publication.</h4>
+                </div>
+              </div>
+              {% endif %}
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Contrats {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Contrats</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Contrats</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des contrats</h5>
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'contrat_etablissement/add_contrat_etablissement' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer un contrat</a>
+                    {% else %}
+                    <a href="{% url 'contrat_etablissement/add_contrat_etablissement' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un contrat</a>
+                    {% endif %}
+                </div>
+                <br>
+                {% if messages %}
+                  {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-8"></div>
+                    <div class="col-md-4">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Etablissement</th>
+                                <th class="white-space">Montant par élève ({{ setting.devise }})</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contrat in contrats %}
+                            <tr>
+                                <td>{{ contrat.etablissement.id }}</td>
+                                <td class="white-space">{{ contrat.etablissement }}</td>
+                                <td>{{ contrat.amount }}</td>
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#detailModal{{ contrat.id }}" title="Plus d'info" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="detailModal{{ contrat.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                                          <div class="modal-content">
+                                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                              <h5 class="modal-title">Détail du contrat</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <h5 class="text-center"><b>{{ contrat.etablissement }}</b></h5>
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <h5 class="card-title">Contrat du {{ contrat.date_contrat|date:"d/m/Y" }} </h5>
+                                                    <table class="table">
+                                                      <tr>
+                                                        <th class="white-space">Montant par élève ({{ setting.devise }})</th><td> : {{ contrat.amount|floatformat:2 }}</td>
+                                                      </tr>
+                                                      <tr>
+                                                        <th>Description</th><td> : {{ contrat.description }}</td>
+                                                      </tr>
+                                                      <tr>
+                                                      {% if contrat.status_signature %}
+                                                        <th>Statut</th><td> : <span class="badge rounded-pill bg-success">Validé</span></td>
+                                                      {% else %}
+                                                        <th>Statut</th><td> : <span class="badge rounded-pill bg-warning">En attente</span></td>
+                                                      {% endif %}
+                                                      </tr>
+                                                    </table>
+                                                  </div>
+                                                </div>
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">Signatures</h5>
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="card">
+                                                                    <div class="card-body">
+                                                                        <br>
+                                                                        <h5>{{ contrat.user.last_name|title }} {{ contrat.user.first_name|title }}</h5>
+                                                                        <p>Date : {{ contrat.date_contrat|date:"d/m/Y" }}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            {% if contrat.status_signature %}
+                                                            <div class="col-md-6">
+                                                              <div class="card">
+                                                                  <div class="card-body">
+                                                                      <br>
+                                                                      <h5>{{ contrat.user.last_name|title }} {{ contrat.user.first_name|title }}</h5>
+                                                                      <p>Date : {{ contrat.date_signature|date:"d/m/Y" }}</p>
+                                                                  </div>
+                                                              </div>
+                                                          </div>
+                                                          {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="text-center">
+                                                  <a href="{% url 'contrat_etablissement/edit_contrat_etablissement' contrat.id|crypter_id %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier </a>
+                                                  <a class="btn btn-danger btn-sm delete-contrat-etablissement" id="{{ contrat.id }}"><i class="bi bi-trash"></i> Supprimer </a>
+                                                </p>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+                <!-- Start groupe Modal -->
+                <div class="modal fade" id="content_delete" tabindex="-1">
+                  <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content">
+                      <div class="modal-header bg-danger text-light">
+                        <h5 class="modal-title">Suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true" class="badge bg-dark">x</span>
+                        </button>
+                      </div>
+                      <div class="modal-body" id="content-delete-item"></div>
+                    </div>
+                  </div>
+                </div><!-- End group Modal-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

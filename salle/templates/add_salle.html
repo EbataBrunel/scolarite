@@ -1,0 +1,91 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Ajout d'une salle {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Salles</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'salles' %}" > Salles </a></li>
+          <li class="breadcrumb-item active">Ajout</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Enregistrer une salle</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formSalle" class="row g-3">
+                {% csrf_token %}
+                <div class="col-12">
+                  <label for="cycle" class="form-label">Cycle : </label>
+                  <select name="cycle" id="cycle" class="form-select" aria-label="Default select example" required>
+                      <option value="">-- Selectionnez --</option>
+                      {% for cycle in cycles %}
+                      <option value="{{ cycle.id }}">{{ cycle.libelle }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+                <div id="classe_serie_view"></div>
+                
+                <div class="col-12">
+                    <label for="Number" class="form-label">Numéro : </label>
+                    <select name="number" id="Number" class="form-select" aria-label="Default select example">
+                        {% for number in numbers %}
+                        <option value="{{ number }}">{{ number }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label for="Max_student" class="form-label">Max des élèves : </label>
+                    <input type="number" name="max_student" class="form-control" id="Max_student" required>
+                  </div>
+                  <div class="col-12">
+                    <label for="price" class="form-label">Frais mensuel ({{ setting.devise }}): </label>
+                    <input type="text" name="price" class="form-control" id="price" required>
+                  </div>
+                  <div class="col-12">
+                    <label for="price_inscription" class="form-label">Frais inscription ({{ setting.devise }}): </label>
+                    <input type="text" name="price_inscription" class="form-control" id="price_inscription" required>
+                  </div>
+                <div class="text-center">
+                  <a href="{% url 'salles' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

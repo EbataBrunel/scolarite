@@ -1,0 +1,73 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Compositions par trimestre {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Examens</h1>
+      <nav>
+        <ol class="breadcrumb">
+          {% if request.user.is_superuser %}
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          {% else %}
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          {% endif %}
+          <li class="breadcrumb-item"><a href="{% url 'compositions' %}">Compositions</a></li>
+          <li class="breadcrumb-item active">Détails</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des compositions par trimestre de {{ salle.classe }} {{ salle.serie }}{{ salle.number }}</h5>
+                {% if anneeacademique.status_cloture %}
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'add_composition' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                    {% else %}
+                    <a href="{% url 'add_composition' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th class="text-center white-space">Trimestre</th>
+                                <th class="text-center">NombreMatière</th>
+                                <th class="text-center">NombreElèves</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for composition in compositions %}
+                            <tr>
+                                <td class="text-center">{{ composition.trimestre }}</td>
+                                <td class="text-center"><span class="badge rounded-pill bg-secondary text-center">{{ composition.nb_matiere }}</span></td>
+                                <td class="text-center"><span class="badge rounded-pill bg-secondary text-center">{{ composition.nb_student }}</span></td>
+                                <td class="text-center">
+                                    <a href="{% url 'detail_cmp_trimestre' salle.id|crypter_id composition.trimestre|crypter_id %}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye "></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

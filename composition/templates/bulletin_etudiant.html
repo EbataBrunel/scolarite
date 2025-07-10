@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bulletin de Notes - 1er Trimestre</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 40px;
+    }
+    .bulletin {
+      max-width: 900px;
+      background: #fff;
+      margin: auto;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      position: relative;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #0074d9;
+      padding-bottom: 10px;
+    }
+    .header img.logo {
+      height: 60px;
+    }
+    .header-center {
+      text-align: center;
+      flex: 1;
+    }
+    .header-center h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .student-photo {
+      position: absolute;
+      top: 40px;
+      right: 30px;
+    }
+    .student-photo img {
+      height: 60px;
+      border-radius: 50%;
+    }
+    .info {
+      margin: 20px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #eaf3fc;
+    }
+    td.left-align {
+      text-align: left;
+    }
+    .footer {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .summary {
+      margin-top: 20px;
+      background: #f7f7f7;
+      padding: 10px;
+      border-left: 4px solid #0074d9;
+    }
+
+    .text-success{
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="bulletin">
+    <div class="student-photo">
+      <img src="data:image/png;base64,{{ base64_image_student }}" alt="Photo">
+    </div>
+    <div class="header">
+      <img src="data:image/png;base64,{{ base64_image }}" alt="Logo" class="logo">
+      <div class="header-center">
+        <h2>BULLETIN DE NOTES DU {{ trimestre|upper }}</h2>
+        <p>Année scolaire: {{ anneeacademique.annee_debut }} {{ anneeacademique.separateur }} {{ anneeacademique.annee_fin }}</p>
+        <p>Complexe scolaire {{ setting.appname }}, 75008 PARIS - Tél: {{ setting.phone }} - Email: {{ setting.email }}</p>
+      </div>
+    </div>
+
+    <div class="info">
+      <div><strong>Nom :</strong> {{ inscription.student.lastname|title }} {{ inscription.student.firstname|title }}</div>
+      <div><strong>Date de naissance : </strong> {{ inscription.student.datenais|date:"d/m/Y" }}</div>
+      <div><strong>Sexe :</strong> {{ inscription.student.gender }}</div>
+      <div><strong>Classe/Effectif :</strong> {{ inscription.salle }}/{{ nb_students_inscris }}</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" class="item-table-center bg-secondary">Matières</th>
+          <th class="text-center bg-secondary" colspan="3">Notes</th>
+          <th rowspan="2" class="item-table-center bg-secondary">Coef</th>
+          <th rowspan="2" class="item-table-center bg-secondary">Total</th>
+          <th rowspan="2" class="item-table-center bg-secondary">Min<br>Max</th>
+          <th rowspan="2" class="item-table-center bg-secondary">Observations</th>
+      </tr>
+      <tr>
+          <th class="text-center bg-secondary">M. Classe</th>
+          <th class="text-center bg-secondary">M. Comp</th>
+          <th class="text-center bg-secondary">M. Gle</th>
+          
+      </tr>
+      </thead>
+      <tbody>
+        {% for d in details %}
+        <tr>
+          <td class="left-align">
+            {{ d.matiere }}<br>
+            <span style="float:right">{{ d.enseignant.last_name|title }}</span>
+          </td>
+          <td>{{ d.moyenne_controle|floatformat:2 }}</td>
+          <td>{{ d.note_examen|floatformat:2 }}</td>
+          <td>{{ d.moyenne_finale_matiere|floatformat:2 }}</td>
+          <td>{{ d.coefficient }}</td>
+          <td>{{ d.total_note|floatformat:2 }}</td>
+          <td>{{ d.note_minimale|floatformat:2 }}<br>{{ d.note_maximale|floatformat:2 }}</td>
+          <td class="left-align">{{ d.mention_note_matiere }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfooter>
+        <tr>
+          <th colspan="4">Total</th>
+          <th>{{ somme_coefficient }}</th>
+          <th>{{ somme_note|floatformat:2 }}</th>
+          <th colspan="2"></th>
+        </tr>
+        <tr>
+          <td colspan="2">Moyenne</td>
+          <th>{{ moyenne_generale|floatformat:2 }}</th>
+          <td colspan="3">Min : <strong>{{ moyenne_min|floatformat:2 }}</strong> | Max : <strong>{{ moyenne_max|floatformat:2 }}</strong></td>
+          <td>Mention</td>
+          <th>{{ mention }}</th>
+        </tr>
+        <tr>
+          <th colspan="8"> DECISION DU CONSEIL D'ADMISTRATION</th>
+        </tr>
+        <tr>
+          <th colspan="4">Discipline</th>
+          <th colspan="4">Décision</th>
+        </tr>
+        <tr>
+          <th colspan="2">Absence : {{ nb_absences }}</th>
+          <th colspan="2">Rang : {{ rang }} / {{ nb_student_compose }}</th>
+          <th colspan="4">
+            {% if moyenne_generale >= deliberation.moyennevalidation  %}
+              {% if inscription.student.gender == "Masculin" %}
+                <span class="text-success">Admis</span>
+              {% else %}
+                <span class="text-success">Admise</span>
+              {% endif %}
+            {% else %}
+              {% if inscription.student.gender == "Masculin" %}
+                <span  class="text-danger">Ajourné</span>
+              {% else %}
+                <span  class="text-danger">Ajournée</span>
+              {% endif %}
+            {% endif%}
+          </th>
+        </tr>
+      </tfooter>
+    </table>
+
+    <div class="footer">
+      <div>Fais à Brazzaville, le {{ date_actuelle|date:"d/m/Y" }}</div>
+    </div>
+
+    <div class="summary">
+      {% if moyenne_generale >= 12 %}
+      Excellent trimestre pour {{ inscription.student.firstname|title }} {{ inscription.student.lastname|title }}. Au delà de ses très bons résultats homogènes, {{ inscription.student.firstname }} fait preuve d'une maturité et d'une autonomie de travail à la hauteur de sa réussite académique. Bravo !
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

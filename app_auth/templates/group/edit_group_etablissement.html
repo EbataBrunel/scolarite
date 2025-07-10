@@ -1,0 +1,70 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Edition d'un rôle {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Groupes</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'group/group_etablissements' %}" >Rôles</a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'un rôle</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdateGroupEtablissement" class="row g-3">
+                {% csrf_token %}
+                <input type="text" name="id" value="{{ group.id }}" hidden="True" required="True">
+                <div class="col-12">
+                  <label for="name" class="form-label">Nom : </label>
+                  <select name="name" id="name" class="form-select" aria-label="Default select example" required>
+                      <option value="{{ group.name }}">{{ group.name }}</option>
+                      {% for g in groups %}
+                      <option value="{{ g.name }}">{{ g.name }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+                <div class="text-center">
+                  <a href ="{% url 'group/group_etablissements' %}" type="reset" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Modifier </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

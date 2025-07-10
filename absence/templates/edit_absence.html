@@ -1,0 +1,128 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'une absence {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Absences</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'absences' %}" >Absences</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'detail_salle_absence' absence.enseignant.id|crypter_id %}" >Salles</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'detail_absences' absence.enseignant.id|crypter_id absence.salle.id|crypter_id %}" >Détails</a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'une absence</h5>
+                <div class="card {{ setting.theme }} {{ setting.text_color }}">
+                    <div class="card-body">
+                      <br>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table">
+                                    <tr>
+                                        <th>Prof :</th>
+                                        <td>{{ absence.enseignant.last_name }} {{ absence.enseignant.first_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Classe :</th>
+                                        <td>{{ absence.salle }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Matière :</th>
+                                        <td>{{ absence.matiere }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Jour :</th>
+                                        <td>{{ absence.jour }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="col-md-6">
+                                <table class="table">
+                                    <tr>
+                                        <th>Horaire :</th>
+                                        <td>{{ absence.heure_debut }} {{ absence.heure_fin }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date :</th>
+                                        <td>{{ absence.date_absence|date:"d/m/Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Motif :</th>
+                                        <td>{{ absence.motif }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+              
+              <div class="card-body">
+                <div class="row">
+                  <div class="row">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                    <!-- On inclut l'image de chargement -->
+                    {% include 'global/_loading.html' %}
+                    <!-- Vertical Form -->
+                    <form method="post" action="" id="formUpdateAbsence" class="row g-3">
+                      {% csrf_token %}
+                      <input type="text" name="id" value="{{ absence.id }}" hidden>
+                      <div class="col-12">
+                        <label for="date_absence" class="form-label">Date d'absence : </label>
+                        <input type="date" name="date_absence" value="{{ absence.date_absence|date:"Y-m-d" }}" class="form-control" id="date_absence" required>
+                      </div>
+                      <div class="col-12">
+                        <label for="motif" class="form-label">Motif : </label>
+                        <textarea class="form-control" name="motif" id="motif" style="height: 50px;">{{ absence.motif }}</textarea>
+                    </div>
+                    
+                      <div class="text-center">
+                        <a href="{% url 'detail_absences' absence.enseignant.id|crypter_id absence.salle.id|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                      </div>
+                    </form><!-- Vertical Form -->
+                    <div class="col-md-4"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

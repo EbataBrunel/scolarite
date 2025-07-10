@@ -1,0 +1,111 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Dette des parents {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Paiements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Dettes</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des parents et leurs dettes</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Noms</th>
+                                <th>Prénoms</th>
+                                <th>NbEnfants</th>
+                                <th>Dette({{ setting.devise }})</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in parents %}
+                            <tr>
+                                <td>{{ p.parent.lastname|title }}</td>
+                                <td>{{ p.parent.firstname|title }}</td>
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#enfantModal{{ p.parent.id }}" title="Détails" class="btn btn-info btn-sm">{{ p.nombre_enfants }} <i class="bi bi-eye"></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="enfantModal{{ p.parent.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-srollable modal-dialog-centered">
+                                          <div class="modal-content">
+                                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                              <h5 class="modal-title">Liste des enfants de <b>{{ p.parent.lastname|title }} {{ p.parent.firstname|title }}</b></h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <div class="card">
+                                                <div class="card-body">
+                                                    <table class="table">
+                                                        <tr>
+                                                            <th>Noms</th>
+                                                            <th>Prénoms</th>
+                                                            <th>Dette({{ setting.devise }})</th>
+                                                        </tr>
+                                                        {% for s in p.students %}
+                                                        <tr>
+                                                            <td>{{ s.student.lastname|title }}</td>
+                                                            <td>{{ s.student.firstname|title }}</td>
+                                                            <td><span class="text-danger">{{ s.dette|floatformat:2 }}</span></td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                        <tr>
+                                                            <th colspan="2">Total</th>
+                                                            <th><span class="text-danger">{{ p.dette|floatformat:2 }}</span></th>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                              </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                                <td><span class="text-danger">{{ p.dette|floatformat:2 }}</td>
+                                <td>
+                                    <span id="content-status-notification{{ p.parent.id }}">
+                                        {% if p.status %}
+                                        <span style="font-size:20px" class="text-success"><i class="bi bi-check-circle"></i></span>
+                                        {% else %}
+                                        <button class="btn btn-primary btn-sm add-notification" id="{{ p.parent.id }}" data-montant="{{ p.dette|floatformat:0 }}">Envoyé</button>
+                                        {% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <th colspan="3"><b>Total</b></th>
+                                <th colspan="2"><span class="text-danger"><b>{{ total|floatformat:2}}</b></span></th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

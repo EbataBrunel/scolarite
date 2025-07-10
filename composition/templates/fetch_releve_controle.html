@@ -1,0 +1,45 @@
+{% load crypto_filters %}
+<h4 class="text-center"> Relevé de notes</h4>
+<div class="table-responsive bg-primary text-light"  style="padding:10px; border-radius:10px">
+    <table class="table">
+        <tr>
+            <th>Trimestre : </th><td>{{ trimestre }}</td>
+        </tr>
+        <tr>
+            <th>Matière : </th><td>{{ matiere }}</td>
+        </tr>
+        <tr>
+            <th>Contrôle : </th><td>{{ numcontrole }}</td>
+        </tr>
+    </table>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <!-- Table with stripped rows -->
+        <div class="table-responsive">
+            <table class="table datatable">
+                <thead>
+                    <tr>
+                        <th>Noms</th>
+                        <th>Prénoms</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for composition in compositions %}
+                    <tr>
+                        <td>{{ composition.student.lastname|title }}</td>
+                        <td>{{ composition.student.firstname|title }}</td>
+                        <td>{{ composition.note|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- End Table with stripped rows -->
+        <p class="text-center">
+            <a href="{% url 'releve_note_controle' inscription.salle.id|crypter_id matiere.id|crypter_id numcontrole|crypter_id trimestre|crypter_id %}" class="btn btn-dark btn-sm">Télécharger le fichier</a>
+        </p>
+    </div>
+</div>

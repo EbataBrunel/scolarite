@@ -1,0 +1,8 @@
+{% if matieres %}
+    <option value="">-- Selectionnez --</option>
+    {% for matiere in matieres %}
+        <option value="{{ matiere.id }}">{{ matiere }}</option>
+    {% endfor %}
+{% else %}
+    <option value="">Aucune donnée n'a été enregistrée</option>
+{% endif %}

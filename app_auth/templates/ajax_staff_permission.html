@@ -1,0 +1,48 @@
+<div class="row mb-5">
+    <label class="col-sm-2 col-form-label">Actif</label>
+    <div class="col-sm-10">
+        {% if request.session.is_active %}
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="actif" id="actif" checked>
+            <label class="form-check-label" for="actif">Précise si l’utilisateur doit être considéré comme actif. Décochez ceci plutôt que de supprimer le compte.</label>
+        </div>
+        {% else %}
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="actif" id="actif">
+            <label class="form-check-label" for="actif">Précise si l’utilisateur doit être considéré comme actif. Décochez ceci plutôt que de supprimer le compte.</label>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<div class="row mb-5">
+  <label class="col-sm-2 col-form-label">Staff</label>
+  <div class="col-sm-10">
+      {% if request.session.is_staff %}
+      <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="staff" id="staff" checked>
+          <label class="form-check-label" for="staff">Précise si l’utilisateur doit être considéré comme actif. Décochez ceci plutôt que de supprimer le compte.</label>
+      </div>
+      {% else %}
+      <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="staff" id="staff">
+          <label class="form-check-label" for="staff">Précise si l’utilisateur doit être considéré comme actif. Décochez ceci plutôt que de supprimer le compte.</label>
+      </div>
+      {% endif %}
+  </div>
+</div>
+<div class="row mb-5">
+    <label class="col-sm-2 col-form-label">super utilisateur</label>
+    <div class="col-sm-10">
+        {% if request.session.is_superuser %}
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="superuser" id="superuser" checked>
+            <label class="form-check-label" for="superuser">Précise que l’utilisateur possède toutes les permissions sans les assigner explicitement.</label>
+        </div>
+        {% else %}
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="superuser" id="superuser">
+            <label class="form-check-label" for="superuser">Précise que l’utilisateur possède toutes les permissions sans les assigner explicitement.</label>
+        </div>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,2347 @@
+<script>
+    $(document).ready(function(){
+                       
+        // Appel initial pour défiler vers le bas à l'ouverture de la page
+        scrollToBot();
+
+        // Fonction pour défiler vers le dernier message (le bas du conteneur)
+        function scrollToBot(){
+            const container = document.getElementById('defiler-vers-bas');
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);  // On ajoute un délai de 100ms
+        }
+
+        // ================== Gestion des établissements ===========================
+        $('#formEtablissement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_etablissement' %}",
+                method : "POST",
+                data:new FormData($('#formEtablissement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formEtablissement')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateEtablissement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_et' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateEtablissement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ============ Gestion des classes ==================
+        $('#formClass').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_class' %}",
+                method : "POST",
+                data:new FormData($('#formClass')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formClass')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateClass').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_cl' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateClass')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+
+        // ============ Gestion des groupes ==================
+        $('#formGroup').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'group/add_group' %}",
+                method : "POST",
+                data:new FormData($('#formGroup')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formGroup')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateGroup').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_gr' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateGroup')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('#formGroupUser').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'group/add_group_user' %}",
+                method : "POST",
+                data:new FormData($('#formGroupUser')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formGroupUser')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        }); 
+        
+        // ====================  Récuperer le nouveau modal ===================
+        $('.delete-new-user').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_new_user/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        // ====================  Récuperer le nouveau modal ===================
+        $('.group-new-user').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_group_new_user/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_group').modal('show');
+                            $('#content-group-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        // ============ Gestion Group Etablissement ==================
+        $('#formGroupEtablissement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'group/add_group_etablissement' %}",
+                method : "POST",
+                data:new FormData($('#formGroupEtablissement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formGroupEtablissement')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });   
+
+        $('#formUpdateGroupEtablissement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_ge' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateGroupEtablissement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+
+        // ============ Gestion d'années académiques ==================
+        $('#formAnneeAcademqiue').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_anneeacademique' %}",
+                method : "POST",
+                data:new FormData($('#formAnneeAcademqiue')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formAnneeAcademqiue')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateAnneeAcademique').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_anneeac' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateAnneeAcademique')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('#formClotureAnneeacdemique').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'clot_anneeacademique' %}",
+                method : "POST",
+                data:new FormData($('#formClotureAnneeacdemique')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#clotureModal').modal('hide')
+                        if (data.status_cloture){
+                            status = "<span class='badge rounded-pill bg-success'>Activé</span>";
+                            info = "<p>La désactivation de cette année académique entrainera la fermeture de toutes les activités liées à cette année académique.</p><hr><h5><b>Voulez-vous vraiment désactiver la clôture cette année académique ?</b></h5>";
+                            $('#content-cloture').html(status);
+                            $('#content-message').html(contenu);
+                            $('#content-info').html(info);
+                        }else{
+                            status = "<span class='badge rounded-pill bg-danger'>Désactivé</span>";
+                            info = "<p>L'activation de cette année académique entrainera la fermeture de toutes les activités liées à cette année.</p><hr><h5><b>Voulez-vous vraiment activer la clôture de cette année académique ?</b></h5>";
+                            $('#content-cloture').html(status);
+                            $('#content-message').html(contenu);
+                            $('#content-info').html(info);
+                        }
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('#formDroitAccesAnneeacademique').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'acces_anneeacademique' %}",
+                method : "POST",
+                data:new FormData($('#formDroitAccesAnneeacademique')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#accessModal').modal('hide')
+                        if (data.status_access){
+                            status = "<span class='badge rounded-pill bg-success'>Activé</span>";
+                            info = "<p class='text-center'>Désactiver le droit d'accès de cette année académique entrainera la fermeture de toutes les activités liées à cette année.</p><h5><h5 class='text-center'><b>Voulez-vous vraiment désactiver le droit d'accès de cette année académique ?</b></h5>"
+                            $('#content-access').html(status);
+                            $('#content-message').html(contenu);
+                            $('#content-info').html(info);
+                        }else{
+                            status = "<span class='badge rounded-pill bg-danger'>Désactivé</span>";
+                            info = "<p>Activer le droit d'accès de cette année académique entrainera l'ouverture de toutes les activités liées à cette année.</p><h5><h5 class='text-center'><b>Voulez-vous vraiment activer le droit d'accès de cette année académique ?</b></h5>"
+                            $('#content-access').html(status);
+                            $('#content-message').html(contenu);
+                            $('#content-info').html(info);
+                        }
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+       
+        // ============ Gestion des matières ==================
+        $('#formMatiere').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_matiere' %}",
+                method : "POST",
+                data:new FormData($('#formMatiere')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formMatiere')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateMatiere').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_mt' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateMatiere')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ============ Gestion des parents ==================
+        $('#formParent').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'parent/add_parent' %}",
+                method : "POST",
+                data:new FormData($('#formParent')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formParent')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateParent').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_pa' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateParent')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        }); 
+
+        // ============ Gestion des étudiants ==================
+        $('#formStudent').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'student/add_student' %}",
+                method : "POST",
+                data:new FormData($('#formStudent')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formStudent')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateStudent').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_st' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateStudent')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // =========================== Gestion de séries ===============================
+        $('#formSerie').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_serie' %}",
+                method : "POST",
+                data:new FormData($('#formSerie')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formSerie')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateSerie').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_sr' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateSerie')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ================== Gestion des salles ===========================
+        $('#formCycle').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_cycle' %}",
+                method : "POST",
+                data:new FormData($('#formCycle')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formCycle')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateCycle').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_cy' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateCycle')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+        
+        // ================== Gestion des salles ===========================
+        $('#formSalle').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_salle' %}",
+                method : "POST",
+                data:new FormData($('#formSalle')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formSalle')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateSalle').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_sl' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateSalle')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ================== Gestion des inscriptions ===========================
+        $('#formInscription').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_inscription' %}",
+                method : "POST",
+                data:new FormData($('#formInscription')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formInscription')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateInscription').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_in' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateInscription')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ================== Gestion des programmes ===========================
+        $('#formProgramme').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_programme' %}",
+                method : "POST",
+                data:new FormData($('#formProgramme')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formProgramme')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateProgramme').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_pg' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateProgramme')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ================== Gestion d'enseignements ===========================
+        $('#formEnseignement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_enseignement' %}",
+                method : "POST",
+                data:new FormData($('#formEnseignement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formEnseignement')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateEnseignement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_en' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateEnseignement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+
+        // ================== Gestion de compositions ===========================
+        $('#formComposition').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_composition' %}",
+                method : "POST",
+                data:new FormData($('#formComposition')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formComposition')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateComposition').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_cp' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateComposition')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ================== Délibération ==========================================
+        $('#formClotureDeliberation').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'cloture_deliberation' %}",
+                method : "POST",
+                data:new FormData($('#formClotureDeliberation')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#clotureModal').modal('hide')
+                        if (data.status_cloture){
+                            status = "<span class='badge rounded-pill bg-success'>Activé</span>";
+                            info = "<p>La désactivation de cette déliberation entrainera la fermeture de toutes les activités liées aux examens de cette salle pour ce trimestre et pour cette année académique.</p><h5><h5 class='text-center'><b>Voulez-vous vraiment désactiver cette délibération ?</b></h5>";
+                            $('#content-cloture').html(status);
+                            $('#content-message').html(contenu);
+                            $('#content-info').html(info);
+                        }else{
+                            status = "<span class='badge rounded-pill bg-danger'>Désactivé</span>";
+                            info = "<p>L'activation de cette déliberation entrainera l'ouverture de toutes les activités liées aux examens de cette salle pour ce trimestre et pour cette année académique.</p><h5><h5 class='text-center'><b>Voulez-vous vraiment activer cette délibération ?</b></h5>";
+                            $('#content-cloture').html(status);
+                            $('#content-message').html(contenu);
+                            $('#content-info').html(info);
+                        }
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ================== Gestion de l'emploi du temps ===========================
+        $('#formEmploitemps').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_emploitemps' %}",
+                method : "POST",
+                data:new FormData($('#formEmploitemps')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formEmploitemps')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateEmploitemps').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_emp' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateEmploitemps')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ================== Enregistrer la Moyenne de validation  ===========================
+        $(document).on('submit', '#formValidationMoyenne', function(event) {
+            event.preventDefault(); // Empêche la soumission par défaut, si nécessaire
+            $.ajax({
+                url:"{% url 'moyenne_validation' %}",
+                method : "POST",
+                data:new FormData($('#formValidationMoyenne')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    $('#content_delib').html(data);
+                }
+            });
+            return false;
+        }); 
+
+        // ================== Enregistrer la Moyenne de validation  ===========================
+        $(document).on('submit', '#formPublicationResultat', function(event) {
+            event.preventDefault(); // Empêche la soumission par défaut, si nécessaire
+            document.getElementById('spinner-loading').style.display = 'block';
+            salle = $("#salle").val()
+            trimestre = $("#trimestre").val()
+            $.ajax({
+                url:"{% url 'publication_result' %}",
+                method : "POST",
+                data:new FormData($('#formPublicationResultat')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+
+                }
+            });
+            return false;
+        }); 
+        
+
+        // ============ Gestion des absences ==================
+        $('#formAbsence').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'save_ab' %}",
+                method : "POST",
+                data:new FormData($('#formAbsence')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formAbsence')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateAbsence').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_ab' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateAbsence')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+
+        $('#formAbsenceAdmin').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_absence_admin' %}",
+                method : "POST",
+                data:new FormData($('#formAbsenceAdmin')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formAbsenceAdmin')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateAbsenceAdmin').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_aa' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateAbsenceAdmin')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete-absence-admin').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_absence_admin/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        // ============ Gestion des publications ==================
+        $('#formPublication').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_publication' %}",
+                method : "POST",
+                data:new FormData($('#formPublication')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formPublication')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdatePublication').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_pub' %}",
+                method : "POST",
+                data:new FormData($('#formUpdatePublication')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ============ Gestion des activités ==================
+        $('#formActivity').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_activity' %}",
+                method : "POST",
+                data:new FormData($('#formActivity')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formActivity')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateActivity').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_ac' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateActivity')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ============ Gestion des paiements ==================
+        $('#formPayment').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_payment' %}",
+                method : "POST",
+                data:new FormData($('#formPayment')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formPayment')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdatePayment').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_py' %}",
+                method : "POST",
+                data:new FormData($('#formUpdatePayment')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('#formPaymentEtablissement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'payment_etablissement/add_payment_etablissement' %}",
+                method : "POST",
+                data:new FormData($('#formPaymentEtablissement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdatePaymentEtablissement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_pe' %}",
+                method : "POST",
+                data:new FormData($('#formUpdatePaymentEtablissement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete-payment-etablissement').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_payment_etablissement/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        $('#formAutorisationPayment').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'autorisation/add_autorisation_payment' %}",
+                method : "POST",
+                data:new FormData($('#formAutorisationPayment')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formAutorisationPayment')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateAutorisationPayment').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_ap' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateAutorisationPayment')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete-autorisation-student').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_autorisation_student/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        $('#formAutorisationPaymentSalle').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'autorisation_paye_salle/add_autorisation_payment_salle' %}",
+                method : "POST",
+                data:new FormData($('#formAutorisationPaymentSalle')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formAutorisationPaymentSalle')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateAutorisationPaymentSalle').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_aps' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateAutorisationPaymentSalle')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete-autorisation-salle').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_autorisation_salle/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-salle-etablissement').html(data);
+                        }
+                    );
+            }
+        });
+
+
+        $('#formContratEtablissement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'contrat_etablissement/add_contrat_etablissement' %}",
+                method : "POST",
+                data:new FormData($('#formContratEtablissement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formContratEtablissement')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateContratEtablissement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_ce' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateContratEtablissement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete-contrat-etablissement').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_contrat_etablissement/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+
+
+        $('#formAutorisationPaymentEtablissement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'autorisation_paye_etablissement/add_autorisation_paye_etablissement' %}",
+                method : "POST",
+                data:new FormData($('#formAutorisationPaymentEtablissement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formAutorisationPaymentEtablissement')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateAutorisationPaymentEtablissement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_ae' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateAutorisationPaymentEtablissement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete-autorisation-paye-etablissement').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_autorisation_paye_etablissement/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        // ============ Gestion d'émargements ==================
+        $('#formEmargement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_em' %}",
+                method : "POST",
+                data:new FormData($('#formEmargement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formEmargement')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateEmargement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_em' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateEmargement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ============ Gestion des contrats & rénumeration==================
+        $('#formContrat').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'contrat/add_contrat' %}",
+                method : "POST",
+                data:new FormData($('#formContrat')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formContrat')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateContrat').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_ct' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateContrat')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete-contrat').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_contrat/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        $('#formRenumAdmin').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'renum/add_renum_admin' %}",
+                method : "POST",
+                data:new FormData($('#formRenumAdmin')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formRenumAdmin')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateRenumAdmin').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_ra' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateRenumAdmin')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete-renum-admin').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_renum_admin/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        // ========================= Modifier mot de passe étudiant ======================
+        $('#formUpdatePasswordStudent').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'update_password' %}",
+                method : "POST",
+                data:new FormData($('#formUpdatePasswordStudent')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('#formUpdatePasswordparent').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'update_password_parent' %}",
+                method : "POST",
+                data:new FormData($('#formUpdatePasswordParent')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ============ Gestion de contacts ==================
+        $('#formContact').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_contact' %}",
+                method : "POST",
+                data:new FormData($('#formContact')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#Message').val('');
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        }); 
+
+        $('#formContactAdmin').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_contact_admin' %}",
+                method : "POST",
+                data:new FormData($('#formContactAdmin')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('.content-contact').html(data);
+                    $('#Message').val('');
+                    scrollToBot();
+                }
+            });
+            return false;
+        }); 
+
+        $('#formContactAdminStudent').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_contact_admin_customer' %}",
+                method : "POST",
+                data:new FormData($('#formContactAdminStudent')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#addContactStudentModal').modal('hide');
+                    $('.content-contact-customer').html(data);
+                    $('#Message').val('');
+                }
+            });
+            return false;
+        });
+
+        $('#formContactAdminParent').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_contact_admin_customer' %}",
+                method : "POST",
+                data:new FormData($('#formContactAdminParent')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#addContactParentModal').modal('hide');
+                    $('.content-contact-customer').html(data);
+                    $('#Message').val('');
+                }
+            });
+            return false;
+        });
+
+        $('#formContactCustomer').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_contact_customer' %}",
+                method : "POST",
+                data:new FormData($('#formContactCustomer')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('.content-customer').html(data);
+                    $('#Message').val('');
+                    scrollToBot();
+                }
+            });
+            return false;
+        });
+
+
+        $('#formMessage').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_message' %}",
+                method : "POST",
+                data:new FormData($('#formMessage')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#messageModal').modal('hide');
+                    $('.content-message').html(data);
+                    $('#content').val('');
+                }
+            });
+            return false;
+        });
+
+        $('#formMessageUser').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_message_user' %}",
+                method : "POST",
+                data:new FormData($('#formMessageUser')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('.content-message-user').html(data);
+                    $('#content').val('');
+                    scrollToBot();
+                }
+            });
+            return false;
+        }); 
+
+        // ================== Gestion de cours ===========================
+        $('#formCours').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_cours' %}",
+                method : "POST",
+                data:new FormData($('#formCours')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formCours')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateCours').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_cour' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateCours')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formCours')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        // ============ Gestion des dépenses ==================
+        $('#formDepense').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_depense' %}",
+                method : "POST",
+                data:new FormData($('#formDepense')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formDepense')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateDepense').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_dp' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateDepense')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete_depense').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_depense/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        // ============ Commentaire du cours ==================
+        $(document).on("submit", "form[id^='formCommentCours-']", function (e) {
+            e.preventDefault(); // Empêche le rechargement de la page
+
+            // Identifiez le formulaire spécifique et ses éléments
+            let form = $(this); 
+            let coursId = form.find("input[name='cours_id']").val();
+            let spinner = $(`#spinner-loading-${coursId}`);
+            let contentComment = $(`#content_comment-${coursId}`);
+            let contentInput = $(`#content-${coursId}`);
+
+            // Affiche le spinner
+            spinner.show();
+            $.ajax({
+                url: "{% url 'add_commentcours' %}",
+                method: "POST",
+                data: new FormData(form[0]),
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    spinner.hide(); // Cache le spinner
+                    contentComment.html(data); // Met à jour les commentaires
+                    contentInput.val(""); // Vide le champ
+                },
+                error: function () {
+                    spinner.hide(); // Cache le spinner en cas d'erreur
+                    alert("Erreur lors de l'ajout du commentaire.");
+                }
+            });
+            return false;
+        });
+
+        // ============ Gestion des rénumerations ==================
+        $('#formRenumeration').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'add_renum' %}",
+                method : "POST",
+                data:new FormData($('#formRenumeration')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+        
+        $('#formUpdateRenum').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_re' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateRenum')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete-renum').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_renum/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+        
+        // ============ Evaluation de l'enseignant ==================
+        $(document).on("submit", "form[id^='formEvalEnseignant-']", function (e) {
+            e.preventDefault(); // Empêche le rechargement de la page
+
+            // Identifiez le formulaire spécifique et ses éléments
+            let form = $(this); 
+            let enseignementId = form.find("input[name='id']").val();
+            //let spinner = $(`#spinner-loading-${coursId}`);
+            let contentEval = $(`#content_eval_enseignant-${enseignementId}`);
+            //let contentInput = $(`#content-${coursId}`);
+            // Affiche le spinner
+            //spinner.show();
+            $.ajax({
+                url: "{% url 'add_eval' %}",
+                method: "POST",
+                data: new FormData(form[0]),
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.status === "success") {
+                        $('#evalModal' + enseignementId).modal('hide');
+                        let content = `<p>Vous avez attribué la note de <b class="text-danger">${data.evaluation.note}</b> à <b>${data.evaluation.nom_enseignant} ${data.evaluation.prenom_enseignant}</b> dans le cadre de son cours de <b>${data.evaluation.matiere}</b>.</p>`;
+                        contentEval.html(content);
+                    } else {
+                        $('#evalModal' + enseignementId).modal('hide');
+                        alert("Erreur : " + (data.error || "Réponse invalide"));
+                    }
+                },
+                error: function (xhr) {
+                    $('#evalModal' + enseignementId).modal('hide');
+                    alert("Erreur lors de l'évaluation de l'enseignant : " + xhr.responseText);
+                }
+            });
+            return false;
+        });
+
+
+        // ============ Gestion des calendriers ==================
+
+        $('#formTrimestre').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'trimestre/add_trimestre' %}",
+                method : "POST",
+                data:new FormData($('#formTrimestre')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formTrimestre')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateTrimestre').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_tr' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateTrimestre')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+
+        $('#formEvenement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'evenement/add_evenement' %}",
+                method : "POST",
+                data:new FormData($('#formEvenement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none'; // On cache le loading
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                        $('#formEvenement')[0].reset();
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });  
+
+        $('#formUpdateEvenement').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'edit_ev' %}",
+                method : "POST",
+                data:new FormData($('#formUpdateEvenement')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.delete-evenement').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_evenement/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        // ============================== Permission ================================
+        $('#formPermission').submit(function(){
+            document.getElementById('spinner-loading').style.display = 'block';
+            $.ajax({
+                url:"{% url 'update_permission' %}",
+                method : "POST",
+                data:new FormData($('#formPermission')[0]),
+                contentType : false,
+                processData : false,
+                success : function(data){
+                    document.getElementById('spinner-loading').style.display = 'none';
+                    $('#message').modal('show');
+                    if (data.status == "success"){
+                        contenu = "<div  class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                    if (data.status == "error"){
+                        contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
+                        $('#content-message').html(contenu);
+                    }
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

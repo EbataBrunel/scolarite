@@ -1,0 +1,57 @@
+<!-- Table with stripped rows -->
+<h5 class="card-title text-center">Totales des heures émargées</h5>
+<div class="table-responsive">
+    <table class="table datatable">
+        <thead>
+            <tr>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Id</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Salles</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">HeureTotale</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in emargements %}
+            <tr>
+                <td>{{ e.salle.id }}</td>
+                <td>{{ e.salle }}</td>
+                <td><span class="badge bg-warning">{{ e.total_time }}</span></td>
+                <td>
+                    <a href="#"  data-bs-toggle="modal" data-bs-target="#detailModal{{ e.salle.id }}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i> Détails </a>
+                    <!-- Start de delete Modal -->
+                    <div class="modal fade" id="detailModal{{ e.salle.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                          <div class="modal-content">
+                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                              <h5 class="modal-title text-center"> {{ e.salle }} </h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                               <p class="text-center">Heure totale : <span class="badge bg-warning">{{ e.total_time }}</span></p>
+                              <table class="table table-bordered">
+                                <tr>
+                                  <th>Id</th>  
+                                  <th>Matières</th>
+                                  <th>HeureTotal</th>
+                                </tr>
+                                {% for m in e.matieres %}
+                                <tr>
+                                  <td>{{ m.matiere.id }}</td>
+                                  <td>{{ m.matiere }}</td>
+                                  <td><span class="badge bg-warning">{{ m.total_time_matiere }}</span></td>
+                                </tr>
+                                {% endfor %}
+                              </table>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer la fênetre</button></div>
+                          </div>
+                        </div>
+                    </div><!-- Fin de delete Modal-->
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- End Table with stripped rows -->

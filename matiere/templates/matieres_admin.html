@@ -1,0 +1,63 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Matières {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Matières</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Matières</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des matières</h5>
+                <div class="card">
+                  <div class="card-body">
+                    <!-- Table with stripped rows -->
+                    <div class="table-responsive">
+                        <table class="table datatable">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Libellé</th>
+                                    <th>Abréviation</th>
+                                    <th class="white-space">Fond text</th>
+                                    <th class="white-space">Couleur text</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for matiere in matieres %}
+                                <tr>
+                                    <td>{{ matiere.id }}</td>
+                                    <td class="white-space">{{ matiere.libelle }}</td>
+                                    <td class="white-space">{{ matiere.abreviation }}</td>
+                                    <td>{{ matiere.theme }}</td>
+                                    <td>{{ matiere.text_color }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- End Table with stripped rows -->
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

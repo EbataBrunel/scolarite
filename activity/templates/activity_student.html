@@ -1,0 +1,38 @@
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Activités {% endblock %}
+{% block content %}
+{% load static %}
+
+  <!-- ======= Sidebar ======= -->
+
+  <main id="main" class="main">
+    <div class="row">
+        <div class="col-md-10">
+            <div class="pagetitle">
+                <h1><i class="bi bi-house"></i> Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item active">Information</li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+          
+            <section class="section contact">
+                <div class="bg-warning">
+                    <h3 class="content-title text-center"><i class="bi bi-info-circle"></i> Information</h3>
+                </div>
+                <hr>
+                {% for a in activities %}
+                <div class="content-activity">
+                    <p>{{ a.activity.content }}</p>
+                </div>
+                <span style="margin-left:50px">{{ a.activity.date|date:"d/m/Y" }}</span><hr>
+                {% endfor %}
+            </section>
+
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+  </main><!-- End #main -->
+  {% endblock %}

@@ -1,0 +1,152 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Evenements {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Calendrier</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Evenements</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des évenements</h5>
+                {% if anneeacademique.status_cloture %}
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'evenement/add_evenement' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer un évenements</a>
+                    {% else %}
+                    <a href="{% url 'evenement/add_evenement' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un évenement</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% if messages %}
+                  {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-8"></div>
+                    <div class="col-md-4">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Trimestre</th>
+                                <th>NombreEvènements</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in evenements %}
+                            <tr>
+                                <td>{{ e.trimestre.id }}</td>
+                                <td>{{ e.trimestre.name }}</td>
+                                <td><span class="badge rounded-pill bg-secondary">{{ e.nombre_evenements }}</span></td>
+                                <td>
+                                  <a class="btn btn-info btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ e.trimestre.id }}" title="Détail"><i class="bi bi-eye"></i></a>
+                                  <!-- debut detail modal -->
+                                  <div class="modal fade" id="detailModal{{ e.trimestre.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                          <div class="modal-content">
+                                              <div class="modal-header bg-info">
+                                                  <h5 class="modal-title" id="exampleModalLabel"><b class="text-center"> Liste des evènements </b></h5>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <br>
+                                                    <h5><b>{{ e.trimestre.name }}</b></h5>
+                                                    <hr>
+                                                    <div class="table-responsive">
+                                                      <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Id</th>
+                                                                <th>Titre</th>
+                                                                <th>DateDébut</th>
+                                                                <th>DateFin</th>
+                                                                <th>Description</th>
+                                                                {% if anneeacademique.status_cloture %}
+                                                                <th>Actions</th>
+                                                                {% endif %}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                          {% for evenement in e.evenements %}
+                                                          <tr>
+                                                              <td>{{ evenement.id }}</td>
+                                                              <td>{{ evenement.name }}</td>
+                                                              <td>{{ evenement.start_date|date:"d/m/Y" }}</td>
+                                                              <td>{{ evenement.end_date|date:"d/m/Y" }}</td>
+                                                              <td>{{ evenement.description }}</td>
+                                                              {% if anneeacademique.status_cloture %}
+                                                              <td style="width:5px; min-width:5px; max-width:5px; white-space: nowrap;">
+                                                                <a class="btn btn-danger btn-sm delete-evenement" id="{{ evenement.id }}"><i class="bi bi-trash"></i></a>
+                                                                <a href="{% url 'evenement/edit_evenement' evenement.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                                                              </td>
+                                                              {% endif %}
+                                                          </tr>
+                                                          {% endfor %}
+                                                        </tbody>
+                                                      </table>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <!-- end modal detail -->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+
+                <!-- Start groupe Modal -->
+                <div class="modal fade" id="content_delete" tabindex="-1">
+                  <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content">
+                      <div class="modal-header bg-danger text-light">
+                        <h5 class="modal-title">Suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true" class="badge bg-dark">x</span>
+                        </button>
+                      </div>
+                      <div class="modal-body" id="content-delete-item"></div>
+                    </div>
+                  </div>
+                </div><!-- End group Modal-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

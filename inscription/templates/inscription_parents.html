@@ -1,0 +1,170 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Parents {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Inscriptions</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Parents</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des parents</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Téléphone</th>
+                                <th>Proféssion</th>
+                                <th>Enfants</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in parents %}
+                            <tr>
+                                <td>{{ p.parent.id }}</td>
+                                <td class="white-space">{{ p.parent.lastname|upper }}</td>
+                                <td class="white-space">{{ p.parent.firstname|title }}</td>
+                                <td class="white-space">{{ p.parent.phone }}</td>
+                                <td class="white-space">{{ p.parent.profession }}</td>
+                                <td>
+                                  <a class="btn btn-info btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ p.parent.id }}" title="Détail"><i class="bi bi-eye"></i></a>
+                                  <!-- debut detail modal -->
+                                  <div class="modal fade" id="detailModal{{ p.parent.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                          <div class="modal-content">
+                                              <div class="modal-header bg-info">
+                                                  <h5 class="modal-title" id="exampleModalLabel"><b class="text-center"> Liste des enfants </b></h5>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <br>
+                                                    <h5><b>{{ p.parent.lastname|upper }} {{ p.parent.firstname|title }}</b></h5>
+                                                    <hr>
+                                                    <div class="table-responsive">
+                                                      <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                              <th>Photo</th>
+                                                              <th>Noms</th>
+                                                              <th>Prénoms</th>
+                                                              <th>Sexe</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                          {% for student in p.students %}
+                                                          <tr>
+                                                            <td>
+                                                              {% if student.photo %}
+                                                                <img src="{{ student.photo.url }}" class="img-responsive rounded-circle" width="50" height="50"/>
+                                                              {% else %}
+                                                                <img src="{% static 'assets/img/user.png' %}" class="img-responsive rounded-circle" width="50" height="50"/>
+                                                              {% endif %}
+                                                            </td>
+                                                            <td class="white-space">{{ student.lastname|title }}</td>
+                                                            <td class="white-space">{{ student.firstname|title }}</td>
+                                                            <td>{{ student.gender }}</td>
+                                                          </tr>
+                                                          {% endfor %}
+                                                        </tbody>
+                                                      </table>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <!-- end modal detail -->
+                                </td>
+                                <td>
+                                    {% if p.parent.status_access %}
+                                        <a href="#"  data-bs-toggle="modal" data-bs-target="#accessModal{{ p.parent.id }}" title="Droit" class="btn btn-outline-dark btn-sm">
+                                            <span id="icon-{{ p.parent.id }}">
+                                              <span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i></span>
+                                            </span>
+                                        </a>
+                                        <!-- Start de delete Modal -->
+                                        <div class="modal fade" id="accessModal{{ p.parent.id }}" tabindex="-1">
+                                              <div class="modal-dialog modal-sm">
+                                                <div class="modal-content">
+                                                  <div class="modal-header">
+                                                    <h5 class="modal-title">Droit d'accès</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                  </div>
+                                                  <div class="modal-body">
+                                                    <div class="text-center">
+                                                      <span>Voulez-vous vraiment désactiver le droit d'accès de ce parent ?</span>
+                                                    </div>
+                                                  </div>
+                                                  <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                    <a href="#" class="btn btn-primary btn-sm access-parent" id="{{ p.parent.id }}"><i class="bi bi-check"></i> Valider</a>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                        </div><!-- Fin de delete Modal-->
+                                    {% else %}
+                                        <a href="#"  data-bs-toggle="modal" data-bs-target="#accessModal{{ p.parent.id }}" title="Droit" class="btn btn-outline-dark btn-sm">
+                                            <span id="icon-{{ p.parent.id }}">
+                                              <span class="badge rounded-pill bg-danger"><i class="bi bi-x-circle"></i></span>
+                                            </span>
+                                        </a>
+                                        <!-- Start de delete Modal -->
+                                        <div class="modal fade" id="accessModal{{ p.parent.id }}" tabindex="-1">
+                                            <div class="modal-dialog modal-sm">
+                                                <div class="modal-content">
+                                                  <div class="modal-header">
+                                                    <h5 class="modal-title">Droit d'accès</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                  </div>
+                                                  <div class="modal-body">
+                                                    <div class="text-center" id="content-access-{{ p.parent.id }}">
+                                                      <p>Voulez-vous vraiment activer le droit d'accès de ce parent ?</p>
+                                                    </div>
+                                                  </div>
+                                                  <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                    <a href="#" class="btn btn-primary btn-sm access-parent" id="{{ p.parent.id }}"><i class="bi bi-check"></i>Valider</a>
+                                                  </div>
+                                                </div>
+                                            </div>
+                                        </div><!-- Fin de delete Modal-->
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

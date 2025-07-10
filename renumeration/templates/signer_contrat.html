@@ -1,0 +1,6 @@
+{% if contrat.status_signature %}
+    <h5>{{ contrat.user.last_name|title }} {{ contrat.user.first_name|title }}</h5>
+    <p>Date : {{ contrat.date_signature|date:"d/m/Y" }}</p>
+{% else %}
+    <h4 class="text-danger"> La signature a échouée </h4>
+{% endif %}

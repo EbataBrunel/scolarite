@@ -1,0 +1,147 @@
+
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Classes {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Classes</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Classes</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des classes</h5>
+                {% if anneeacademique.status_cloture %}
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'add_class' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une classe</a>
+                    {% else %}
+                    <a href="{% url 'add_class' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une classe</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <br>
+                {% if messages %}
+                  {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Cycle</th>
+                                <th>NombreClasses</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in classes %}
+                            <tr>
+                                <td>{{ c.cycle.id }}</td>
+                                <td class="white-space">{{ c.cycle }}</td>
+                                <td><span class="badge rounded-pill bg-secondary">{{ c.nombre_classes }}</span></td>
+                                <td>
+                                  <a class="btn btn-info btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ c.cycle.id }}" title="Détail"><i class="bi bi-eye"></i></a>
+                                  <!-- debut detail modal -->
+                                  <div class="modal fade" id="detailModal{{ c.cycle.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                          <div class="modal-content">
+                                              <div class="modal-header bg-info">
+                                                  <h5 class="modal-title" id="exampleModalLabel"><b class="text-center"> Liste des classes </b></h5>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <br>
+                                                    <h5><b>{{ c.cycle }}</b></h5>
+                                                    <hr>
+                                                    <div class="table-responsive">
+                                                      <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Id</th>
+                                                                <th>Nom</th>
+                                                                {% if anneeacademique.status_cloture %}
+                                                                <th>Actions</th>
+                                                                {% endif %}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                          {% for classe in c.classes %}
+                                                          <tr>
+                                                              <td>{{ classe.id }}</td>
+                                                              <td>{{ classe.libelle }}</td>
+                                                              {% if anneeacademique.status_cloture %}
+                                                              <td style="width:5px; min-width:5px; max-width:5px; white-space: nowrap;">
+                                                                <a href="{% url 'delete_classe' classe.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                                                <a href="{% url 'edit_class' classe.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                                                              </td>
+                                                              {% endif %}
+                                                          </tr>
+                                                          {% endfor %}
+                                                        </tbody>
+                                                      </table>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <!-- end modal detail -->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+                 <!-- Start groupe Modal -->
+                <div class="modal fade" id="content_delete" tabindex="-1">
+                  <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content">
+                      <div class="modal-header bg-danger text-light">
+                        <h5 class="modal-title">Suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true" class="badge bg-dark">x</span>
+                        </button>
+                      </div>
+                      <div class="modal-body" id="content-delete-item"></div>
+                    </div>
+                  </div>
+                </div><!-- End group Modal-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

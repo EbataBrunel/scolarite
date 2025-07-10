@@ -1,0 +1,146 @@
+<h5 class="card-title text-center">Liste des enseignants du fondamental rénumérés</h5>
+<!-- Table with stripped rows -->
+<div class="table-responsive">
+    <table class="table datatable">
+        <thead>
+            <tr>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Enseignants</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Montant ({{ setting.devise }})</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Indemnité ({{ setting.devise }})</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Date</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Gestionnaire</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}  white-space">Net à payer ({{ setting.devise }})</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Mode paiement</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Bulletin</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if renumerations_enseignants_fondamental %}
+                {% for r in renumerations_enseignants_fondamental %}
+                <tr>
+                    <td>{{ r.renumeration.personnel.last_name|title }} {{ r.renumeration.personnel.first_name|title }}</td>
+                    <td>{{ r.renumeration.amount }}</td>
+                    <td>{{ r.renumeration.indemnite|floatformat:2 }}</td>
+                    <td>{{ r.renumeration.date|date:"d/m/Y" }}</td>
+                    <td class="white-space">{{ r.renumeration.user.last_name }} {{ r.renumeration.user.first_name }}</td>
+                    <td>{{ r.net_payer|floatformat:2 }}</td>
+                    <td>{{ r.renumeration.mode_payment }}</td>
+                    <td><a href="{% url 'bulletin_paie_enseignant' r.renumeration.id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i></a></td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <th class="text-center white-space" colspan="5">Somme totale ({{ setting.devise }}) : </th>
+                    <th class="text-center">{{ somme_totale_enseignant_fondamental|floatformat:2 }}</th>
+                    <th></th>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">Aucune rénumeration des enseignants n'a été enregistrée</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+<!-- End Table with stripped rows -->
+<br>
+<h5 class="card-title text-center">Liste des enseignants du secondaire rénumérés</h5>
+<!-- Table with stripped rows -->
+<div class="table-responsive">
+    <table class="table datatable">
+        <thead>
+            <tr>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Enseignants</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Montant ({{ setting.devise }})</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Indemnité ({{ setting.devise }})</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Date</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Gestionnaire</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}  white-space">Net à payer ({{ setting.devise }})</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Mode paiement</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Bulletin</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if renumerations_enseignants_secondaire %}
+                {% for r in renumerations_enseignants_secondaire %}
+                <tr>
+                    <td>{{ r.renumeration.personnel.last_name|title }} {{ r.renumeration.personnel.first_name|title }}</td>
+                    <td>{{ r.renumeration.amount }}</td>
+                    <td>{{ r.renumeration.indemnite|floatformat:2 }}</td>
+                    <td>{{ r.renumeration.date|date:"d/m/Y" }}</td>
+                    <td class="white-space">{{ r.renumeration.user.last_name }} {{ r.renumeration.user.first_name }}</td>
+                    <td>{{ r.net_payer|floatformat:2 }}</td>
+                    <td>{{ r.renumeration.mode_payment }}</td>
+                    <td><a href="{% url 'bulletin_paie_enseignant' r.renumeration.id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i></a></td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <th class="text-center white-space" colspan="5">Somme totale ({{ setting.devise }}) : </th>
+                    <th class="text-center">{{ somme_totale_enseignant_secondaire|floatformat:2 }}</th>
+                    <th></th>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">Aucune rénumeration des enseignants n'a été enregistrée</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+<!-- End Table with stripped rows -->
+
+<hr>
+<h5 class="card-title text-center">Liste des administrateurs rénumérés</h5>
+<div class="table-responsive">
+    <table class="table datatable">
+        <thead>
+            <tr>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Enseignants</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Montant ({{ setting.devise }})</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Indemnité ({{ setting.devise }})</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Date</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Gestionnaire</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Net à payer ({{ setting.devise }})</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Mode paiement</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Bulletin</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if renumerations_admin %}
+                {% for r in renumerations_admin %}
+                <tr>
+                    <td>{{ r.renumeration.user.last_name|title }} {{ r.renumeration.user.first_name|title }}</td>
+                    <td>{{ r.renumeration.amount }}</td>
+                    <td>{{ r.renumeration.indemnite }}</td>
+                    <td>{{ r.renumeration.date_renumeration|date:"d/m/Y" }}</td>
+                    <td class="white-space">{{ r.renumeration.responsable.last_name }} {{ r.renumeration.responsable.first_name }}</td>
+                    <td>{{ r.net_payer|floatformat:2 }}</td>
+                    <td>{{ r.renumeration.mode_payment }}</td>
+                    <td><a href="{% url 'bulletin_paie_admin' r.renumeration.id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i></a></td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <th class="text-center white-space" colspan="5">Somme totale ({{ setting.devise }}) : </th>
+                    <th class="text-center">{{ sum_total_admin|floatformat:2 }}</th>
+                    <th></th>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">Aucune rénumeration des administarteurs n'a été enregistrée</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body height_min_max_card">
+              <h5 class="card-title text-center">Total ({{ setting.devise }})</h5>
+              <h1 class="text-success text-center">{{ total|floatformat:2 }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4"></div>
+</div>

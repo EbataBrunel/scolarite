@@ -1,0 +1,1048 @@
+<script type="text/javascript">
+    $(document).ready(function(){
+        hideContentRenumeration();
+
+        $('#cycle').on('change', function(){
+            var id_cycle = $(this).val();
+            if(id_cycle){
+                    $.get("ajax_classe/"+id_cycle,
+                        {id_cycle:id_cycle},
+                        function(data){
+                            $('#classe_serie_view').html(data); 
+                        }
+                    );
+
+            }else{
+              $('#classeview').html("");   
+            }
+        });
+        /* Récuperer les matières programmées dans la salle selectionnée */
+        $('#Salle').on('change', function(){
+            var id_salle = $(this).val();
+            if(id_salle){
+                    $.get("ajax_matiere/"+id_salle,
+                        {id_salle:id_salle},
+                        function(data){
+                            $('#matiereview').html(data); 
+
+                        }
+                    );
+
+            }else{   
+              $('#matiereview').html(""); 
+            }
+        });
+        /* Récuperer les enseignants de la salle selectionnée */
+        $('#Salle').on('change', function(){
+            var id_salle = $(this).val();
+            if(id_salle){
+                    $.get("ajax_enseignant/"+id_salle,
+                        {id_salle:id_salle},
+                        function(data){
+                            //$('#Matiere').html(data); 
+                            $('#enseignantview').html(data); 
+                            $('#matiereview').html(""); 
+
+                        }
+                    );
+
+            }else{
+              $('#enseignantview').html("");   
+              $('#matiereview').html(""); 
+            }
+        });
+        /* Récuperer les matières de l'enseignant dans la salle selectionnée */
+        $(document).on('change','#enseignant',function(){
+            var id_matiere = $(this).val();
+            var id_salle = $("#Salle").val();
+            if(id_matiere){
+                    $.get("ajax_matiere_enseignant/"+id_salle+"/"+id_matiere,
+                        {},
+                        function(data){
+                            $('#matiereview').html(data); 
+                        }
+                    );
+
+            }else{
+              $('#matiereview').html("");   
+            }
+        });
+
+        $('#salle').on('change', function(){
+            var id = $(this).val();
+            if(id){
+                $.get("ajax_trimestre_enseigner/"+id,
+                    {id:id},
+                    function(data){
+                        $('#trimestreview').html(data);
+                        $('#matiereview').html("");  
+                    }
+                );
+
+            }else{
+                $('#trimestreview').html("");
+              $('#matiereview').html("");   
+            }
+        });
+
+        $('#salle').on('change', function(){
+            var id = $(this).val();
+            if(id){
+                    $.get("ajax_student_inscris/"+id,
+                        {id:id},
+                        function(data){
+                            $('#studentview').html(data); 
+                        }
+                    );
+
+            }else{
+              $('#studentview').html("");  
+            }
+        });
+
+        $('#salle_paye').on('change', function(){
+            var id = $(this).val();
+            if(id){
+                    $.get("ajax_student_inscris/"+id,
+                        {id:id},
+                        function(data){
+                            $('#studentview').html(data); 
+                        }
+                    );
+
+            }else{
+              $('#studentview').html("");  
+            }
+        });
+
+        /* Récuperer le montant de l'inscription d'une salle */
+        $('#salle').on('change', function(){
+            var id_salle = $(this).val();
+            if(id_salle){
+                    $.get("ajax_amount_inscription/"+id_salle,
+                        {id_salle:id_salle},
+                        function(data){
+                            $('#amountview').html(data); 
+
+                        }
+                    );
+
+            }else{   
+              $('#amountview').html(""); 
+            }
+        });
+
+        // Recuperer les matières enseignées par trimestre
+        $(document).on('click', '#trimestre', function(){
+            var trimestre = $(this).val();
+            var salle_id = $('#salle').val();
+            if(trimestre){
+                $.get(`ajax_matiere_enseigner/${trimestre}/${salle_id}`,
+                    {},
+                    function(data){
+                        $('#matiereview').html(data);
+                    }
+                );
+            }else{
+              $('#matiereview').html("");   
+            }
+        });
+
+        $('#salle_id').on('change', function(){
+            var id = $(this).val();
+            var salle_id = id
+            if(id){
+                $.get(`/composition/edit_composition/${salle_id}/ajax_trim_enseigner/${id}`,
+                    {id:id},
+                    function(data){
+                        $('#trimestreview').html(data);
+                        $('#matiereview').html("");  
+                    }
+                );
+
+            }else{
+                $('#trimestreview').html(""); 
+                $('#matiereview').html("");   
+            }
+        });
+
+
+        // Recuperer les matières enseignées par trimestre (Remplir le champs trimestre de l'edition d'une composition )
+        $(document).on('change', '#Trimestre', function(){
+            var trimestre = $(this).val();
+            var id = $('#salle_id').val();
+            var salle_id = id
+            if(trimestre){
+                $.get(`/composition/edit_composition/${salle_id}/ajax_trimestre_matiere_enseigner/${trimestre}/${id}`,
+                    {},
+                    function(data){
+                        $('#matiereview').html(data);
+                    }
+                );
+            }
+        });
+
+
+        $('#salle_id').on('change', function(){
+            var id = $(this).val();
+            var salle_id = id;
+            if(id){
+                    $.get(`/composition/edit_composition/${salle_id}/ajax_trim_student_inscris/${id}`,
+                        {id:id},
+                        function(data){
+                            $('#studentview').html(data); 
+                        }
+                    );
+
+            }else{
+              $('#studentview').html("");  
+            }
+        });
+
+        $('#salle_emp').on('change', function(){
+            var salle_id = $(this).val();
+            if(salle_id){
+                    $.get("content_emploitemps/"+salle_id,
+                        {salle_id:salle_id},
+                        function(data){
+                            $('#content_emploi').html(data); 
+                        }
+                    );
+
+            }else{
+                $('#content_emploi').html(""); 
+            }
+        });
+
+        $('#salle_emp').on('change', function(){
+            var salle_id = $(this).val();
+            if(salle_id){
+                    $.get("content_emploitemps_parent/"+salle_id,
+                        {salle_id:salle_id},
+                        function(data){
+                            $('#content_emploitemps_parent').html(data); 
+                        }
+                    );
+
+            }else{
+                $('#content_emploitemps_parent').html(""); 
+            }
+        });
+
+        $('#salle_delib').on('change', function(){
+            var salle_id = $(this).val();
+            if(salle_id){
+                    $.get("trimestre_deliberation/"+salle_id,
+                        {salle_id:salle_id},
+                        function(data){
+                            $('#trimestreview').html(data); 
+                            $('#content_delib').html("");
+                        }
+                    );
+            }else{
+                $('#trimestreview').html(""); 
+                $('#content_delib').html(""); 
+            }
+        });
+
+        $(document).on('click', '#trimestre_delib', function(){
+            var trimestre = $(this).val();
+            var salle_id = $('#salle_delib').val();
+            if(trimestre){
+                    $.get("content_deliberation/"+salle_id+"/"+trimestre,
+                        {salle_id:salle_id, trimestre:trimestre},
+                        function(data){
+                            $('#content_delib').html(data); 
+                        }
+                    );
+
+            }else{
+                $('#content_delib').html(""); 
+            }
+        });
+
+
+        $('#salle_resultat').on('change', function(){
+            var salle_id = $(this).val();
+            if(salle_id){
+                    $.get("trimestre_resultat/"+salle_id,
+                        {salle_id:salle_id},
+                        function(data){
+                            $('#trimestreview').html(data); 
+                            $('#content_resultat').html(""); 
+                        }
+                    );
+            }else{
+                $('#trimestreview').html(""); 
+                $('#content_resultat').html(""); 
+            }
+        });
+
+        $(document).on('click', '#trimestre_resultat', function(){
+            var trimestre = $(this).val();
+            var salle_id = $('#salle_resultat').val();
+            if(trimestre){
+                    $.get("content_resultat/"+salle_id+"/"+trimestre,
+                        {salle_id:salle_id, trimestre:trimestre},
+                        function(data){
+                            $('#content_resultat').html(data); 
+                        }
+                    );
+
+            }else{
+                $('#content_resultat').html(""); 
+            }
+        });
+
+        // Recuperer les matières enseignées par trimestre
+        $(document).on('click', '#trimestre_stat', function(){
+            var trimestre = $(this).val();
+            if(trimestre){
+                $.get(`content_stat_comp/${trimestre}`,
+                    {},
+                    function(data){
+                        $('#content-stat').html(data);
+                    }
+                );
+            }else{
+              $('#content-stat').html("");   
+            }
+        });
+        
+        // Recuperer les matières enseignées par trimestre
+        $(document).on('click', '#salle_stat', function(){
+            var salle_id = $(this).val();
+            if(salle_id){
+                $.get(`content_stat_comp_trimestre/${salle_id}`,
+                    {},
+                    function(data){
+                        $('#content-stat-trim').html(data);
+                    }
+                );
+            }else{
+              $('#content-stat-trim').html("");   
+            }
+        });
+
+
+        $('#Evaluation').on('change', function(){
+            var evaluation = $(this).val();
+            if(evaluation){   
+                $.get("ajax_eval_controle/"+evaluation,
+                    {},
+                    function(data){
+                        $('#controleview').html(data); 
+                    }
+                );
+
+            }
+        });
+
+        $('#evaluation').on('change', function(){
+            var evaluation = $(this).val();
+            var id = $('#id').val();
+            if(evaluation){   
+                $.get(`/composition/edit-composition/${id}/ajax_evaluation_controle/${evaluation}`,
+                    {},
+                    function(data){
+                        $('#controleview').html(data); 
+                    }
+                );
+
+            }
+        });
+
+        $(document).on('click','.tri_student',function(){
+            $('#spinner-loading').css('display', 'block');
+            var action = $(this).attr("id");
+            var trimestre = $(this).data("trim");
+            var salle_id = $(this).data("salle");
+
+            if(action){
+                $.get(`tri_student_composer/${action}/${salle_id}/${trimestre}`,
+                    {},
+                    function(data){
+                        $('#spinner-loading').css('display', 'none');
+                        $('#content_student_composer').html(data); 
+                    }
+                );
+
+            }
+        });
+
+        $(".examen").on('click',function(){
+            $('#spinner-loading').css('display', 'block');
+            var evaluation = $(this).attr("id");
+            var trimestre = $(this).data("trim");
+            var salle_id = $(this).data("salle");
+            var matiere_id = $(this).data("matiere");
+            var s_id = salle_id
+            var m_id = matiere_id
+
+            if(evaluation){
+                $.get(`/composition/detail_cmpteacher/${s_id}/${m_id}/examen_teacher/${trimestre}/${evaluation}/${salle_id}/${matiere_id}`,
+                    {},
+                    function(data){
+                        $('#spinner-loading').css('display', 'none');
+                        $('.content_examen').html(data);
+                        
+                        // Retirer la classe "bg-primary" de toutes les divs
+                        $('.desp').removeClass('btn-outline-primary');
+                        // Ajouter la classe "bg-primary" uniquement à l'élément cliqué
+                        $(".activated_"+evaluation).removeClass("btn-outline-secondary");
+                        $(".activated_"+evaluation).addClass("btn-outline-primary");
+                        $('.datatable').DataTable().destroy();
+                        // Réactiver DataTable
+                        $('.datatable').DataTable({
+                            searching: true,  // Barre de recherche
+                            paging: true,     // Pagination
+                            info: true
+                        }); 
+                    }
+                );
+
+            }
+        });
+
+        /*===================== Absence de l'étudiant =============*/
+        $(".button-absence").on('click', function(){
+            var id = $(this).attr("id");
+            var emargement_id = $(this).data("ema");
+            if(id){
+                $.get(`save_absencestudent/${id}/${emargement_id}`,{},
+                    function(data){
+                        $(".absence"+id).html(data);
+                    }
+                );
+
+            }
+        });
+
+        $('#salle_ens').on('change', function(){
+            var salle_id = $(this).val();
+            if(salle_id){
+                    $.get("mat_enseignant/"+salle_id,
+                        {},
+                        function(data){
+                            $('#matiereview').html(data); 
+                        }
+                    );
+
+            }else{
+            $('#matiereview').html("");  
+            }
+        });
+
+        // Supprimer ma question au forum
+        $(document).on('click','.delete_comment', function(){
+            var id = $(this).attr("id");
+            var salle_id = $(this).data("salle");
+            if(id){
+                $.get(`/cours/detail-coursligne/${salle_id}/delete_comment/${id}`,
+                    {id:id},
+                    function(data){
+                        $('#deleteModal'+id).modal('hide');
+                        $("#comment_"+id).html("<em></em>");
+                        $("#nb_comment"+id).html("<span>"+data.nb_comment+"</span>")  
+                    }
+                );
+            }
+        });
+
+        // Renuménumération
+        $('#month').on('change', function(){
+            var month = $(this).val();
+            if(month){
+                    $.get("ajax_pers_renum/"+month,
+                        {},
+                        function(data){
+                            $('#content_renumeration').html(data); 
+                        }
+                    );
+            }else{
+                $('#content_renumeration').html(""); 
+            }
+        });
+
+        $('#month').on('change', function(){
+            var month = $(this).val();
+            if(month){
+                    $.get("ajax_teacher_renum/"+month,
+                        {},
+                        function(data){
+                            $('#content_renum').show();
+                            $('#content_enseignant_renumeration').html(data); 
+                        }
+                    );
+            }else{
+                $('#content_enseignant_renumeration').html(""); 
+            }
+        });
+
+        $('#month').on('change', function(){
+            var month = $(this).val();
+            if(month){
+                    $.get("ajax_heures_emargements/"+month,
+                        {},
+                        function(data){
+                            $('#content_emargement').html(data); 
+                        }
+                    );
+            }else{
+                $('#content_emargement').html(""); 
+            }
+        });
+
+
+        $('#month').on('change', function(){
+            var month = $(this).val();
+            if(month){
+                    $.get("ajax_emargements_ens/"+month,
+                        {},
+                        function(data){
+                            $('#content_emargement_ens').html(data); 
+                        }
+                    );
+            }else{
+                $('#content_emargement_ens').html(""); 
+            }
+        });
+
+
+        $('#month').on('change', function(){
+            var month = $(this).val();
+            if(month){
+                    $.get("ajax_recapitulatif/"+month,
+                        {},
+                        function(data){
+                            $('#content_recapitulatif').html(data); 
+                        }
+                    );
+            }else{
+                $('#content_recapitulatif').html(""); 
+            }
+        });
+
+
+        //Remplir le formulaire du baccalaureat
+        $('#type_depense').on('change', function(){
+            var type_depense = $(this).val()
+            if (type_depense == "Autre"){
+                $.get("type_depense/"+type_depense,
+                {},
+                function(data){
+                    $('.other').html(data)
+                });
+            }else{
+                $('.other').html("")
+            }
+        });
+
+        $(document).on('click','.droit_val',function(){
+            $('#spinner-loading').css('display', 'block');
+            var id = $(this).attr("id");
+
+            if(id){
+                $.get(`droit_evaluation/${id}`,
+                    {},
+                    function(data){
+                        $('#evalModal').modal("hide");
+                        $('#spinner-loading').css('display', 'none');
+                        if (data.status == "success"){
+                            let content = `<div><p class="text-warning text-center">Evaluation en cours ....</p><p class="text-center">Date limite : ${data.date_limit}</p></div>`;
+                            $('#content_droit_evaluation').html(content); 
+                        }
+                    }
+                );
+
+            }
+        });
+
+
+        $('#type_contrat').on('change', function(){
+            var type_contrat = $(this).val();
+            if(type_contrat){
+                    $.get("ajax_type_contrat/"+type_contrat,
+                        {},
+                        function(data){
+                            $('#amountview_contrat').html(data); 
+                        }
+                    );
+            }else{
+                $('#amountview_contrat').html(""); 
+            }
+        });
+        /* Selectionner les mois du contrat de l'utilisateur  */
+        $('#user').on('change', function(){
+            var user_id = $(this).val();
+            if(user_id){
+                    $.get("ajax_user_month_contrat/"+user_id,
+                        {},
+                        function(data){
+                            $('#monthcontratview').html(data); 
+                            $('#amountview').html(""); 
+                        }
+                    );
+            }else{
+                $('#monthcontratview').html(""); 
+                $('#amountview').html(""); 
+            }
+        });
+
+        /* Recuperer le montant du contrat de l'utilisateur du mois selectionné */
+        $(document).on('change','#month',function(){
+            var month = $(this).val();
+            var user_id = $("#user").val()
+            if(month){
+                    $.get(`ajax_user_amount/${user_id}/${month}`,
+                        {},
+                        function(data){
+                            $('#amountview').html(data); 
+                        }
+                    );
+            }else{
+                $('#amountview').html(""); 
+            }
+        });
+
+        /* Recuperer les mois que l'établissement va payer  */
+        $('#etablissement').on('change', function(){
+            var etablissement_id = $(this).val();
+            if(etablissement_id){
+                    $.get("ajax_month_payment_etablissement/"+etablissement_id,
+                        {},
+                        function(data){
+                            $('#monthview').html(data); 
+                            $('#amountview').html("");
+                        }
+                    );
+            }else{
+                $('#amountview').html(""); 
+                $('#amountview').html("");
+
+            }
+        });
+
+        /* Recuperer le montant de l'établissement que chaque étudiant paye par mois   */
+        $(document).on('change','#month',function(){
+            var month = $(this).val();
+            var etablissement_id = $("#etablissement").val();
+            if(month){
+                    $.get(`ajax_amount_contrat_etablissement/${etablissement_id}/${month}`,
+                        {},
+                        function(data){
+                            $('#amountview').html(data); 
+                        }
+                    );
+            }else{
+                $('#amountview').html(""); 
+            }
+        });
+
+        /* ========================== Afficher les groupes d'un utilisateur */
+        $('.hovergroup').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("fetchgroup/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_admin').modal('show');
+                            $('#content-group-admin').html(data);
+                        }
+                    );
+            }
+        });
+
+        $('.hovergroup-etablissement-user').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("fetchgroupe_etablissement_user/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_admin').modal('show');
+                            $('#content-group-admin').html(data);
+                        }
+                    );
+            }
+        });
+
+        $('.hovergroup-teacher').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("fetchgroupe_etablissement_user/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_teacher').modal('show');
+                            $('#content-group-teacher').html(data);
+                        }
+                    );
+            }
+        });
+
+        // Aficher les status de paye des parents
+        $('.status-paye-parent').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("status_paye_parent/"+id,
+                        {id:id},
+                        function(data){
+                            $('#modal_status_paye_parent').modal('show');
+                            $('#content-status-paye-parent').html(data);
+                        }
+                    );
+            }
+        });
+
+        /* Droit d'accès des étudtiants */
+        $('.access-parent').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("access_parent/"+id,
+                        {id:id},
+                        function(data){
+                            if (data.status){
+                                $('#accessModal'+id).modal('hide');
+                                button_content = "<span class='badge rounded-pill bg-success'><i class='bi bi-check-circle'></i></span>";
+                                content_access = "<p>Voulez-vous vraiment désactiver le droit d'accès de cet élève ?</p>"
+                                $('#icon-'+id).html(button_content);
+                                $('#content-access-'+id).html(content_access)
+                            }else{
+                                $('#accessModal'+id).modal('hide');
+                                button_content = "<span class='badge rounded-pill bg-danger'><i class='bi bi-x-circle'></i></span>";
+                                content_access = "<p>Voulez-vous vraiment activer le droit d'accès de cet élève ?</p>"
+                                $('#icon-'+id).html(button_content);
+                                $('#content-access-'+id).html(content_access)
+                            }
+                        }
+                    );
+            }
+        });
+
+        /* Droit d'accès des étudtiants */
+        $('.access-student').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("access_student/"+id,
+                        {id:id},
+                        function(data){
+                            if (data.status){
+                                $('#accessModal'+id).modal('hide');
+                                button_content = "<span class='badge rounded-pill bg-success'><i class='bi bi-check-circle'></i></span>";
+                                content_access = "<p>Voulez-vous vraiment désactiver le droit d'accès de cet élève ?</p>"
+                                $('#icon-'+id).html(button_content);
+                                $('#content-access-'+id).html(content_access)
+                            }else{
+                                $('#accessModal'+id).modal('hide');
+                                button_content = "<span class='badge rounded-pill bg-danger'><i class='bi bi-x-circle'></i></span>";
+                                content_access = "<p>Voulez-vous vraiment activer le droit d'accès de cet élève ?</p>"
+                                $('#icon-'+id).html(button_content);
+                                $('#content-access-'+id).html(content_access)
+                            }
+                        }
+                    );
+            }
+        });
+
+        /* Bloquer definitivement le compte de l'étudtiant */
+        $('.block-account-student').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("block_account_student/"+id,
+                        {id:id},
+                        function(data){
+                            if (data.status == "success"){
+                                $('#blockModal'+id).modal('hide');
+                                button_content = "<span class='badge rounded-pill bg-danger'><i class='bi bi-x-circle'></i></span>";
+                                content_access = "<p>Vous n'avez pas les droits nécessaires pour activer le blocage de ce compte. Veuillez contacter un super utilisateur pour effectuer cette opération</p>"
+                                $('#icon-account-'+id).html(button_content);
+                                $('#content-block-account-'+id).html(content_access)
+                            }
+                        }
+                    );
+            }
+        });
+
+        /* ========================== Afficher les groupes d'un utilisateur */
+        $('.hover-releve-controle').on('click', function(){
+            var student_id = $(this).data("student");          
+            var num_controle = $(this).data("num");
+            var matiere_id = $(this).data("matiere");
+            var trimestre = $(this).data("trim");
+            
+            if(matiere_id){
+                    $.get(`fetch_releve_controle/${student_id}/${matiere_id}/${num_controle}/${trimestre}`,
+                        {},
+                        function(data){
+                            $('#show_releve_controle').modal('show');
+                            $('#content-releve-controle').html(data);
+                        }
+                    );
+            }
+        });
+
+        /* ========================== Afficher les groupes d'un utilisateur */
+        $('.hover-releve-examen').on('click', function(){  
+            var student_id = $(this).data("student");
+            var matiere_id = $(this).data("matiere");
+            var trimestre = $(this).data("trim");
+            
+            if(matiere_id){
+                    $.get(`fetch_releve_examen/${student_id}/${matiere_id}/${trimestre}`,
+                        {},
+                        function(data){
+                            $('#show_releve_examen').modal('show');
+                            $('#content-releve-examen').html(data);
+                        }
+                    );
+            }
+        });
+
+        /* ========================== Afficher les groupes d'un utilisateur */
+       $(document).on('click','.add-notification',function(){
+            var parent_id = $(this).attr("id");
+            var montant = $(this).data("montant");
+            if(parent_id){
+                    $.get(`add_notification/${parent_id}/${montant}`,
+                        {},
+                        function(data){
+                            $('#content-status-notification'+parent_id).html(data);
+                        }
+                    );
+            }
+        });
+
+        /* ========================== Signature des contrats */
+       $(document).on('click','.signer-contrat',function(){
+            var contrat_id = $(this).attr("id");
+            if(contrat_id){
+                    $.get(`signer_contrat/${contrat_id}`,
+                        {},
+                        function(data){
+                            $('#content-signature-contrat'+contrat_id).html(data);
+                        }
+                    );
+            }
+        });
+
+        $(document).on('click','.signer-contrat-etablissement',function(){
+            var contrat_id = $(this).attr("id");
+            if(contrat_id){
+                    $.get(`signer_contrat_promoteur/${contrat_id}`,
+                        {},
+                        function(data){
+                            $('#content-signature-contrat'+contrat_id).html(data);
+                        }
+                    );
+            }
+        });
+
+        /* ============================= Permission ==================== */
+       $(document).on('click','#actif',function(){
+            var isChecked = $(this).prop('checked'); // true ou false
+            var actif = isChecked ? 'on' : null;
+            var user_id = $("#user_id").val()
+
+            if(user_id){
+                    $.get(`ajax_active_permission/${actif}`,
+                        {},
+                        function(data){
+                            $('#content-permission').html(data);
+                        }
+                    );
+            }
+        });
+
+        $(document).on('click','#staff',function(){
+            var isChecked = $(this).prop('checked'); // true ou false
+            var staff = isChecked ? 'on' : null;
+            var user_id = $("#user_id").val()
+
+            if(user_id){
+                    $.get(`ajax_staff_permission/${staff}`,
+                        {},
+                        function(data){
+                            $('#content-permission').html(data);
+                        }
+                    );
+            }
+        });
+
+        $(document).on('click','#superuser',function(){
+            var isChecked = $(this).prop('checked'); // true ou false
+            var superuser = isChecked ? 'on' : null;
+
+            $.get(`ajax_superuser_permission/${superuser}`,
+                        {},
+                        function(data){
+                            $('#content-permission').html(data);
+                        }
+            );
+            
+        });
+
+        /* Afficher les salles et le nombre d'élèves d'un établissement */ 
+        $('.button-salle').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                $.get("ajax_content_salle_etablissement/"+id,
+                    {id:id},
+                    function(data){
+                        $('#content-salle').modal('show');
+                        $('#content-salle-etablissement').html(data);
+                    }
+                );
+            }
+        });
+
+        /* Afficher les étudiants d'une salle d'un établissement */ 
+        $(document).on('click','.button-student',function(){
+            var id = $(this).attr("id");
+            if(id){
+                $.get("ajax_content_student_etablissement/"+id,
+                    {id:id},
+                    function(data){
+                        $('#content-student').modal('show');
+                        $('#content-student-etablissement').html(data);
+                    }
+                );
+            }
+        });
+
+        /* Modal de confirmation de paiement */
+        $('.modal-confirmation-payment').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_modal_confirmation_payment/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_confirmation_payment').modal('show');
+                            $('#content-confirmation-item').html(data);
+                        }
+                    );
+            }
+        });
+
+        /* Confirmation de paiement */
+        $(document).on('click','.confirmer-payment',function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("confirmation_payment/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_confirmation_payment').modal('hide');
+                            if (data.status){
+                                content = "<span class='badge rounded-pill bg-success'>Payé</span>";
+                                $('#content-confirmation'+id).html(content);
+                            }
+                        }
+                    );
+            }
+        });
+        /* Afficher la fenêtre de bloquage d'activités de l'étudiant */ 
+        $(document).on('click','.modal-block-student',function(){
+            var id = $(this).attr("id");
+            if(id){
+                $.get("ajax_modal_block_student_etablissement/"+id,
+                    {id:id},
+                    function(data){
+                        if(data.status){
+                            $('#content-block-student').modal('show');
+                            content = "<div class='card'><div class='card-body'><h5 class='card-title'>"+data.student.lastname+" "+data.student.firstname+"</b></h5><p>Désactiver le bloquage entrainera l'ouverture de toutes les activités de cet élève.</p><br><p class='text-center'><a href='#' class='btn btn-info btn-sm button-block-student' id="+id+"><i class='bi bi-check'></i> Valider </a></p></div></div>";
+                            $('#content-block-student-etablissement').html(content);
+                        }else{
+
+                            var rawDate = data.inscription.date_block; // ex: "2025-02-10T10:14:00Z"
+                            var date = new Date(rawDate);
+
+                            // Formater à la française : 10/02/2025 10h:14
+                            var jour = ('0' + date.getDate()).slice(-2);
+                            var mois = ('0' + (date.getMonth() + 1)).slice(-2);
+                            var annee = date.getFullYear();
+                            var heures = ('0' + date.getHours()).slice(-2);
+                            var minutes = ('0' + date.getMinutes()).slice(-2);
+
+                            var dateFormattee = `${jour}/${mois}/${annee} à ${heures}h:${minutes}`;
+
+                            $('#content-block-student').modal('show');
+                            content = "<div class='card'><div class='card-body'><h5 class='card-title'>"+data.student.lastname+"</h5><p>Activer le bloquage entrainera la fermeture de toutes les activités de cet élève.</p><p><b>Effectuer par : </b>"+data.inscription.last_name+" "+data.inscription.first_name+"</p><p><b>Date : </b>"+dateFormattee+"</p><p class='text-center'><a href='#' class='btn btn-info btn-sm button-block-student' id="+id+"><i class='bi bi-check'></i> Valider </a></p></div></div>";
+                            $('#content-block-student-etablissement').html(content);
+                        }
+                    }
+                );
+            }
+        });
+
+        /* Blocker les activités de l'étudiant */ 
+        $(document).on('click','.button-block-student',function(){
+            var id = $(this).attr("id");
+            if(id){
+                $.get("ajax_block_student_etablissement/"+id,
+                    {id:id},
+                    function(data){
+                        $('#content-block-student').modal('hide');
+                        if(data.status){
+                            content = "<span class='badge rounded-pill bg-success'><i class='bi bi-check-circle'></i></span>";
+                            $('#icon-'+id).html(content);
+                        }else{
+                            content = "<span class='badge rounded-pill bg-danger'><i class='bi bi-x-circle'></i></span>";
+                            $('#icon-'+id).html(content);
+                        }
+                    }
+                );
+            }
+        });
+
+        /* Desactiver le status des nouveaux commentaire 
+        $(document).on('click','.new_comment',function(){
+            var id = $(this).attr("id");
+            if(id){
+                $('.content_new_comment'+id).html("<span></span>");
+            }
+        }); */
+
+        // Appel initial pour défiler vers le bas à l'ouverture de la page
+        scrollToBottom();
+
+        // Fonction pour défiler vers le dernier message (le bas du conteneur)
+        function scrollToBottom(){
+            const container = document.getElementById('defiler-vers-bas');
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);  // On ajoute un délai de 100ms
+        }
+        
+
+        $(document).on('click','.close-modal',function(){
+            var id = $(this).attr("id");
+            if(id){
+                $('#infoModal'+id).modal('hide');
+            }
+        });
+
+        function hideContentRenumeration(){
+            $('#content_renum').hide();
+        }
+
+
+        //  récupère le chemin actuel de l’URL.
+       /* var path = window.location.pathname;
+
+        // Parcourir tous les liens dans les sous-menus
+        $('.nav-content li a').each(function() {
+            // Vérifier si le href correspond à l'URL actuelle
+            if ($(this).attr('href') === path) {
+                // Ajouter la classe active au sous-menu cliqué
+                $(this).parent().addClass('collapse');
+                // Ajouter la classe active à l'élément parent "treeview" pour garder le menu ouvert
+                $(this).closest('.nav-link').addClass('collapse');
+            }
+        });
+
+        $('.sidebar-nav li a').each(function() { // parcourt tous les liens du menu et ajoute la classe active si le chemin de l'URL correspond à href de l’élément <a>.
+            if ($(this).attr('href') === path) {
+                $(this).closest('li').addClass('collapse');
+            }
+        });*/
+
+    });
+</script>

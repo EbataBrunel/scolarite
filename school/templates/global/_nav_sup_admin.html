@@ -1,0 +1,108 @@
+{% load static %}
+{% load crypto_filters %}
+<!-- ======= Sidebar ======= -->
+<aside id="sidebar" class="sidebar {{ setting.theme }}">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+      {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" or request.session.group_name == "Super user" %}
+          
+          <li class="nav-item">
+            <a class="nav-link collapsed" href="{% url 'settings/db_cycle' request.session.etablissement_id|crypter_id %}">
+              <i class="bi bi-house"></i>
+              <span>Accueil</span>
+            </a>
+          </li><!-- End Dashboard Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'settings/db' in request.path or 'group/group_etablissement_user' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/db' %}">
+              <i class="bi bi-grid"></i>
+              <span>Tableau de bord</span>
+            </a>
+          </li><!-- End Dashboard Nav -->
+
+          <li class="nav-heading">Pages</li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'anneeacademiques_promoteur' in request.path or 'cloture_anneeacademique' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'anneeacademiques_promoteur' %}">
+              <i class="bi bi-calendar"></i>
+              <span>Années académiques</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'cycles' in request.path or 'delete_cycle' in request.path or 'add_cycle' in request.path or 'edit_cycle' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'cycles' %}">
+              <i class="bi bi-stack"></i>
+              <span>Cycles</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'classes' in request.path or 'delete_classe' in request.path or 'add_class' in request.path or 'edit_class' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'classes' %}">
+              <i class="bi bi-shop-window"></i>
+              <span>Classes</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'series' in request.path or 'delete_serie' in request.path or 'add_serie' in request.path or 'edit_serie' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'series' %}">
+              <i class="bi bi-table"></i>
+              <span>Séries</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'salles' in request.path or 'detail_salle' in request.path or 'add_salle' in request.path or 'edit_salle' in request.path or 'delete_salle' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'salles' %}">
+              <i class="bi bi-shop"></i>
+              <span>Salles</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'matieres' in request.path or 'delete_matiere' in request.path or 'add_matiere' in request.path or 'edit_matiere' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'matieres' %}">
+              <i class="bi bi-list"></i>
+              <span>Matières</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'inscriptions_admin' in request.path  %} {% else %}collapsed{% endif %}" href="{% url 'inscriptions_admin' %}">
+              <i class="bi bi-people"></i>
+              <span>Liste des élèves</span>
+            </a>
+          </li><!-- End Contact Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'deliberation/deliberations' in request.path or 'deliberation/detail_deliberation' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'deliberation/deliberations' %}">
+              <i class="bi bi-phone-landscape-fill"></i>
+              <span>Déliberations</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'contrat_etablissement/mes_contrats_promoteur' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'contrat_etablissement/mes_contrats_promoteur' %}">
+              <i class="bi bi-person-square"></i>
+              <span>Mes contrats</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'payment_etablissement/mes_payment_etablissement' in request.path or 'payment_etablissement/validate_payment_etablissement' in request.path or 'payment_etablissement/validate_payment_etablissement' in request.path or 'payment_etablissement/payment_etablissement_success' in request.path or 'payment_etablissement/payment_etablissement_echec' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-paye" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-cash"></i><span>Paiements</span><i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+            <ul id="icons-paye" class="nav-content collapse {% if 'payment_etablissement/mes_payment_etablissement' in request.path or 'payment_etablissement/validate_payment_etablissement' in request.path or 'payment_etablissement/payment_etablissement_success' in request.path or 'payment_etablissement/payment_etablissement_echec' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+              <li>
+                <a href="{% url 'payment_etablissement/mes_payment_etablissement' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Paiements établissements</span>
+                </a>
+              </li>
+            </ul>
+          </li><!-- End Icons Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'group/group_etablissements' in request.path or 'group/add_group_etablissement' in request.path or 'group/edit_group_etablissement' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'group/group_etablissements' %}">
+              <i class="bi bi-person-square"></i>
+              <span>Rôles</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'settings/setting_sup_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/setting_sup_admin' %}">
+              <i class="bi bi-gear"></i>
+              <span>Paramètre</span>
+            </a>
+          </li><!-- End Contact Page Nav -->
+        </li><!-- End Contact Page Nav -->
+    
+      {% endif %}
+
+    </ul>
+
+  </aside><!-- End Sidebar-->

@@ -1,0 +1,131 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Enregistrer uné absence {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Absences</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'absences' %}" >Absences</a></li>
+          <li class="breadcrumb-item active">Ajout</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Enregistrer une absence</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row {{ setting.theme }} {{ setting.text_color }}" style="border-radius:7px">
+                            <div class="col-md-6">
+                                <br>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <tr>
+                                            <th>Enseignant</th>
+                                            <td>: {{ emploitemps.enseignant.last_name }} {{ emploitemps.enseignant.first_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Classe</th>
+                                            <td>: {{ emploitemps.salle }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Matière</th>
+                                            <td>: {{ emploitemps.matiere }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <br>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <tr>
+                                            <th>Jour</th>
+                                            <td>: {{ emploitemps.jour }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th> Horaire</th>
+                                            <td>: {{ emploitemps.heure_debut }} {{ emploitemps.heure_fin }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4"></div>
+                            <div class="col-md-4">
+                                {% if status_contrat == "En cours" %}
+                                <!-- On inclut l'image de chargement -->
+                                {% include 'global/_loading.html' %}
+                                <!-- Vertical Form -->
+                                <form method="post" action="" id="formAbsence" class="row g-3">
+                                    {% csrf_token %}
+                                    <input type="text" name="emploi_id" id="emploi_id" value="{{ emploitemps.id }}" hidden>
+                                    <div class="col-12">
+                                    <label for="date_absence" class="form-label">Date d'absence : </label>
+                                    <input type="date" name="date_absence" class="form-control" id="date_absence" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="motif" class="form-label">Motif : </label>
+                                        <textarea class="form-control" name="motif" id="motif" style="height: 50px;"></textarea>
+                                    </div>
+                                
+                                    <div class="text-center">
+                                        <a href="{% url 'emploitemps' %}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left-circle"></i> Retour </a>
+                                        <a href="{% url 'absences' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                                    </div>
+                                </form><!-- Vertical Form -->
+                                {% elif status_contrat == "En attente" %}
+                                    <br>
+                                    <h4 class="text-center text-warning"> Son contrat n'a pas encore commencé, impossible d'enregistrer une absence . </h4>
+                                {% else %}
+                                    <br>
+                                    <h4 class="text-center text-danger"> Son contrat est déjà terminé, impossible d'enregistrer une absence. </h4>
+                                {% endif %}
+                                <!-- Start message Modal -->
+                                <div class="modal fade" id="message" tabindex="-1">
+                                    <div class="modal-dialog modal-sm">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                        <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true" class="badge bg-dark">x</span>
+                                        </button>
+                                        </div>
+                                        <div class="modal-body" id="content-message"></div>
+                                    </div>
+                                    </div>
+                                </div><!-- End message Modal-->
+                            </div>
+                            <div class="col-md-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

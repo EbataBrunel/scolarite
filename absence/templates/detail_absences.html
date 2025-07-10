@@ -1,0 +1,118 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Détails des absences {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Absences</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'absences' %}">Enseignants</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'detail_salle_absence' enseignant.id|crypter_id %}">Salles</a></li>
+          <li class="breadcrumb-item active">Détails</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des absences</h5>
+                <div class="row">
+                  <div class="col-md-8">
+                    <div class="table-responsive {{ setting.theme }} {{ setting.text_color }}"  style="padding:10px; border-radius:10px">
+                      <table class="table">
+                        <tr>
+                          <th>Enseignant</th>
+                          <td> : {{ enseignant.last_name }} {{ enseignant.first_name }}</td>
+                        </tr>
+                        <tr>
+                          <th>Salle</th>
+                          <td> : {{salle }}</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <br>
+                {% if messages %}
+                  {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Matière</th>
+                                <th>Horaire</th>
+                                <th>Jour</th>
+                                <th>Date</th>
+                                {% if anneeacademique.status_cloture == False %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for absence in absences %}
+                            <tr>
+                                <td>{{ absence.id }}</td>
+                                <td class="white-space">{{ absence.matiere }}</td>
+                                <td class="white-space">{{ absence.heure_debut }}-{{ absence.heure_fin }}</td>
+                                <td>{{ absence.jour }}</td>
+                                <td class="white-space">{{ absence.date_absence|date:"d/m/Y" }}</td>
+                                {% if anneeacademique.status_cloture == False %}
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ absence.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                    <a href="{% url 'edit_absence' absence.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ absence.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-sm">
+                                          <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title">Suppression</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <p class="text-center">Voulez-vous vraiment supprimer cet enseignement ?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              <a href="{% url 'del_absence' absence.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Paiements établissement {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Paiements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Paiements</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des paiements de l'établissement</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th class="white-space">Montant élève ({{ setting.devise }})</th>
+                                <th class="white-space">Nombre élèves</th>
+                                <th>Montant ({{ setting.devise }})</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>{{ payment.month }}</td>
+                                <td>{{ payment.amount_student|floatformat:2 }}</td>
+                                <td>{{ payment.number_student }}</td>
+                                <td>{{ payment.amount|floatformat:2 }}</td>
+                                {% if payment.status == "Payé" %}
+                                <td><span class="badge rounded-pill bg-success">Payé</span></td>
+                                {% elif payment.status == "En cours" %}
+                                <td><span class="badge rounded-pill bg-warning">En cours</span></td>
+                                {% else %}
+                                <td><a href="{% url 'payment_etablissement/validate_payment_etablissement' payment.month|crypter_id %}"><span class="badge rounded-pill bg-danger">Impayé</span></a></td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

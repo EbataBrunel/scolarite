@@ -1,0 +1,62 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Absence des élèves {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Gestion des absences</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Absence des élèves</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Absences des élèves </h5>
+                  <div class="row">
+                    {% for emargement in emargements %}
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ emargement.salle }}</h5>
+                                
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-center">Matières</h5>
+                                        {% for m in emargement.matieres %}
+                                          <div class="card">
+                                            <div class="card-body">
+                                              {% if m.nb_absences > 1 %}
+                                              <p class="card-title">{{ m.matiere }} |<span> {{ m.nb_absences }} absences</span></p>
+                                              {% else %}
+                                              <p class="card-title">{{ m.matiere }} | <span>{{ m.nb_absences }} absence</span></p>
+                                              {% endif %}
+                                              <a href="{% url 'abs_studentmatiere' emargement.salle.id|crypter_id m.matiere.id|crypter_id %}" class="btn btn-secondary btn-sm">Voir plus</a>
+                                            </div>
+                                          </div>
+                                        {% endfor %}
+                                    </div>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Caisse{% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Caisse</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Caisse</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+      <div class="row">
+        <div class="col-xl-12">
+          <div class="card">
+            <br>
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                     <div class="card">
+                        <div class="card-body height_min_max_card">
+                            <h5 class="card-title text-center">Somme totale de la caisse</h5>
+                            <h1 class="text-success text-center"><b>{{ totale|floatformat:2 }}{{ setting.devise }}</b></h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-1"></div>
+              <div class="col-md-10">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title text-center">Détails</h5>
+                    <div class="card-body pt-3">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="card">
+                            <div class="card-body">
+                              <h5 class="card-title text-center">Récette mensuelle</h5>
+                              <!-- Table with stripped rows -->
+                              <div class="table-responsive">
+                                  <table class="table">
+                                      <thead>
+                                          <tr>
+                                              <th class="{{ setting.theme }} {{ setting.text_color }}">Mois</th>
+                                              <th class="{{ setting.theme }} {{ setting.text_color }}">Récette({{ setting.devise }})</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          {% for c in caisses %}
+                                          <tr>
+                                              <td>{{ c.month }}</td>
+                                              <td>{{ c.recette_month|floatformat:2 }}</td>
+                                          </tr>
+                                          {% endfor %}
+                                      </tbody>
+                                      <tfooter>
+                                          <tr>
+                                              <th><b>total({{ setting.devise }})</b></th>
+                                              <th colspan="2"><span class="text-success">{{ recette_totale|floatformat:2 }}</span></th>
+                                          </tr>
+                                      </tfooter>
+                                  </table>
+                              </div>
+                              <!-- End Table with stripped rows -->
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <!-- Table with stripped rows -->
+                          <div class="card">
+                            <div class="card-body">
+                              <h5 class="card-title text-center">Récette des inscriptions</h5>
+                                <div class="table-responsive">
+                                  <table class="table">
+                                      <thead>
+                                          <tr>
+                                              <th class="{{ setting.theme }} {{ setting.text_color }}">Salle</th>
+                                              <th class="{{ setting.theme }} {{ setting.text_color }}">TotalFrais({{ setting.devise }})</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                        {% for s in salles %}
+                                        <tr>
+                                          <td>{{ s.salle }}</td>
+                                          <td>{{ s.total_inscription_salle|floatformat:2 }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr>
+                                          <td><b>Total({{ setting.devise }})</b></td>
+                                          <td><b class="text-success">{{ total_inscription|floatformat:2 }}</b></td>
+                                        </tr>
+                                      </tbody>
+                                  </table>
+                                </div>
+                                <!-- End Table with stripped rows -->
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-1"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

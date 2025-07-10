@@ -1,0 +1,160 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Autorisation de paiements {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Autorisations</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Autorisations</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des autorisations de paiements</h5>
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'autorisation_paye_etablissement/add_autorisation_paye_etablissement' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une autorisation</a>
+                    {% else %}
+                    <a href="{% url 'autorisation_paye_etablissement/add_autorisation_paye_etablissement' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une autorisation</a>
+                    {% endif %}
+                </div>
+                <br>
+                {% if messages %}
+                  {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-8"></div>
+                    <div class="col-md-4">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Etablissement</th>
+                                <th>NombreMois</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in etablissements %}
+                            <tr>
+                                <td>{{ e.etablissement.id }}</td>
+                                <td class="white-space">{{ e.etablissement }}</td>
+                                <td><span class="badge rounded-pill bg-secondary">{{ e.nombre_months }}</span></td>
+                                <td>
+                                  <a class="btn btn-info btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ e.etablissement.id }}" title="Détail"><i class="bi bi-eye"></i></a>
+                                  <!-- debut detail modal -->
+                                  <div class="modal fade" id="detailModal{{ e.etablissement.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable" role="document">
+                                          <div class="modal-content">
+                                              <div class="modal-header bg-info">
+                                                  <h5 class="modal-title" id="exampleModalLabel"><b class="text-center"> Liste des paiements </b></h5>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <br>
+                                                    <h5><b>{{ e.etablissement }}</b></h5>
+                                                    <hr>
+                                                    {% for autorisation in e.autorisations %}
+                                                    <div class="card">
+                                                      <div class="card-body">
+                                                        <div class="row">
+                                                          <div class="col-md-6">
+                                                            <div class="table-responsive">
+                                                              <table class="table">
+                                                                <tr>
+                                                                  <th>Id</th><td>{{ autorisation.id }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                  <th>Mois</th><td>{{ autorisation.month }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                  <th>Utilisateur</th><td class="white-space">{{ autorisation.user.last_name|title }} {{ autorisation.user.first_name|title }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                  <th>Date d'autorisation</th><td>{{ autorisation.date_autorisation|date:"d/m/Y" }}</td>
+                                                                </tr>
+                                                              </table>
+                                                            </div>
+                                                          </div>
+                                                          <div class="col-md-6">
+                                                            <div class="table-responsive">
+                                                              <table class="table">
+                                                                <tr>
+                                                                  <th class="white-space">Justification</th><td>{{ autorisation.justification }}</td>
+                                                                </tr>
+                                                              </table>
+                                                            </div>
+                                                          </div>
+                                                          <div>
+                                                            <a class="btn btn-danger btn-sm delete-autorisation-paye-etablissement" id="{{ autorisation.id }}"><i class="bi bi-trash"></i> Supprimer </a>&nbsp;
+                                                            <a href="{% url 'autorisation_paye_etablissement/edit_autorisation_paye_etablissement' autorisation.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier</a>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <!-- end modal detail -->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                              <th colspan="2"><b>Total</b></th><td colspan="2"><span class="badge rounded-pill bg-dark">{{ total_etablissement }}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+
+                <!-- Start groupe Modal -->
+                <div class="modal fade" id="content_delete" tabindex="-1">
+                  <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content">
+                      <div class="modal-header bg-danger text-light">
+                        <h5 class="modal-title">Suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true" class="badge bg-dark">x</span>
+                        </button>
+                      </div>
+                      <div class="modal-body" id="content-delete-item"></div>
+                    </div>
+                  </div>
+                </div><!-- End group Modal-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,142 @@
+<div class="row">
+  <div class="col-md-2"></div>
+  <div class="col-md-8">
+    <div class="row justify-content-center">
+      {% for e in etablissements %}
+        {% if request.session.group_name == "Super user" %}
+        <div class="col-lg-4" style="margin-bottom: 10px">
+          <!-- Default Card -->
+          <div class="card">
+            {% if e.access %}
+              <div class="card-body height_min_max_card {{ setting.theme }}">
+                <a href="{% url 'session_annee' e.etablissement.id %}" class="decoration {{ setting.text_color}}">
+                  <h5 class="card-title text-center">{{ e.etablissement }}</h5>
+                  <p class="text-center"><span class="font-size"><i class="bi bi-house"></i></span></p>
+                </a>
+              </div>
+            {% else %}
+              <div class="card-body height_min_max_card bg-warning">
+                <a href="{% url 'session_annee' e.etablissement.id %}" class="decoration {{ setting.text_color}}">
+                  <h5 class="card-title text-center">{{ e.etablissement }}</h5>
+                  <p class="text-center"><span class="font-size"><i class="bi bi-house"></i></span></p>
+                </a>
+              </div>
+            {% endif %}
+          </div><!-- End Default Card -->
+        </div>
+        {% else %}
+        <div class="col-lg-4" style="margin-bottom: 10px">
+          <!-- Default Card -->
+          <div class="card">
+            <div class="card-body height_min_max_card {{ setting.theme }}">
+              <a href="#"  data-bs-toggle="modal" data-bs-target="#infoModal{{ e.etablissement.id }}" class="decoration {{ setting.text_color}}">
+                <h5 class="card-title text-center">{{ e.etablissement }}</h5>
+                <p class="text-center"><span class="font-size"><i class="bi bi-house"></i></span></p>
+              </a>
+              <!-- Start Modal -->
+              <div class="modal fade" id="infoModal{{ e.etablissement.id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">{{ e.etablissement }}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p class="text-center">Vous n'avez pas le droit d'acceder à cette page</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                    </div>
+                  </div>
+                </div>
+              </div><!-- Fin Modal-->
+            </div>
+          </div><!-- End Default Card -->
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <br>
+    <div class="row justify-content-center">
+      <div class="col-md-2"></div>
+      <div class="col-lg-4" style="margin-bottom: 10px">
+        <!-- Default Card -->
+        <div class="card">
+          <div class="card-body height_min_max_card {{ setting.theme }}">
+            <a href="{% url 'settings/db_supuser' %}" class="decoration {{ setting.text_color }}">
+              <h5 class="card-title text-center">Tableau de bord</h5>
+              <p class="text-center font-size"><i class="bi bi-grid"></i></p>
+            </a>
+          </div>
+        </div><!-- End Default Card -->
+      </div>
+      
+      <div class="col-lg-4" style="margin-bottom: 10px">
+        <!-- Default Card -->
+        <div class="card">
+          <div class="card-body height_min_max_card bg-warning">
+            <a href="#"  data-bs-toggle="modal" data-bs-target="#deconnecterModal" title="Supprimer" style="text-decoration:none">
+            <h5 class="card-title text-center text-danger"> Se déconnecter</h5>
+            <p class="text-center font-size"><i class="bi bi-box-arrow-right"></i></p>
+            </a>
+            <!-- Start Modal -->
+            <div class="modal fade" id="deconnecterModal" tabindex="-1">
+              <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Déconnection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p class="text-center">Voulez-vous vraiment quitter l'application ?</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                    <a href="{% url 'logout' %}" class="btn btn-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Se deconnecter</a>
+                  </div>
+                </div>
+              </div>
+            </div><!-- Fin Modal-->
+          </div>
+        </div><!-- End Default Card -->
+      </div>
+      <div class="col-md-2"></div>
+    </div>
+
+    <br>
+    <div class="row">
+      <div class="col-md-4"></div>
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="text-center">
+              <form method="post" class="row g-3">
+                  {% csrf_token %}
+                  <div class="col-12">
+                    <select name="group_name" id="group_name" class="form-select" aria-label="Default select example">
+                        <option id="{{ group_name }}">{{ group_name }}</option>
+                        {% for group in groups %}
+                        <option value="{{ group.name }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="col-12">
+                      <select name="anneeacademique" id="anneeacademique" class="form-select" aria-label="Default select example">
+                          <option id="{{ anneeacademique.id }}">{{ anneeacademique.annee_debut }} {{ anneeacademique.separateur }} {{ anneeacademique.annee_fin }}</option>
+                          {% for annee in anneeacademiques %}
+                          <option value="{{ annee.id }}">{{ annee.annee_debut }} {{ annee.separateur }} {{ annee.annee_fin }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4"></div>
+    </div>
+
+  </div>
+  <div class="col-md-2"></div>
+</div>

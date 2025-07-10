@@ -1,0 +1,115 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Contacts {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Contacts</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Contacts</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des contacts</h5>
+                {% if nombre_contacts_students and nombre_contacts_parents %}
+                    <div class="card">
+                        <div class="card-body">
+                            <br>
+                            <ul>
+                            {% if nombre_contacts_parents > 1 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center"><a href="{% url 'contact_sp_admin' customer.parent|crypter_id %}">Nouveaux messages des parents</a> <span class="badge bg-success rounded-pill">{{ nombre_contacts_parents }}</span></li>
+                            {% else %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center"><a href="{% url 'contact_sp_admin' customer.parent|crypter_id %}">Nouveau message des parents</a> <span class="badge bg-success rounded-pill">{{ nombre_contacts_parents }}</span></li>
+                            {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="card">
+                        <div class="card-body">
+                            <br>
+                            <ul>
+                            {% if nombre_contacts_students > 1 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center"><a href="{% url 'contact_sp_admin' customer.student|crypter_id %}">Nouveaux messages des élèves</a><span class="badge bg-success rounded-pill">{{ nombre_contacts_students }}</span></li>
+                            {% else %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center"><a href="{% url 'contact_sp_admin' customer.student|crypter_id %}">Nouveau message des élèves</a><span class="badge bg-success rounded-pill">{{ nombre_contacts_students }}</span></li>
+                            {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                {% elif nombre_contacts_parents %}
+                    <div class="card">
+                        <div class="card-body">
+                            <br>
+                            {% if nombre_contacts_parents > 1 %}
+                            <p><a href="{% url 'contact_sp_admin' customer.parent|crypter_id %}"><span class="badge rounded-pill bg-success">{{ nombre_contacts_parents }}</span><span class="text-secondary"> Nouveaux messages des parents </span></a></p>
+                            {% else %}
+                            <p><a href="{% url 'contact_sp_admin' customer.parent|crypter_id %}"><span class="badge rounded-pill bg-success">{{ nombre_contacts_parents }}</span><span class="text-secondary"> Nouveau message des parents </span></a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="card">
+                        <div class="card-body">
+                            <br>
+                            <p><a href="{% url 'contact_sp_admin' customer.student|crypter_id %}"><span class="text-secondary"> Message des élèves</span><a></p>
+                        </div>
+                    </div>
+                {% elif nombre_contacts_students %}
+                    <div class="card">
+                        <div class="card-body">
+                            <br>
+                            <ul>
+                            {% if nombre_contacts_students > 1 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center"><a href="{% url 'contact_sp_admin' customer.student|crypter_id %}">Nouveaux messages des élèves</a><span class="badge rounded-pill bg-success">{{ nombre_contacts_students }}</span></li>
+                            {% else %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center"><a href="{% url 'contact_sp_admin' customer.student|crypter_id %}">Nouveau message des élèves</a><span class="badge rounded-pill bg-success">{{ nombre_contacts_students }}</span></li>
+                            {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="card">
+                        <div class="card-body">
+                            <br>
+                            <ul>
+                            <li class="list-group-item d-flex justify-content-between align-items-center"><a href="{% url 'contact_sp_admin' customer.parent|crypter_id %}">Message des parents</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                {% else %}
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <br>
+                            <p><a href="{% url 'contact_sp_admin' customer.parent|crypter_id %}"><span class="text-secondary"> Message des parents</span><a></p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <br>
+                            <p><a href="{% url 'contact_sp_admin' customer.student|crypter_id %}"><span class="text-secondary"> Message des élèves</span><a></p>
+                        </div>
+                    </div>
+                {% endif%}
+                
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

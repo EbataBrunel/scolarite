@@ -1,0 +1,108 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'une rénumeration {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Rénumerations</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'renum/renum_admin' %}" > Rénumerations </a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'une rénumeration enseignant</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdateRenum" class="row g-3">
+                {% csrf_token %}
+                <div class="row">
+                  <div class="col-md-6">
+                    <input type="text" name="id" value="{{ renumeration.id }}" hidden>
+                    <div class="col-12">
+                      <label for="user" class="form-label">Utilisateur : </label>
+                      <select name="user" id="user" class="form-select" aria-label="Default select example" required>
+                        <option value="{{ renumeration.user.id }}">{{ renumeration.user.last_name|title }} {{ renumeration.user.first_name|title }}</option>
+                          {% for user in users %}
+                          <option value="{{ user.id }}">{{ user.last_name|title }} {{ user.first_name|title }}</option>
+                          {% endfor %}
+                      </select>
+                    </div>
+                    <div id="monthcontratview">
+                      <div class="col-12">
+                        <label for="month" class="form-label">Mois : </label>
+                        <select name="month" id="month" class="form-select" aria-label="Default select example" required>
+                            <option value="{{ renumeration.month }}">{{ renumeration.month }}</option>
+                            {% for month in months %}
+                            <option value="{{ month }}">{{ month }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                    <div id="amountview">
+                        <div class="col-12">
+                        <label for="amount" class="form-label">Montant : </label>
+                        <input type="text" name="amount" value="{{ renumeration.amount }}" class="form-control" id="amount" readonly required>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                      <label for="indemnite" class="form-label">Indemnité : </label>
+                      <input type="text" name="indemnite" value="{{ renumeration.indemnite }}" class="form-control" id="indemnite" required>
+                    </div>
+                    <div class="col-12">
+                      <label for="mode_payment" class="form-label">Mode de paiement : </label>
+                      <select name="mode_payment" id="mode_payment" class="form-select" aria-label="Default select example">
+                          <option value="{{ renumeration.mode_payment }}">{{ renumeration.mode_payment }}</option>
+                          {% for mode_payment in mode_payments %}
+                          <option value="{{ mode_payment }}">{{ mode_payment }}</option>
+                          {% endfor %}
+                      </select>
+                    </div>
+                    <div class="col-12">
+                      <label for="password" class="form-label">Entrer votre mot de passe : </label>
+                      <input type="password" class="form-control" name="password" id="password" required>
+                    </div>
+                  </div>
+                </div>
+                <br>
+                <div class="text-center">
+                  <a href="{% url 'renumerations' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

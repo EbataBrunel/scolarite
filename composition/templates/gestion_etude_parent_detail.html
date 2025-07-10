@@ -1,0 +1,500 @@
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Gestion des études {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <!-- ======= Sidebar ======= -->
+
+  <main id="main" class="main">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="pagetitle">
+                <h1>Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'gestion_etude_parent' %}">Gestion des études</a></li>
+                    <li class="breadcrumb-item active">Détails</li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+            <section class="section contact">
+              <div class="bg-primary text-light">
+                <h3 class="content-title text-center"><i class="bi bi-card-list"></i> Gestion des études</h3>
+              </div>
+                <hr>
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">{{ student.lastname|title }} {{ student.firstname|title }}</h3>
+                        <!-- Pills Tabs -->
+                        <div class="row">
+                            <div class="col-md-3"></div>
+                            <div class="col-md-6">
+                                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                    <button class="nav-link active text-dark" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true"><b>Mes absences</b></button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                    <button class="nav-link text-dark" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false"><b>Mes notes</b></button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                    <button class="nav-link text-dark" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false"><b>Mes bulletins</b></button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-3"></div>
+                        </div>
+                      <div class="tab-content pt-2" id="myTabContent">
+                        <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="home-tab">
+                            <h5 class="text-center"><b>Votre historique d'absences</b></h5>
+                            <p class="text-center">Pour l'année en cours</p>
+                            <hr>
+                            {% if absences %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tr>
+                                        <th class="bg-primary">Matières</th>
+                                        <th class="bg-primary">Séances</th>
+                                        <th class="bg-primary">Dates</th>
+                                        <th class="bg-primary">Crénaux</th>
+                                        <th class="bg-primary">Statut d'absences</th>
+                                    </tr>
+                                    {% for absence in absences %}
+                                    <tr>
+                                        <td>{{ absence.emargement.matiere }}</td>
+                                        <td>{{ absence.emargement.seance }}</td>
+                                        <td>{{ absence.emargement.date_emargement|date:"d/m/Y" }}</td>
+                                        <td>{{ absence.emargement.heure_debut }}-{{ absence.emargement.heure_debut }}</td>
+                                        {% if absence.motif %}
+                                        <td><span class="badge rounded-pill bg-success">Justifiée</span></td>
+                                        {% else %}
+                                        <td><span class="badge rounded-pill bg-warning">Non récevable</span></td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <!-- Tabs Notes -->
+                        <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Trimestres</h5>
+                                            {% for c in compositions %}
+                                                <!-- Vertically centered Modal -->
+                                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#verticalycentered{{ c.i }}">
+                                                    {{ c.trimestre }}
+                                                </button>
+                                                <div class="modal fade" id="verticalycentered{{ c.i }}" tabindex="-1">
+                                                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header bg-primary text-light">
+                                                            <h5 class="modal-title">Evaluation du {{ c.trimestre }}</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                {% if c.controles %}
+                                                                <div class="card">
+                                                                    <div class="card-body">
+                                                                        <h4 class="card-title">Notes de contrôles</h4>
+                                                                        <table class="table">
+                                                                            {% for composition in c.controles %}
+                                                                            <tr>
+                                                                                <td>{{ composition.matiere }}</td>
+                                                                                <td class="padding-left">{{ composition.numerocontrole }}</td>
+                                                                                <td class="padding-left">{{ composition.note }}</td>
+                                                                                <td>
+                                                                                    <button class="btn btn-default btn-sm hover-releve-controle" data-student="{{ student.id }}" data-matiere="{{ composition.matiere.id }}" data-num="{{ composition.numerocontrole }}" data-trim="{{ c.trimestre }}"> <span class="badge rounded-pill bg-secondary"><i class="bi bi-eye"></i> Voir plus </span> </button>
+                                                                                </td>
+                                                                            </tr>
+                                                                            {% endfor %}
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                                {% endif %}
+
+                                                                {% if c.examens %}
+                                                                    <div class="card">
+                                                                        <div class="card-body">
+                                                                            <h4 class="card-title">Notes de l'examen</h4>
+                                                                            <table class="table">
+                                                                                {% for composition in c.examens %}
+                                                                                <tr>
+                                                                                    <td>{{ composition.matiere }}</td>
+                                                                                    <td class="padding-left">{{ composition.note }}</td>
+                                                                                    <td>
+                                                                                        <button class="btn btn-default btn-sm hover-releve-examen" data-student="{{ student.id }}" data-matiere="{{ composition.matiere.id }}" data-trim="{{ c.trimestre }}"> <span class="badge rounded-pill bg-secondary"><i class="bi bi-eye"></i> Voir plus </span> </button>
+                                                                                    </td>
+                                                                                </tr>
+                                                                                {% endfor %}
+                                                                            </table>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer la fênetre</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div><!-- End Vertically centered Modal-->
+                                            {% endfor %}
+
+                                            <!-- Start controle Modal -->
+                                            <div class="modal fade" id="show_releve_controle" tabindex="-1">
+                                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-primary text-light">
+                                                            <h5 class="modal-title"><i class="bi bi-info-circle"></i> Evaluation</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true" class="badge bg-dark">x</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body" id="content-releve-controle"></div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div><!-- End examen Modal-->
+
+                                            <!-- Start groupe Modal -->
+                                            <div class="modal fade" id="show_releve_examen" tabindex="-1">
+                                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-primary text-light">
+                                                            <h5 class="modal-title"><i class="bi bi-info-circle"></i> <b>Evaluation</b></h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true" class="badge bg-dark">x</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body" id="content-releve-examen"></div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div><!-- End examen Modal-->
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Résultats</h5>
+                                            {% if nb_deliberation > 0 %}
+                                                {% for c in compositions %}
+                                                    {% if c.deliberation %}
+                                                        {% if c.deliberation.status %}
+                                                        <!-- Vertically centered Modal -->
+                                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#resultatview{{ c.i }}">
+                                                            {{ c.trimestre }}
+                                                        </button>
+                                                        <div class="modal fade" id="resultatview{{ c.i }}" tabindex="-1">
+                                                            <div class="modal-dialog modal-fullscreen modal-dialog-centered">
+                                                            <div class="modal-content">
+                                                                <div class="text-center">
+                                                                    <div class="row">
+                                                                        <div class="col-md-3"></div>
+                                                                        <div class="col-md-6 bg-secondary" style="border-radius:20px">
+                                                                            <br>
+                                                                            <h4 class="text-center"><b>Bulletin de notes du {{ c.trimestre }}</b></h4>
+                                                                            <h5 class="text-center">Année scolaire : {{ request.session.annee_debut }} {{ request.session.separateur }} {{ request.session.annee_fin }}</h5>
+                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                        </div>
+                                                                        <div class="col-md-3"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="row">
+                                                                        <div class="col-md-8">
+                                                                            <table class="">
+                                                                                <tr>
+                                                                                    <td>Matricule de l'élève :</td>
+                                                                                    <td class="padding-left">EAJC0{{ c.student.id }}</td>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <td>Nom et prénom :</td>
+                                                                                    <td class="padding-left"><b>{{ c.student.lastname|title }} {{ c.student.firstname|title }}</b></td>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <td>Date et lieu de naissance : </td>
+                                                                                    <td class="padding-left">{{ c.student.datenais|date:"d/m/Y" }}</td>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <td>Adresse : </td>
+                                                                                    <td class="padding-left">{{ c.student.address }}</td>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <td>Classe / Effectif : </td>
+                                                                                    <td class="padding-left">{{ c.salle }} / {{ c.nb_students_inscris }}</td>
+                                                                                </tr>
+                                                                            </table>
+                                                                        </div>
+                                                                        <div class="col-md-4">
+                                                                            <p style="float:right">
+                                                                                {% if c.student.photo %}
+                                                                                <img src="{{ c.student.photo.url }}" class="img-responsive img-detail" />
+                                                                                {% else %}
+                                                                                <img class="img-responsive img-detail" src="{% static 'assets/img/user.png' %}">
+                                                                                {% endif %}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-bordered">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th rowspan="2" class="item-table-center bg-secondary">Matières</th>
+                                                                                    <th class="text-center bg-secondary" colspan="3">Notes</th>
+                                                                                    <th rowspan="2" class="item-table-center bg-secondary">Min<br>Max</th>
+                                                                                    <th rowspan="2" class="item-table-center bg-secondary">Coefficients</th>
+                                                                                    <th rowspan="2" class="item-table-center bg-secondary">Observations</th>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <th class="text-center bg-secondary">M. Classe</th>
+                                                                                    <th class="text-center bg-secondary">M. Comp</th>
+                                                                                    <th class="text-center bg-secondary">M. Gle</th>
+                                                                                    
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                            {% for d in c.details %}
+                                                                            <tr>
+                                                                                <td>
+                                                                                    {{ d.matiere }}<br>
+                                                                                    <span style="float:right">{{ d.enseignant.last_name|title }}</span>
+                                                                                </td>
+                                                                                <td class="item-table-center">{{ d.moyenne_controle|floatformat:2 }}</td>
+                                                                                <td class="item-table-center">{{ d.note_examen|floatformat:2 }}</td>
+                                                                                <td class="item-table-center">{{ d.moyenne_finale_matiere|floatformat:2 }}</td>
+                                                                                <td class="text-center">{{ d.note_minimale|floatformat:2 }}<br>{{ d.note_maximale|floatformat:2 }}</td>
+                                                                                <td class="item-table-center">{{ d.coefficient }}</td>
+                                                                                <td class="item-table-center">{{ d.mention_note_matiere }}</td>
+                                                                            </tr>
+                                                                            {% endfor %}
+                                                                            </tbody>
+                                                                            <tfooter>
+                                                                                <tr>
+                                                                                    <td colspan="3" class="text-center">Total : </td>
+                                                                                    <td class="text-center">{{ c.somme_totale_notes }}</td>
+                                                                                    <td></td>
+                                                                                    <td class="text-center">{{ c.somme_coefficient }}</td>
+                                                                                    <td></td>
+                                                                                <tr>
+                                                                                <tr>
+                                                                                    <td colspan="2" class="text-center">Moyenne : </td>
+                                                                                    <td class="text-center text-light bg-secondary">{{ c.moyenne|floatformat:2 }}</b></td>
+                                                                                    <td class="text-center">Min : {{ c.moyenne_min|floatformat:2 }}| Max : {{ c.moyenne_max|floatformat:2 }}</td>
+                                                                                    <td></td>
+                                                                                    <td class="text-center">Mention</td>
+                                                                                    <td class="text-center"><b>{{ c.mention }}</b></td>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <td>RESULTATS TRIMESTRIELS</td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td class="text-center"><b>Rang : </b></td>
+                                                                                    <td class="text-center text-light bg-secondary">{{ c.rang }}</td>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <th colspan="6" class="text-center">DECISION DU CONSEIL DE CLASSE</th>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <th colspan="3" class="text-center">Discipline</th>
+                                                                                    <th colspan="3" class="text-center">Décision</th>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <td class="text-center">Absence</td>
+                                                                                    <td colspan="2"  class="text-center">Travail</td>
+                                                                                    {% if c.moyenne >= c.deliberation.moyennevalidation  %}
+                                                                                        {% if c.student.gender == "Masculin" %}
+                                                                                        <td colspan="3"  class="text-center text-success">Admis</td>
+                                                                                        {% else %}
+                                                                                        <td colspan="3"  class="text-center text-success">Admise</td>
+                                                                                        {% endif %}
+                                                                                    {% else %}
+                                                                                        {% if c.student.gender == "Masculin" %}
+                                                                                        <td colspan="3"  class="text-center">Ajourné</td>
+                                                                                        {% else %}
+                                                                                        <td colspan="3"  class="text-center">Ajournée</td>
+                                                                                        {% endif %}
+                                                                                    {% endif%}
+                                                                                </tr>
+                                                                            </tfooter>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer text-center">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                                                </div>
+                                                            </div>
+                                                            </div>
+                                                        </div><!-- End Large Modal-->
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <p><span class="text-warning"><i class="bi bi-circle-fill"></i></span> Aucun resultat n'est disponible.</p> 
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                            {% if stats_compositions %}
+                                <div class="col-md-12"> 
+                                    <div class="card">
+                                        <div class="card-body">
+                                          <h5 class="card-title">Comparaison des notes par trimestre</h5>
+                            
+                                          <!-- Column Chart -->
+                                          <div id="columnChart"></div>
+                            
+                                          <script>
+                                            document.addEventListener("DOMContentLoaded", () => {
+                                              new ApexCharts(document.querySelector("#columnChart"), {
+                                                series: [
+                                                {% for comp in stats_compositions %}
+                                                {
+                                                  name: '{{ comp.trimestre }}',
+                                                  data: [
+                                                  {% for mat in comp.details %}
+                                                    {{ mat.moyenne_finale_matiere|floatformat:0 }},
+                                                  {% endfor %}
+                                                  ]
+                                                },
+                                                {% endfor %}
+                                                ],
+                                                chart: {
+                                                  type: 'bar',
+                                                  height: 350
+                                                },
+                                                plotOptions: {
+                                                  bar: {
+                                                    horizontal: false,
+                                                    columnWidth: '55%',
+                                                    endingShape: 'rounded'
+                                                  },
+                                                },
+                                                dataLabels: {
+                                                  enabled: false
+                                                },
+                                                stroke: {
+                                                  show: true,
+                                                  width: 2,
+                                                  colors: ['transparent']
+                                                },
+                                                xaxis: {
+                                                  categories: [
+                                                  {% for matiere in matieres %}
+                                                        '{{ matiere }}',
+                                                  {% endfor %} 
+                                                  ],
+                                                },
+                                                yaxis: {
+                                                  title: {
+                                                    text: 'Note / 20'
+                                                  }
+                                                },
+                                                fill: {
+                                                  opacity: 1
+                                                },
+                                                tooltip: {
+                                                  y: {
+                                                    formatter: function(val) {
+                                                      return val 
+                                                    }
+                                                  }
+                                                }
+                                              }).render();
+                                            });
+                                          </script>
+                                          <!-- End Column Chart -->
+                            
+                                        </div>
+                                    </div>
+
+                                </div>
+                            {% endif %}
+                            {% if stats_compositions %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                      <div class="card-body">
+                                        <h5 class="card-title">Comparaison des moyennes</h5>
+                          
+                                        <!-- Pie Chart -->
+                                        <div id="pieChart"></div>
+                          
+                                        <script>
+                                          document.addEventListener("DOMContentLoaded", () => {
+                                            new ApexCharts(document.querySelector("#pieChart"), {
+                                              series: [
+                                              {% for comp in stats_compositions %}
+                                               {{ comp.moyenne|floatformat:0 }},
+                                              {% endfor %}
+                                              ],
+                                              chart: {
+                                                height: 350,
+                                                type: 'pie',
+                                                toolbar: {
+                                                  show: true
+                                                }
+                                              },
+                                              labels: [
+                                                {% for comp in stats_compositions %}
+                                                    '{{ comp.trimestre }}',
+                                                {% endfor %}
+                                              ]
+                                            }).render();
+                                          });
+                                        </script>
+                                        <!-- End Pie Chart -->
+                          
+                                      </div>
+                                    </div>
+                                  </div>
+
+                            </div>
+                            {% endif %}s
+
+                        </div>
+                        <!-- End Tabs Notes -->
+
+                        <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="contact-tab">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Bulletins trimestriels</h5>
+                                    {% if nb_deliberation > 0 %}
+                                        {% for c in compositions %}
+                                            {% if c.deliberation %}
+                                                {% if c.deliberation.status %}
+                                                <h3><a href="{% url 'bulletin_etudiant' student.id|crypter_id c.trimestre|crypter_id %}" class="btn btn-outline-primary btn-sm"><span class="text-danger"><i class="bi bi-file-earmark-pdf"></i></span> Télécharger le bulettin du <b>{{ c.trimestre }}</b></a></h3>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                    <p><span class="text-warning"><i class="bi bi-circle-fill"></i></span> Aucun bulletin n'est disponible.</p> 
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                      </div><!-- End Pills Tabs -->
+        
+                    </div>
+                </div>
+            </section>
+
+
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+  </main><!-- End #main -->
+  {% endblock %}

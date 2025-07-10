@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Attestation d'Inscription</title>
+  <style>
+    body {
+      font-family: 'Times New Roman', serif;
+      margin: 40px;
+      background: #fdfdfd;
+    }
+
+    .attestation {
+      max-width: 800px;
+      margin: auto;
+      padding: 40px;
+      border: 2px solid #000;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header img {
+      width: 100px;
+      height: auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    .content {
+      font-size: 18px;
+      line-height: 1.8;
+    }
+
+    .signature {
+      margin-top: 60px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .signature div {
+      width: 45%;
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="attestation">
+    <div class="header">
+        {% if setting.logo %}
+            <img src="data:image/png;base64,{{ base64_image }}" alt="Logo de {{ setting.appname }}">
+        {% endif %}
+
+      <h2>{{ setting.appname|upper }}</h2>
+      <p>Complexe scolaire {{ setting.appname }} - Agréé par l'État<br>{{ setting.address }}<br>Tél : 01 23 45 67 89</p>
+    </div>
+
+    <h1>Attestation d'inscription</h1>
+
+    <div class="content">
+      Je soussigné(e), la direction de l’établissement <strong>École Privée Sainte Lucie</strong>, atteste que :<br><br>
+      <strong>Nom de l'élève :</strong> {{ inscription.student.lastname }} {{ inscription.student.firstname|title }}<br>
+      <strong>Date de naissance :</strong> {{ inscription.student.datenais|date:"d/m/Y" }}<br>
+      <strong>Lieu de naissance :</strong> {{ inscription.student.country }}<br><br>
+      est régulièrement inscrit(e) au sein de notre établissement pour l’année scolaire <strong>{{ anneeacademique.annee_debut }} {{ anneeacademique.separateur }} {{ anneeacademique.annee_fin }}</strong>, en classe de <strong>{{ inscription.salle }}</strong> (cycle collège).<br><br>
+      La présente attestation est délivrée pour servir et valoir ce que de droit.
+    </div>
+
+    <div class="signature">
+      <div>
+        Fait à Paris, le 09 avril 2025<br><br>
+        <strong>Le Chef d’établissement : {{ user.first_name|title }} {{ user.last_name|title }}</strong><br><br><br>
+        ______________________
+      </div>
+      <div>
+        <br><br>
+        <strong>Cachet de l’établissement</strong><br><br><br>
+        ______________________
+      </div>
+    </div>
+
+    <div class="footer">
+      Complexe scolaire {{ setting.appname }} - Collège sous contrat avec l'État - SIRET : 123 456 789 00010
+    </div>
+  </div>
+
+</body>
+</html>

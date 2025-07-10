@@ -1,0 +1,130 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Absences des administrateurs {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Gestion des absences</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Absences des administrateurs</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des absences des administrateurs</h5>
+                {% if anneeacademique.status_cloture %}
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'add_absence_admin' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une absence</a>
+                    {% else %}
+                    <a href="{% url 'add_absence_admin' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une absence</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <br>
+                {% if messages %}
+                  {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>NombreAbsences</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in liste_absences %}
+                            {% if s.nb_absences %}
+                            <tr>
+                                <td class="white-space">{{ s.user.last_name|title }}</td>
+                                <td class="white-space">{{ s.user.first_name|title }}</td>
+                                <td><span class="badge rounded-pill bg-secondary">{{ s.nb_absences }}</span></td>
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#detailModal{{ s.user.id }}" title="Plus d'info" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="detailModal{{ s.user.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                          <div class="modal-content">
+                                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                              <h5 class="modal-title">Détails des absences</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <div class="table-responsive">
+                                                {% for absence in s.absences %}
+                                                <h5><b>Date de l'absence</b></h5>
+                                                <p>{{ absence.date_absence }}</p>
+                                                <p><b>Motif : </b> {{ absence.motif }}</p>
+                                                <p><b>Administrateur : </b>{{ absence.admin.last_name|title }} {{ absence.admin.first_name|title }}</p> 
+                                                {% if anneeacademique.status_cloture %}
+                                                <p>
+                                                  <a class="btn btn-danger btn-sm delete-absence-admin" id="{{ absence.id }}"><i class="bi bi-trash"></i> Supprimer </a>
+                                                  <a href="{% url 'edit_absence_admin' absence.id|crypter_id %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier </a>
+                                                </p>
+                                                {% endif %}
+                                                <hr>
+                                                {% endfor%}
+                                              </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+                
+                <!-- Start groupe Modal -->
+                <div class="modal fade" id="content_delete" tabindex="-1">
+                  <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content">
+                      <div class="modal-header bg-danger text-light">
+                        <h5 class="modal-title">Suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true" class="badge bg-dark">x</span>
+                        </button>
+                      </div>
+                      <div class="modal-body" id="content-delete-item"></div>
+                    </div>
+                  </div>
+                </div><!-- End group Modal-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

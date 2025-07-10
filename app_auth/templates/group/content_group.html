@@ -1,0 +1,42 @@
+<!-- Table with stripped rows -->
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Noms</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in groups %}
+            <tr>
+                <td>{{ group.id }}</td>
+                <td>{{ group.name }}</td>
+                <td>
+                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ group.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                    <!-- Start de delete Modal -->
+                    <div class="modal fade" id="deleteModal{{ group.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-sm">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title">Suppression</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <p class="text-center">Voulez-vous vraiment supprimer ce groupe ?</p>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                              <a href="{% url 'del_user_to_group' user.id group.name %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                            </div>
+                          </div>
+                        </div>
+                    </div><!-- Fin de delete Modal-->
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+  </div>
+  <!-- End Table with stripped rows -->

@@ -1,0 +1,106 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'une dépense {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Dépenses</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'depenses' %}" > Dépenses </a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'une dépense</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdateDepense" class="row g-3">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-3"></div>
+                    <div class="col-md-6">
+                        <input type="text" name="id" value="{{ depense.id }}" hidden>
+                        <div class="col-12">
+                          <label for="month" class="form-label">Mois : </label>
+                          <select name="month" id="month" class="form-select" aria-label="Default select example" required>
+                              <option value="{{ depense.month }}">{{ depense.month }}</option>
+                              {% for month in months %}
+                              <option value="{{ month }}">{{ month }}</option>
+                              {% endfor %}
+                          </select>
+                        </div>
+                        <div class="col-12">
+                          <label for="type_depense" class="form-label">Type de dépense : </label>
+                          <select name="type_depense" id="type_depense" class="form-select" aria-label="Default select example" required>
+                              <option value="{{ depense.type_depense }}">{{ depense.type_depense }}</option>
+                              {% for type_depense in type_depenses %}
+                              <option value="{{ type_depense }}">{{ type_depense }}</option>
+                              {% endfor %}
+                          </select>
+                        </div>
+                        <div class="other"></div>
+                        <div class="col-12">
+                          <label for="signe" class="form-label">Signe : </label>
+                          <select name="signe" id="signe" class="form-select" aria-label="Default select example" required>
+                              {% if depense.signe == "Entrée" %} 
+                                  <option value="Entrée">Entrée</option>
+                                  <option value="Sortie">Sortie</option>
+                              {% else %}
+                                  <option value="Sortie">Sortie</option>
+                                  <option value="Entrée">Entrée</option>
+                              {% endif %}
+                          </select>
+                        </div>
+                        <div class="col-12">
+                          <label for="amount" class="form-label">Montant ({{ setting.devise }}): </label>
+                          <input type="text" name="amount" value="{{ depense.amount }}" class="form-control" id="amount" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="description" class="form-label">Description : </label>
+                            <textarea class="form-control" name="description" id="description" style="height: 50px;">{{ depense.description }}</textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-3"></div>
+                </div>
+                <br>
+                <div class="text-center">
+                  <a href="{% url 'depenses' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

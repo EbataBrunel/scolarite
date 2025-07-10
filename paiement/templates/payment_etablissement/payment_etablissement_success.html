@@ -1,0 +1,62 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Succès {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Paiements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'payment_etablissement/mes_payment_etablissement' %}" >Paiements</a></li>
+          <li class="breadcrumb-item active">Succès</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title text-center">Opération effectuée avec succès</h5>
+                <p class="text-success text-center"><i class="bi bi-check-circle-fill" style="font-size:50px"></i></p>
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Détail du paiement</h3>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <tr>
+                                    <th>Mois</th>
+                                    <th class="white-space">Nombre d'étudiant</th>
+                                    <th class="white-space">Montant par étudiant</th>
+                                    <th>Montant</th>
+                                </tr>
+                                <tr>
+                                    <td>{{ payment.month }}</td>
+                                    <td>{{ payment.number_student }}</td>
+                                    <td>{{ payment.amount_student }}</td>
+                                    <td>{{ payment.amount }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center">
+                    <a href="{% url 'payment_etablissement/mes_payment_etablissement' %}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-circle-left"></i> Retour</a>&nbsp;
+                    <a href="{% url 'payment_etablissement/recu_paye_etablissement' payment.id|crypter_id %}" title="Facture" class="btn btn-dark btn-sm"><i class="bi bi-upload"></i> Télécharger la facture </a>
+                </p>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

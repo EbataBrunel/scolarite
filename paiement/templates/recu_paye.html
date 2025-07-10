@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Reçu de Paiement - École Privée</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 40px;
+      padding: 310px 50px
+    }
+
+    .receipt {
+      background: #fff;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h2 {
+      margin: 0;
+    }
+
+    .school-info {
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .details, .payment {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .details td, .payment td {
+      padding: 6px 10px;
+    }
+
+    .payment th {
+      background: #f0f0f0;
+      padding: 10px;
+    }
+
+    .total {
+      text-align: right;
+      font-weight: bold;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .footer {
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="receipt">
+    <div class="header">
+      <h2>Complexe scolaire {{ setting.appname }}</h2>
+      <div class="school-info">
+        {{ setting.address }}<br>
+        Tél : {{ setting.phone }} - Email : {{ setting.email }}
+      </div>
+    </div>
+
+    <table class="details">
+      <tr>
+        <td><strong>Reçu n° :</strong> {{ anneeacademique.annee_debut }}{{ anneeacademique.separateur }}{{ anneeacademique.annee_fin }}-{{ paiement.id }}</td>
+        <td><strong>Date :</strong> {{ date_actuelle|date:"d/m/Y" }}</td>
+      </tr>
+      <tr>
+        <td><strong>Nom de l'élève :</strong> {{ paiement.student.lastname|title }} {{ paiement.student.firstname|title }}</td>
+        <td><strong>Classe :</strong> {{ paiement.salle }}</td>
+      </tr>
+      <tr>
+        <td colspan="2"><strong>Responsable légal :</strong> {{ user.last_name|title }} {{ user.first_name|title }}</td>
+      </tr>
+    </table>
+
+    <h5 style="text-align:center"><strong> Mois : </strong>{{ paiement.month }}</h5>
+
+    <table class="payment" border="1" cellspacing="0" cellpadding="0">
+      <tr>
+        <th>Description</th>
+        <th>Montant (€)</th>
+      </tr>
+      <tr>
+        <td>Frais de scolarité</td>
+        <td>{{ paiement.amount|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <td>Cantine scolaire</td>
+        <td>75,00</td>
+      </tr>
+      <tr>
+        <td>Activités extra-scolaires</td>
+        <td>30,00</td>
+      </tr>
+    </table>
+
+    <div class="total">
+      Total payé : {{ paiement.amount|floatformat:2 }}
+    </div>
+
+    <div class="footer">
+      Merci pour votre paiement.<br>
+      Ce reçu est généré automatiquement et n’a pas besoin de signature.
+    </div>
+  </div>
+
+</body>
+</html>

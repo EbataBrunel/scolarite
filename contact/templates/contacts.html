@@ -1,0 +1,82 @@
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Contacts {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <!-- ======= Sidebar ======= -->
+
+  <main id="main" class="main">
+    <div class="row">
+        <div class="col-md-10">
+            <div class="pagetitle">
+                <h1>Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item active">Messagerie</li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+            <section class="section contact">
+                <div class="bg-danger text-light">
+                    <h3 class="content-title text-center"><i class="bi bi-envelope"></i> Messagerie</h3>
+                </div>
+                <hr>
+                <div class="chat-container" id="defiler-vers-bas">
+                    <div class="content-customer">
+                        {% for contact in contacts %}
+                            {% if contact.sending_status %}
+                              <div class="message outgoing">
+                                <div class="bubble outgoing">
+                                  <h6><b>{{ contact.subject }}</b></h6>
+                                  <p>{{ contact.message }}</p>
+                                </div>
+                              </div>
+                              <div class="timestamp">{{ contact.datecontact|date:"d/m/Y h:m" }}</div>
+                            {% else %}
+                              <div class="message incoming">
+                                <div class="bubble incoming">
+                                  <h6><b>{{ contact.subject }}</b></h6>
+                                  {% if contact.reading_status == 0 or contact.reading_status == 1 %}
+                                    <i class="bi bi-circle text-secondary"></i>
+                                  {% else %}
+                                      <i class="bi bi-circle-fill text-secondary"></i>
+                                  {% endif %}
+                                  <span>{{ contact.message }}</span>
+                                </div>
+                              </div>
+                              <div class="timestamp">{{ contact.datecontact|date:"d/m/Y h:m" }}</div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- On inclut l'image de chargement -->
+                    {% include 'global/_loading.html' %}
+                    <!-- Vertical Form -->
+                    <form method="post" action="" id="formContactCustomer" class="row g-3">
+                      {% csrf_token %} 
+                      <div class="input-group">
+                        <span class="input-group-text">
+                          <select name="subject" id="subject" class="form-select" required>
+                            <option value="">Choisi un sujet</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject }}">{{ subject }}</option>
+                            {% endfor %}
+                          </select>
+                        </span>
+                        <input type="text" name="message" id="Message" class="form-control" required>
+                        <span class="input-group-text">
+                          <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i></button>
+                        </span>
+                      </div>
+                    </form>
+                </div>
+            </section>
+
+
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+  </main><!-- End #main -->
+  {% endblock %}

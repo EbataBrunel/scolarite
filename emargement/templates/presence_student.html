@@ -1,0 +1,124 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Elèves {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Absences</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'mes_emargements' %}">Mes émargements</a></li>
+          <li class="breadcrumb-item active">Elèves</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste de présence des élèves</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="table-responsive {{ setting.theme }} {{ setting.text_color }}" style="border-radius:7px">
+                                    <table class="table">
+                                        <tr>
+                                            <th>Salle :</th>
+                                            <td>{{ emargement.salle }} {{ emploitemps.enseignant.first_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Matière :</th>
+                                            <td>{{ emargement.matiere }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Mois :</th>
+                                            <td>{{ emargement.month }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Jour :</th>
+                                            <td>{{ emargement.jour }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="table-responsive {{ setting.theme }} {{ setting.text_color }}" style="border-radius:7px">
+                                    <table class="table">
+                                        <tr>
+                                            <th>Horaire :</th>
+                                            <td>{{ emargement.heure_debut }}-{{ emargement.heure_fin }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date d'absence :</th>
+                                            <td>{{ emargement.date_emargement|date:"d/m/Y" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Séance :</th>
+                                            <td>{{ emargement.seance }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th> Titre du cours :</th>
+                                            <td>{{ emargement.titre }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- On inclut l'image de chargement -->
+                {% include 'global/_loading.html' %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Noms</th>
+                                <th>Prénoms</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in students %}
+                            <tr>
+                                <td>{{ s.student.lastname|title }}</td>
+                                <td>{{ s.student.firstname|title }}</td>
+                                <td>
+                                    <span class="button-absence absence{{s.student.id}}" id="{{ s.student.id }}" data-ema="{{ emargement.id }}">
+                                    {% if s.presence == "Présent" %}
+                                        {% if s.student.gender == "Masculin" %}
+                                        <a href="#"><span class="badge rounded-pill bg-success">Présent</span></a>
+                                        {% else %}
+                                        <a href="#"><span class="badge rounded-pill bg-success">Présente</span></a>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if s.student.gender == "Masculin" %}
+                                        <a href="#"><span class="badge rounded-pill bg-danger">Absent</span></a>
+                                        {% else %}
+                                        <a href="#"><span class="badge rounded-pill bg-danger">Absente</span></a>
+                                        {% endif %}
+                                    {% endif %}
+                                    </span>
+                                </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

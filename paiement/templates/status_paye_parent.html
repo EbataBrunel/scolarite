@@ -1,0 +1,43 @@
+<div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Mois</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+              {% for mp in months %}
+                <tr>
+                  <td>{{ mp.month }}</td>
+                  {% if mp.status == "Impayé" %}
+                  <td><span class="badge rounded-pill bg-danger">{{ mp.status }}</sapn></td>
+                  {% elif mp.status == "Avance" %}
+                  <td><span class="badge rounded-pill bg-warning">{{ mp.status }}</sapn></td>
+                  {% elif mp.status == "Ne paye pas" %}
+                  <td><span class="badge rounded-pill bg-primary">{{ mp.status }}</sapn></td>
+                  {% else %}
+                  <td><span class="badge rounded-pill bg-success">{{ mp.status }}</sapn></td>
+                  {% endif %}
+                </tr>
+              {% endfor%}
+            </body>
+        </table>
+      </div> 
+      <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-body height_min_max_card">
+                  <h5 class="card-title text-center">Dette</h5>
+                  <h3 class="text-danger text-center">{{ montant_restant }}{{ setting.devise }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-1"></div>
+      </div>
+
+    </div>
+</div>

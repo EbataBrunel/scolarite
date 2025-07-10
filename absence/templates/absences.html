@@ -1,0 +1,61 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Liste des absences {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Absences</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Enseignants</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des enseignants absents</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Noms</th>
+                                <th>Prénoms</th>
+                                <th>NombreSalles</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for absence in liste_absences %}
+                            <tr>
+                                <td>{{ absence.enseignant.id }}</td>
+                                <td>{{ absence.enseignant.last_name|upper }}</td>
+                                <td>{{ absence.enseignant.first_name|title }}</td>
+                                <td><span class="badge rounded-pill bg-secondary"> {{ absence.nb_salle }} </span></td>
+                                <td>
+                                  <a href="{% url 'detail_salle_absence' absence.enseignant.id|crypter_id %}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye "></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

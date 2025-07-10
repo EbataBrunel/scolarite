@@ -1,0 +1,80 @@
+from django.urls import path
+from .views import*
+
+urlpatterns=[
+    path("payments", payments, name="payments"),
+    path("students_payments/<str:salle_id>", students_payments, name="students_payments"),
+    path("detail_payment/<str:salle_id>/<str:student_id>", detail_payment, name="detail_payment"),
+    path("add_payment", add_payment, name="add_payment"),
+    path("edit_payment/<str:id>", edit_payment, name="edit_payment"),
+    path("edit_py", edit_py, name="edit_py"),
+    path("del_payment/<str:id>", del_payment, name="del_payment"),
+    
+    path("autorisation/autorisation_payments", autorisation_payments, name="autorisation/autorisation_payments"),
+    path("autorisation/detail_autorisation_payments/<str:salle_id>", detail_autorisation_payments, name="autorisation/detail_autorisation_payments"),
+    path("autorisation/add_autorisation_payment", add_autorisation_payment, name="autorisation/add_autorisation_payment"),
+    path("autorisation/edit_autorisation_payment/<str:id>", edit_autorisation_payment, name="autorisation/edit_autorisation_payment"),
+    path("edit-ap", edit_ap, name="edit_ap"),
+    path("del_autorisation_payment/<str:id>", del_autorisation_payment, name="del_autorisation_payment"),
+    path("autorisation/detail_autorisation_payments/ajax_delete_autorisation_student/<int:id>", ajax_delete_autorisation_student, name="ajax_delete_autorisation_student"),
+    
+    path("autorisation_paye_salle/autorisation_payments_salle", autorisation_payments_salle, name="autorisation_paye_salle/autorisation_payments_salle"),
+    path("autorisation_paye_salle/add_autorisation_payment_salle", add_autorisation_payment_salle, name="autorisation_paye_salle/add_autorisation_payment_salle"),
+    path("autorisation_paye_salle/edit_autorisation_payment_salle/<str:id>", edit_autorisation_payment_salle, name="autorisation_paye_salle/edit_autorisation_payment_salle"),
+    path("edit_aps", edit_aps, name="edit_aps"),
+    path("del-autorisation_payment_salle/<str:id>", del_autorisation_payment_salle, name="del_autorisation_payment_salle"),
+    path("ajax_delete_autorisation_salle/<int:id>", ajax_delete_autorisation_salle, name="ajax_delete_autorisation_salle"),
+    
+    path("ajax_student_inscris/<int:id>", get_student_inscris_salle.as_view(), name="ajax_student_inscris"),
+    path("edit-payment/ajax_student_inscris/<int:id>", get_student_inscris_salle.as_view(), name="ajax_student_inscris"),
+    
+    path("contrat_etablissement/contrat_etablissements", contrat_etablissements, name="contrat_etablissement/contrat_etablissements"),
+    path("contrat_etablissement/add_contrat_etablissement", add_contrat_etablissement, name="contrat_etablissement/add_contrat_etablissement"),
+    path("contrat_etablissement/edit_contrat_etablissement/<str:id>", edit_contrat_etablissement, name="contrat_etablissement/edit_contrat_etablissement"),
+    path("edit_ce", edit_ce, name="edit_ce"),
+    path("del_contrat_etablissement/<str:id>", del_contrat_etablissement, name="del_contrat_etablissement"),
+    path("contrat_etablissement/ajax_delete_contrat_etablissement/<int:id>", ajax_delete_contrat_etablissement, name="ajax_delete_contrat_etablissement"),
+    path("contrat_etablissement/mes_contrats_supuser", mes_contrats_superuser, name="contrat_etablissement/mes_contrats_supuser"),
+    path("contrat_etablissement/mes_contrats_promoteur", mes_contrats_promoteur, name="contrat_etablissement/mes_contrats_promoteur"),
+    path("contrat_etablissement/signer_contrat_promoteur/<int:contrat_id>", signer_contrat_promoteur, name="signer_contrat_promoteur"),
+    
+    path("autorisation_paye_etablissement/autorisation_paye_etablissements", autorisation_paye_etablissements, name="autorisation_paye_etablissement/autorisation_paye_etablissements"),
+    path("autorisation_paye_etablissement/add_autorisation_paye_etablissement", add_autorisation_paye_etablissement, name="autorisation_paye_etablissement/add_autorisation_paye_etablissement"),
+    path("autorisation_paye_etablissement/edit_autorisation_paye_etablissement/<str:id>", edit_autorisation_paye_etablissement, name="autorisation_paye_etablissement/edit_autorisation_paye_etablissement"),
+    path("edit-ae", edit_ae, name="edit_ae"),
+    path("del_autorisation_paye_etablissement/<str:id>", del_autorisation_paye_etablissement, name="del_autorisation_paye_etablissement"),
+    path("autorisation_paye_etablissement/ajax_delete_autorisation_paye_etablissement/<int:id>", ajax_delete_autorisation_paye_etablissement, name="ajax_delete_autorisation_paye_etablissement"),
+    
+    path("payment_etablissement/payment_etablissements", payment_etablissements, name="payment_etablissement/payment_etablissements"),
+    path("payment_etablissement/mes_payment_etablissement", mes_payment_etablissement, name="payment_etablissement/mes_payment_etablissement"),
+    path("payment_etablissement/validate_payment_etablissement/<str:month>", validate_payment_etablissement, name="payment_etablissement/validate_payment_etablissement"),
+    path("payment_successful/<str:transaction_id>/<str:month>", payment_successful, name="payment_etablissement/payment_successful"),
+    path("payment_etablissement/payment_etablissement_success/<str:month>", payment_etablissement_success, name="payment_etablissement/payment_etablissement_success"),
+    path("payment_etablissement/payment_etablissement_echec", payment_etablissement_echec, name="payment_etablissement/payment_etablissement_echec"),
+    path("payment_etablissement/add_payment_etablissement", add_payment_etablissement, name="payment_etablissement/add_payment_etablissement"),
+    path("payment_etablissement/edit_payment_etablissement/<str:id>", edit_payment_etablissement, name="payment_etablissement/edit_payment_etablissement"),
+    path("edit_pe", edit_pe, name="edit_pe"),
+    path("del_payment_etablissement/<str:id>", del_payment_etablissement, name="del_payment_etablissement"),
+    path("payment_etablissement/ajax_delete_payment_etablissement/<int:id>", ajax_delete_payment_etablissement, name="ajax_delete_payment_etablissement"),
+    path("payment_etablissement/ajax_month_payment_etablissement/<int:id>", ajax_month_payment_etablissement, name="ajax_month_payment_etablissement"),
+    path("payment_etablissement/edit_payment_etablissement/ajax_month_payment_etablissement/<int:id>", ajax_month_payment_etablissement, name="ajax_month_payment_etablissement"),
+    path("payment_etablissement/ajax_amount_contrat_etablissement/<int:etablissement_id>/<str:month>", ajax_amount_contrat_etablissement, name="ajax_amount_contrat_etablissement"),
+    path("payment_etablissement/edit_payment_etablissement/ajax_amount_contrat_etablissement/<str:etablissement_id>", ajax_amount_contrat_etablissement, name="ajax_amount_contrat_etablissement"),
+    path("payment_etablissement/ajax_modal_confirmation_payment/<int:id>", ajax_modal_confirmation_payment, name="ajax_modal_confirmation_payment"),
+    path("payment_etablissement/confirmation_payment/<int:id>", confirmation_payment, name="confirmation_payment"),
+    path("recu-paye-etablissement/<str:id>", recu_paye_etablissement, name="payment_etablissement/recu_paye_etablissement"),
+    path("payment_etablissement/comptabilite_supuser", comptabilite_supuser, name="payment_etablissement/comptabilite_supuser"),
+    
+    
+    path("comptabilite_payment", comptabilite_payment, name="comptabilite_payment"),
+    path("dossier-financier", dossier_financier, name="dossier_financier"),
+    path("dossier-financier-parent", dossier_financier_parent, name="dossier_financier_parent"),
+    
+    path("recu-paye/<str:id>", recu_paye, name="recu_paye"),
+    path("echeancier/<str:student_id>", echeancier, name="echeancier"),
+    path("status_paye_parent/<int:student_id>", status_paye_parent, name="status_paye_parent"),
+    path("dette_parents", dette_parents, name="dette_parents"),
+    
+    path("add_notification/<int:parent_id>/<str:montant>", add_notification, name="add_notification"),
+    path("notification_parent", notification_parent, name="notification_parent")
+]

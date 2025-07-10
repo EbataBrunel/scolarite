@@ -1,0 +1,98 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Absences des élèves {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Gestion des absences</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Absences des élèves</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des absences des élèves</h5>
+
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Salles</th>
+                                <th>NombreAbsences</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in absences %}
+                            {% if s.nb_absences_students %}
+                            <tr>
+                                <td>{{ s.salle.id }}</td>
+                                <td>{{ s.salle }}</td>
+                                <td><span class="badge rounded-pill bg-secondary">{{ s.nb_absences_students }}</span></td>
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#detailModal{{ s.salle.id }}" title="Plus d'info" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="detailModal{{ s.salle.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                          <div class="modal-content">
+                                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                              <h5 class="modal-title">Détails des absences</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <div class="table-responsive">
+                                                <table class="table">
+                                                  <tr>
+                                                    <th>Nom</th>
+                                                    <th>Prénom</th>
+                                                    <th>NombreAbsences</th>
+                                                    <th>Action</th>
+                                                  </tr>
+                                                  {% for a in s.students %}
+                                                    <tr>
+                                                      <td>{{ a.student.lastname|title }}</td>
+                                                      <td>{{ a.student.firstname|title }}</td>
+                                                      <td><span class="badge rounded-pill bg-secondary">{{ a.nb_absences }}</span></td>
+                                                      <td>
+                                                        <a href="{% url 'abs_student_mat_user' a.student.id|crypter_id %}" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i> PlusInfo</a>
+                                                      </td>
+                                                    </tr>
+                                                  {% endfor %}
+                                                </table>
+                                              </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

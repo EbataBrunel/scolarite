@@ -1,0 +1,24 @@
+{% for contact in contacts %}
+    {% if contact.sending_status %}
+        <div class="message outgoing">
+            <div class="bubble outgoing">
+                <h6><b>{{ contact.subject }}</b></h6>
+                <span>{{ contact.message }}</span>
+            </div>
+        </div>
+        <div class="timestamp">{{ contact.datecontact|date:"d/m/Y h:m" }}</div>
+    {% else %}
+        <div class="message incoming">
+            <div class="bubble incoming">
+                <h6><b>{{ contact.subject }}</b></h6>
+                {% if contact.reading_status == 0 or contact.reading_status == 1 %}
+                    <i class="bi bi-circle text-secondary"></i>
+                {% else %}
+                    <i class="bi bi-circle-fill text-secondary"></i>
+                {% endif %}
+                <span>{{ contact.message }}</span>
+            </div>
+        </div>
+        <div class="timestamp">{{ contact.datecontact|date:"d/m/Y h:m" }}</div>
+    {% endif %}
+{% endfor %}

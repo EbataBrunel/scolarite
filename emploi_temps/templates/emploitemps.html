@@ -1,0 +1,78 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Emploi du temps {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Emploi du temps</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'index' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Emploi du temps</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Emploi du temps </h5>
+                {% if request.session.group_name in permission %}
+                  {% if anneeacademique.status_cloture %}
+                    <div align="right">
+                        {% if setting.theme == "bg-default" %}
+                        <a href="{% url 'add_emploitemps' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer un emploi du temps</a>
+                        {% else %}
+                        <a href="{% url 'add_emploitemps' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un emploi du temps</a>
+                        {% endif %}
+                    </div>
+                  {% endif %}
+                {% endif %}
+                <br>
+                {% if messages %}
+                  {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+                <div class="row">
+                    <div class="col-lg-4"></div>
+                    <div class="col-lg-4">
+                        <!-- Vertical Form -->
+                        <form method="post" action="" class="row g-3">
+                            {% csrf_token %}
+                            <div class="col-12">
+                                <select name="salle_emp" id="salle_emp" class="form-select" aria-label="Default select example" required>
+                                    <option value="">-- Selectionnez une salle --</option>
+                                    {% for salle in salles %}
+                                    <option value="{{ salle.id }}">{{ salle }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-lg-4"></div>
+                </div>
+                <br>
+                <div id="content_emploi">
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

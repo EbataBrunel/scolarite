@@ -1,0 +1,64 @@
+{% load crypto_filters %}
+<!-- Table with stripped rows -->
+<div class="table-responsive">
+    <table class="table datatable">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Noms</th>
+                <th>Prénoms</th>
+                <th>Notes</th>
+                <th>Utilisateur</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for composition in compositions %}
+            <tr>
+                <td>{{ composition.id }}</td>
+                <td>{{ composition.student.lastname }}</td>
+                <td>{{ composition.student.firstname }}</td>
+                <td><b class="text-primary">{{ composition.note }}</b></td>
+                <td>{{ composition.user.last_name|title }} {{ composition.user.first_name|title }}</td>
+                <td>
+                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteMatModal{{ composition.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                    <a href="{% url 'edit_composition' composition.id|crypter_id param %}" title="Détails" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
+                    <!-- Start de delete Modal -->
+                    <div class="modal fade" id="deleteMatModal{{composition.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title">Suppression</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                            <p class="text-center">Voulez-vous vraiment supprimer cette composition ?</p>
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                            <a href="{% url 'del_composition' composition.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                            </div>
+                        </div>
+                        </div>
+                    </div><!-- Fin de delete Modal-->
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- End Table with stripped rows -->
+
+{% if compositions %}
+    {% if evaluation == "Examen" %}
+        <p class="text-center">
+            <a href="{% url 'releve_note_controle' salle_id matiere_id evaluation trimestre %}" class="btn btn-dark btn-sm">Télécharger le fichier</a>
+        </p>
+    {% else %}
+        <p class="text-center">
+            <a href="{% url 'releve_note_controle' salle_id matiere_id evaluation trimestre %}" class="btn btn-dark btn-sm">Télécharger le fichier</a>
+        </p>
+    {% endif %}    
+{% endif %}
+
+

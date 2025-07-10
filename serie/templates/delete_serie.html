@@ -1,0 +1,130 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Suppression d'une série  {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Séries</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'series' %}" >Séries</a></li>
+          <li class="breadcrumb-item active">Suppression</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Suppression de la série</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <th>Id</th>
+                                <td>{{ serie.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Nom</th>
+                                <td>{{ serie.name }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        {% if nombre_total %}
+                            <h5 class="card-title">La suppression de cette série entrainera la suppession de l'élément suivant :</h5>
+                            <hr>
+                            <ul>
+                                {% if nombre.nombre_salles %}
+                                <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_salles }}</span> salles</li>
+                                <hr>
+                                {% endif %}       
+                            </ul>
+                            <p class="text-center">
+                                <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ serie.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                <!-- Start de delete Modal -->
+                                <div class="modal fade" id="deleteModal{{ serie.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-sm">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title">Suppression</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <p class="text-center">Voulez-vous vraiment supprimer cette année académique ?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              <a href="{% url 'del_serie' serie.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!-- Fin de delete Modal-->
+                            </p>
+                        {% else %}
+                            <br>
+                            <ul>
+                                {% if nombre.nombre_salles %}
+                                <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_salles }}</span> salles</li>
+                                <hr>
+                                {% endif %}       
+                            </ul>
+                            <p class="text-center">
+                                <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ matiere.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                <!-- Start de delete Modal -->
+                                <div class="modal fade" id="deleteModal{{ matiere.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-sm">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title">Suppression</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <p class="text-center">Voulez-vous vraiment supprimer cette année académique ?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              <a href="{% url 'del_serie' serie.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!-- Fin de delete Modal-->
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+        <div class="col-md-1"></div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

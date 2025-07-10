@@ -1,0 +1,82 @@
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Evaluation d'un enseignant {% endblock %}
+{% block content %}
+{% load static %}
+
+  <!-- ======= Sidebar ======= -->
+
+  <main id="main" class="main">
+    <div class="row">
+        <div class="col-md-10">
+            <div class="pagetitle">
+                <h1><i class="bi bi-house"></i> Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item active">Evaluation</li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+          
+            <section class="section contact">
+                <div class="color-1">
+                    <h3 class="content-title text-center text-light"><i class="bi bi-patch-check-fill"></i> Evalution des enseignants</h3>
+                </div>
+                <hr>
+                {% for e in enseignements %}
+                {% if e.status %}
+                <p>Vous avez attribué la note de <b class="text-danger">{{ e.note }}</b> à <b>{{ e.enseignement.enseignant.last_name }} {{ e.enseignement.enseignant.first_name }}</b> dans le cadre de son cours de <b>{{e.enseignement.matiere}}</b> pour le <b>{{ e.enseignement.trimestre }}</b>.</p>
+                {% else %}
+                <div id="content_eval_enseignant-{{ e.enseignement.id }}">
+                    <p> 
+                        Vous avez jusqu'au {{ e.enseignement.date_eval|date:"y/m/Y" }} à {{ e.enseignement.date_eval|date:"h:m" }}
+                        pour evaluer <b>{{ e.enseignement.enseignant.last_name|title }} {{ e.enseignement.enseignant.first_name|title }}</b> dans le cadre de son cours de <b>{{ e.enseignement.matiere }}.</b>
+                    </p>
+                    <a href="#"  data-bs-toggle="modal" data-bs-target="#evalModal{{ e.enseignement.id }}" title="Evaluation" class="btn btn-sm color-1 text-light"><i class="bi bi-check-circle"></i> Evaluer </a>
+                    <!-- Start de delete Modal -->
+                    <div class="modal fade" id="evalModal{{ e.enseignement.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+                                <div class="modal-header color-1">
+                                    <h5 class="modal-title text-light">Evaluation de l'enseignant</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="bg-secondary text-light" style="padding:10px; border-radius:10px">
+                                        <p> {{ e.enseignement.enseignant.last_name|title }} {{ e.enseignement.enseignant.first_name|title }} <br>{{ e.enseignement.matiere }}</p>
+                                    </div>
+                                    <br>
+                                    <!-- Vertical Form -->
+                                    <form method="post" action="" id="formEvalEnseignant-{{ e.enseignement.id }}" class="row g-3">
+                                        {% csrf_token %}
+                                        <input type="text" name="id" value="{{ e.enseignement.id }}" hidden="True" required="True">
+                                        <div class="col-12">
+                                            <label for="note" class="form-label">Note (sur 20) * </label>
+                                            <input type="text" name="note" class="form-control" id="note" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="justification" class="form-label">Justification * </label>
+                                            <input type="text" name="justification" class="form-control" id="justification" required>
+                                        </div>
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-sm color-1 text-light"><i class="bi bi-check-circle"></i> Valider </button>
+                                        </div>
+                                    </form><!-- Vertical Form -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- Fin de eval Modal-->
+                </div>
+                {% endif %}
+                <hr>
+                {% endfor %}
+            </section>
+
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+  </main><!-- End #main -->
+  {% endblock %}

@@ -1,0 +1,199 @@
+{% load crypto_filters %}
+<!-- Table with stripped rows -->
+<h5 class="card-title text-center">Rénumeration des énseignants du fondamental</h5>
+<div class="table-responsive">
+    <table class="table datatable">
+        <thead>
+            <tr>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Id</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Noms</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Prénoms</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Statut</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in renumerations_senseignants_fondamental %}
+            <tr>
+                <td>{{ r.enseignant.id }}</td>
+                <td class="white-space">{{ r.enseignant.last_name|upper }}</td>
+                <td class="white-space">{{ r.enseignant.first_name|title }}</td>
+                {% if r.status == "Payé" %}
+                    <td><span class="badge bg-success">{{ r.status }}</span></td>
+                    <td>
+                        <td><span class="badge bg-success">{{ r.status }}</span></td>
+                    <td>
+                        <a href="#"  data-bs-toggle="modal" data-bs-target="#renumEnseignantFondamentalModal{{ r.enseignant.id }}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="renumEnseignantFondamentalModal{{ r.enseignant.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                <h5 class="modal-title text-center">Rénumération de {{ enseignant.last_name|title }} {{ enseignant.first_name|title }}</span></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                <div class="card">
+                                    <div class="card-body">
+                                    <h3 class="card-title">{{ month }}</h3>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                        <tr>
+                                            <th class="white-space">Montant ({{ setting.devise }})</th>
+                                            <th>Indemnité ({{ setting.devise }})</th>
+                                            <th class="white-space">Date de paye</th>
+                                            <th class="white-space">Mode paiement</th>
+                                            <th>Gestionnaire</th>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ r.renumeration.amount }}</td>
+                                            <td>{{ r.renumeration.indemnite }}</td>
+                                            <td class="white-space">{{ renumeration.date|date:"d/m/Y" }}</td>
+                                            <td>{{renumeration.mode_payment }}</td>
+                                            <td class="white-space">{{ r.renumeration.responsable.last_name|title }} - {{ r.renumeration.responsable.first_name|title }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4" class="text-center">Salaire net ({{ setting.devise }})</td>
+                                            <td class="text-success"><b>{{ net_payer|floatformat:2 }}</b></td>
+                                        </tr>
+                                        </table>
+                                    </div>
+                                    </div>
+                                </div>
+                                </div>
+                                <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button></div>
+                            </div>
+                            </div>
+                        </div><!-- Fin de delete Modal-->
+                    </td>
+                {% else %}
+                    <td><span class="badge bg-warning">{{ r.status }}</span></td>
+                    {% if anneeacademique.status_cloture %}
+                    <td>
+                        <a href="{% url 'renum/add_renum_ad' r.enseignant.id|crypter_id month|crypter_id r.type_renumeration|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi-plus-circle"></i></a>
+                    </td>
+                    {% endif %}
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- End Table with stripped rows -->
+<br>
+<!-- Table with stripped rows -->
+<h5 class="card-title text-center">Rénumeration des énseignants du sécondaire</h5>
+<div class="table-responsive">
+    <table class="table datatable">
+        <thead>
+            <tr>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Id</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Noms</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Prénoms</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Statut</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in renumerations %}
+            <tr>
+                <td>{{ r.enseignant.id }}</td>
+                <td class="white-space">{{ r.enseignant.last_name|upper }}</td>
+                <td class="white-space">{{ r.enseignant.first_name|title }}</td>
+                {% if r.status == "Payé" %}
+                <td><span class="badge bg-success">{{ r.status }}</span></td>
+                <td><a href="{% url 'recap_emargement' r.enseignant.id|crypter_id month|crypter_id %}" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a></td>
+                {% else %}
+                <td><span class="badge bg-warning">{{ r.status }}</span></td>
+                <td><a href="{% url 'recap_emargement' r.enseignant.id|crypter_id month|crypter_id %}" class="btn btn-info btn-sm"><i class="bi bi-cash"></i> Rénumérer</a></td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- End Table with stripped rows -->
+<hr>
+<h5 class="card-title text-center">Rénumeration des administrateurs</h5>
+
+<div class="table-responsive">
+    <table class="table datatable">
+        <thead>
+            <tr>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Id</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Noms</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Prénoms</th>
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Statut</th>
+                {% if anneeacademique.status_cloture %}
+                <th class="{{ setting.theme }} {{ setting.text_color }}">Action</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in renumerations_admin %}
+            <tr>
+                <td>{{ r.administrateur.id }}</td>
+                <td class="white-space">{{ r.administrateur.last_name|upper }}</td>
+                <td class="white-space">{{ r.administrateur.first_name|title }}</td>
+                {% if r.status == "Payé" %}
+                    <td><span class="badge bg-success">{{ r.status }}</span></td>
+                    <td>
+                        <a href="#"  data-bs-toggle="modal" data-bs-target="#renumModal" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="renumModal" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                <h5 class="modal-title text-center">Rénumération de {{ r.administrateur.last_name|title }} {{ r.administrateur.first_name|title }}</span></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                <div class="card">
+                                    <div class="card-body">
+                                    <h3 class="card-title">{{ month }}</h3>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                        <tr>
+                                            <th class="white-space">Montant ({{ setting.devise }})</th>
+                                            <th>Indemnité ({{ setting.devise }})</th>
+                                            <th class="white-space">Date de paye</th>
+                                            <th class="white-space">Mode paiement</th>
+                                            <th>Gestionnaire</th>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ r.renumeration.amount }}</td>
+                                            <td>{{ r.renumeration.indemnite }}</td>
+                                            <td class="white-space">{{ r.renumeration.date|date:"d/m/Y" }}</td>
+                                            <td>{{ r.renumeration.mode_payment }}</td>
+                                            <td class="white-space">{{ r.renumeration.responsable.last_name|title }} - {{ renumeration.responsable.first_name|title }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4" class="text-center">Salaire net ({{ setting.devise }})</td>
+                                            <td class="text-success"><b>{{ r.net_payer|floatformat:2 }}</b></td>
+                                        </tr>
+                                        </table>
+                                    </div>
+                                    </div>
+                                </div>
+                                </div>
+                                <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button></div>
+                            </div>
+                            </div>
+                        </div><!-- Fin de delete Modal-->
+                    </td>
+                {% else %}
+                    <td><span class="badge bg-warning">{{ r.status }}</span></td>
+                    {% if anneeacademique.status_cloture %}
+                    <td>
+                        <a href="{% url 'renum/add_renum_ad' r.administrateur.id|crypter_id month|crypter_id r.type_renumeration|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi-plus-circle"></i></a>
+                    </td>
+                    {% endif %}
+                {% endif %}
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

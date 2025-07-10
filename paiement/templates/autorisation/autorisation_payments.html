@@ -1,0 +1,68 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Liste des autorisations de paiements {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Paiements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Autorisations</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des salles dont les élèves ne sont autorisés à payer</h5>
+                {% if anneeacademique.status_cloture %}
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'autorisation/add_autorisation_payment' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une autorisation</a>
+                    {% else %}
+                    <a href="{% url 'autorisation/add_autorisation_payment' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une autorisation</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Salles</th>
+                                <th class="text-center">NombreElèves</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in salles %}
+                            <tr>
+                                <td>{{ s.salle.id }}</td>
+                                <td class="white-space">{{ s.salle }}</td>
+                                <td class="text-center"><span class="badge rounded-pill bg-secondary">{{ s.nb_students }}</span></td>
+                                <td>
+                                    <a href="{% url 'autorisation/detail_autorisation_payments' s.salle.id|crypter_id  %}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye "></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

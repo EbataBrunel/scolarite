@@ -1,0 +1,37 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Echèc {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Paiements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'payment_etablissement/mes_payment_etablissement' %}" >Paiements</a></li>
+          <li class="breadcrumb-item active">Echèc</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Désolé, l'opération de votre paiement a échoué</h5>
+                <p class="text-danger text-center"><i class="bi bi-exclamation-triangle-fill font-size:50"></i></p>
+                <p><a href="{% url 'payment_etablissement/mes_payment_etablissement' %}" class="btn btn-default btn-sm"><i class="bi bi-arrow-circle-left"></i> Retour</a></p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

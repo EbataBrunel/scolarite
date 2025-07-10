@@ -1,0 +1,109 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'un parent {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Utilisateurs</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'parent/parents' %}" >Parents</a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'un parent</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdateParent" class="row g-3">
+                {% csrf_token %}
+                <div class="row">
+                    <input name="id" value="{{ parent.id }}" hidden="True" required="True">
+                    <div class="col-lg-6">
+                        <div class="col-12">
+                            <label for="Lastname" class="form-label">Nom : </label>
+                            <input type="text" name="lastname" value="{{ parent.lastname }}" class="form-control" id="Lastname" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="Firstname" class="form-label">Prénom : </label>
+                            <input type="text" name="firstname" value="{{ parent.firstname }}" class="form-control" id="Firstname" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="Gender" class="form-label">Sexe : </label>
+                            <select name = "gender" id="Gender" class="form-select" aria-label="Default select example" required>
+                                {% if parent.gender == "Masculin" %}
+                                <option value="Masculin">Masculin</option>
+                                <option value="Feminin">Feminin</option>
+                                {% else %}
+                                <option value="Feminin">Feminin</option>
+                                <option value="Masculin">Masculin</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="Address" class="form-label">Adresse : </label>
+                            <input type="text" name="address" value="{{ parent.address }}" class="form-control" id="Address" required>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="col-12">
+                            <label for="Phone" class="form-label">Téléphone : </label>
+                            <input type="text" name="phone" value="{{ parent.phone }}" class="form-control" id="Phone" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="Profession" class="form-label">Profession : </label>
+                            <input type="text" name="profession" value="{{ parent.profession }}" class="form-control" id="Profession" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="Country" class="form-label">Pays : </label>
+                            <select name = "country" id="Country" class="form-select" aria-label="Default select example" required>
+                                <option value="{{ parent.country }}">{{ parent.country }}</option>
+                                {% for country in countries %}
+                                <option value="{{ country }}">{{ country }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <a href="{% url 'parent/parents' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

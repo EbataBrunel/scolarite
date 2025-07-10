@@ -1,0 +1,76 @@
+{% load static %}
+<div id="content_comment-{{ cours_id }}">
+                              <!-- Accordion without outline borders -->
+                              <div class="accordion accordion-flush" id="accordionFlushExample">
+                                <div class="accordion-item">
+                                  <h2 class="accordion-header" id="flush-headingOne">
+                                    <button class="accordion-button collapsed new_comment" type="button" id="{{ cours_id }}" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ cours_id }}" aria-expanded="false" aria-controls="flush-collapseOne">
+                                      <i class="bi bi-chat-fill"></i> Commentaire | <span class="badge rounded-pill bg-secondary" style="margin-left:5px"> {{ nb_comments }} </span></span></span>
+                                    </button>
+                                  </h2>
+                                  <div id="flush-collapse{{ cours_id }}" class="accordion-collapse collapse show" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                                    <div class="accordion-body">
+                                        <form method="post" action="" id="formCommentCours-{{ cours_id }}">
+                                          {% csrf_token %}
+                                          <input type="text" name="cours_id" value="{{ cours_id }}" hidden="True" required="True">
+                                          <div class="input-group mb-3">
+                                            <input type="text" name="content" id="content-{{ cours_id }}" class="form-control" required>
+                                            <span class="input-group-text">
+                                              <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i></button>
+                                            </span>
+                                          </div>
+                                        </form>
+                                        <!-- On inclut l'image de chargement -->
+                                        <div id="spinner-loading-{{ cours_id }}" style="display: none">
+                                          <img width="90" height="90" class="img-responsive loading" src="{% static 'assets/img/spinner.gif' %}" alt="Chargement...">
+                                        </div>
+                                        <div class="chat-container" id="defiler-vers-bas{{ cours_id }}">
+                                          {% for comment in comments %}
+                                          <div id="comment_{{comment.id}}">
+                                            <div class="content-activity">
+                                              <div class="row">
+                                                <div class="col-md-11">
+                                                  {% if comment.is_teacher %}
+                                                  <p>
+                                                    <b>{{ comment.author.last_name|title }} {{ comment.author.first_name|title }}</b><br>
+                                                    {{ comment.content }}
+                                                  </p>
+                                                  {% else %}
+                                                  <p>
+                                                    <b>{{ comment.author.lastname|title }} {{ comment.author.firstname|title }}</b><br>
+                                                    {{ comment.content }}
+                                                  </p>
+                                                  {% endif %}
+                                                </div>
+                                                <div class="col-md-1">
+                                                  <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ comment.id }}" title="Supprimer" class="btn btn-default btn-sm" style="border-radius:20px" ><i class="bi bi-chevron-down"></i></a>
+                                                  <!-- Start de delete Modal -->
+                                                  <div class="modal fade" id="deleteModal{{ comment.id }}" tabindex="-1">
+                                                    <div class="modal-dialog modal-sm modal-dialog-centered">
+                                                      <div class="modal-content">
+                                                        <div class="modal-header">
+                                                          <h5 class="modal-title">Suppression</h5>
+                                                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                          <p class="text-center">Voulez-vous vraiment supprimer ce commentaire ?</p>
+                                                        </div>
+                                                        <div class="modal-footer text-center">
+                                                          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                          <button id="{{ comment.id }}" data-salle="{{ salle.id }}" class="btn btn-outline-secondary btn-sm delete_comment"><i class="bi bi-trash"></i> Supprimer</button>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                </div><!-- Fin de delete Modal-->
+                                                </div>
+                                              </div>
+                                            </div>
+                                            <span style="margin-left:50px">{{ comment.date|date:"d/m/Y h:m" }}</span><hr>
+                                          </div>
+                                          {% endfor %}
+                                        </div>
+                                        
+                                    </div>
+                                  </div>
+                                </div>
+                              </div><!-- End Accordion without outline borders -->

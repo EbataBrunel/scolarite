@@ -1,0 +1,94 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Mes absences {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Mes absences</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Mes absences</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Mes absences</h5>
+                    <div class="row">
+                    {% for absence in absences %}
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ absence.salle }}</h5>
+                                
+                                <div class="card">
+                                    <div class="card-body">
+                                      <h5 class="card-title">Matières</h5>
+                                      {% for m in absence.matieres %}
+                                      <!-- Accordion without outline borders -->
+                                      <div class="accordion accordion-flush" id="accordionFlushExample">
+                                        <div class="accordion-item">
+                                          <h2 class="accordion-header" id="flush-headingOne">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ m.matiere.id }}" aria-expanded="false" aria-controls="flush-collapseOne">
+                                                {% if m.nb_absences > 1 %}
+                                                    {{ m.matiere }} | <span class="text-secondary"> {{ m.nb_absences }} absences </span>
+                                                {% else %}
+                                                    {{ m.matiere }} | <span class="text-secondary"> {{ m.nb_absences }} absence </span>
+                                                {% endif %}
+                                            </button>
+                                          </h2>
+                                          <div id="flush-collapse{{ m.matiere.id }}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                                            <div class="accordion-body">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title text-center">Mes absences en <b>{{ m.matiere }}</b></h6>
+                                                        <div class="table-responsive">
+                                                            <table class="table">
+                                                                <tr>
+                                                                    <th class="{{ setting.theme }} {{ setting.text_color }}">Dates</th>
+                                                                    <th class="{{ setting.theme }} {{ setting.text_color }}">Crénaux</th>
+                                                                    <th class="{{ setting.theme }} {{ setting.text_color }}">Statut</th>
+                                                                </tr>
+                                                                {% for a in m.absences %}  
+                                                                <tr>
+                                                                    <td>{{ a.date_absence|date:"d/m/Y" }}</td>
+                                                                    <td>{{ a.heure_debut }}-{{ a.heure_fin }}</td>
+                                                                    {% if a.motif %}
+                                                                    <td><span class="badge rounded-pill bg-success">Justifiée</span></td>
+                                                                    {% else %}
+                                                                    <td><span class="badge rounded-pill bg-warning">Non récevable</span></td>
+                                                                    {% endif %}
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </table> 
+                                                        </div> 
+                                                    </div>
+                                                </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div><!-- End Accordion without outline borders -->
+                                      {% endfor %}
+                                    </div>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

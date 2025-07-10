@@ -1,0 +1,77 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Détail d'un super utilisateur {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Tableau de bord</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Détails</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Détails</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <p>
+                          {% if user.profile.photo %}
+                            <img src="{{ user.profile.photo.url }}" class="img-responsive img-detail" />
+                          {% else %}
+                          <img class="img-responsive img-detail" src="{% static 'assets/img/user.png' %}">
+                          {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-9">
+                        <!-- Table with stripped rows -->
+                            <table class="table">
+                                <tr>
+                                    <td>Nom : </td>
+                                    <td>{{ user.last_name|upper }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Prénom : </td>
+                                    <td>{{ user.first_name|title }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Date de naissance : </td>
+                                    <td>{{ user.profile.datenais|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Sexe : </td>
+                                    <td>{{ user.profile.gender }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Adresse : </td>
+                                    <td>{{ user.profile.address }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Pays : </td>
+                                    <td>{{ user.profile.country }}</td>
+                                </tr>
+                                <tr>
+                                  <td>Profession : </td>
+                                  <td>{{ user.profile.profession }}</td>
+                              </tr>
+                            </table>
+                        <!-- End Table with stripped rows -->
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

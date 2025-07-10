@@ -1,0 +1,95 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Salles {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Salles</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'salles' %}" > Salles </a></li>
+          <li class="breadcrumb-item active">Détails</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des salles de {{ classe.libelle }}</h5>
+                {% if anneeacademique.status_cloture %}
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'add_salle' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une salle</a>
+                    {% else %}
+                    <a href="{% url 'add_salle' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une salle</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Salle</th>
+                                <th>Max-étudiants</th>
+                                <th class="white-space">Frais mensuel ({{ setting.devise }})</th>
+                                <th class="white-space">Frais inscription ({{ setting.devise }})</th>
+                                {% if anneeacademique.status_cloture %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for salle in salles %}
+                            <tr>
+                                <td>{{ salle.id }}</td>
+                                <td>{{ salle }}</td>
+                                <td>{{ salle.max_student }}</td>
+                                <td>{{ salle.price }}</td>
+                                <td>{{ salle.price_inscription }}</td>
+                                {% if anneeacademique.status_cloture %}
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ salle.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                    <a href="{% url 'edit_salle' salle.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ salle.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-sm">
+                                          <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title">Suppression</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <p class="text-center">Voulez-vous vraiment supprimer cette classe ?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              <a href="{% url 'delete_salle' salle.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

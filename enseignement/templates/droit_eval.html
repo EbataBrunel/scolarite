@@ -1,0 +1,139 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Droit d'evaluation {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Enseignements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'enseignements' %}">Salles</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'trim_enseignement' enseignement.salle.id|crypter_id %}">Trimestres</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'detail_enseignement' enseignement.salle.id|crypter_id enseignement.trimestre|crypter_id %}" > Détails </a></li>
+          <li class="breadcrumb-item active">Droit</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Evaluation de <b>{{ enseignement.enseignant.last_name|title }} {{ enseignement.enseignant.first_name|title }}</b> en <b>{{ enseignement.matiere }}</b> par ses élèves</h5>
+                <div class="row">
+                  {% if enseignement.eval %}
+                    <div class="col-md-4">
+                      {% if status == "En cours" %}
+
+                        <div class="card {{ setting.theme }} {{ setting.text_color }}">
+                            <div class="card-body">
+                                <br>
+                                <h4 class="text-center text-warning">Evaluation en cours ...</h4>
+                                <hr>
+                                <p class="text-center"> Moyenne provisoire : <b>{{ moyenne_enseignant }}</b>
+                                <p class="text-center"> Noter par {{ nb_students }} élèves sur {{ nb_student_inscris }} </p>
+                            </div>
+                        </div>
+                      {% else %}
+                        <div class="card">
+                          <div class="card-body">
+                            <br>
+                            <h4 class="text-center text-success">Evaluation terminée</h4>
+                            <hr>
+                            {% if moyenne_enseignant %}
+                            <p class="text-center"> Moyenne definitive : <b>{{ moyenne_enseignant }}</b></p>
+                            <p class="text-center"> Noter par {{ nb_students }} élèves sur {{ nb_student_inscris }} </p>
+                            {% else %}
+                            <p class="text-center"> Moyenne definitive : <b>Aucune</b></p>
+                            <p class="text-center"> Noter par {{ nb_students }} élèves sur {{ nb_student_inscris }} </p>
+                            {% endif %}
+                          </div>
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                      <div class="card">
+                        <div class="card-body">
+                          <br>
+                          <div class="table-responsive">
+                            <table class="table datatable">
+                                <thead>
+                                    <tr>
+                                        <th>Noms</th>
+                                        <th>Prénoms</th>
+                                        <th>Note</th>
+                                        <th>Justification</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                  {% for evaluation in evaluations %}
+                                  <tr>
+                                    <td>{{ evaluation.student.lastname|title }}</td>
+                                    <td>{{ evaluation.student.firstname|title }}</td>
+                                    <td>{{ evaluation.note }}</td>
+                                    <td>{{ evaluation.justification }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                            </table>
+                          </div> 
+                        </div>
+                      </div> 
+                    </div>
+                  {% else %}
+                  
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body" id="content_droit_evaluation">
+                                <br>
+                                <!-- On inclut l'image de chargement -->
+                                {% include 'global/_loading.html' %}
+                                <p>L'évaluation de l'enseignant se déroulera sur une période de deux semaines à partir de la date à laquelle vous autorisez les élèves à évaluer l'enseignant.</p>
+                                <hr>
+                                {% if anneeacademique.status_cloture %}
+                                  <p class="text-center">
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#evalModal" title="Evaluation" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Evaluation</a>
+                                  </p>
+                                  <!-- Start de delete Modal -->
+                                  <div class="modal fade" id="evalModal" tabindex="-1">
+                                      <div class="modal-dialog modal-sm">
+                                          <div class="modal-content">
+                                              <div class="modal-header">
+                                                  <h5 class="modal-title">Evaluation</h5>
+                                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                  <p class="text-center">Voulez-vous vraiment autoriser les élèves à valider cet enseignant ?</p>
+                                                  <p class="text-center"><b>Date limite : </b></p>
+                                                  <p class="text-center">{{ date_plus_une_semaine|date:"d/m/Y" }}  à {{ date_plus_une_semaine|date:"h:m" }}</p>
+                                              </div>
+                                              <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                  <button id="{{ enseignement.id }}" class="btn btn-primary btn-sm droit_val"><i class="bi bi-check-circle"></i> Autoriser</a>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div><!-- Fin de delete Modal-->
+                                {% endif %}
+                            </div>
+                        </div>
+                      </div>
+                    {% endif %}
+                </div>
+
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

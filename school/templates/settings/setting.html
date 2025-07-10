@@ -1,0 +1,113 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} |Paramètre {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Gestion</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Paramètre</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Paramètres</h5>
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <br>
+                                {% if setting.logo %}
+                                    <img src="{{ setting.logo.url }}" class="img-responsive img-detail" />
+                                {% else %}
+                                <img class="img-responsive img-detail" src="{% static 'assets/img/user.png' %}">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <br>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table">
+                                                        <tr>
+                                                            <th>Nom de l'école</th><td> : {{ setting.appname }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Adresse</th><td> : {{ setting.address }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Téléphone</th><td : >{{ setting.phone }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Email</th><td> : {{ setting.email }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Développeur</th><td> : {{ setting.appeditor }}</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <br>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table">
+                                                        <tr>
+                                                            <th>Version</th><td> : {{ setting.version }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Dévise</th><td> : {{ setting.devise }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Couleur Fond</th><td> : {{ setting.theme }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Couleur Text</th><td> : {{ setting.text_color }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>LongueurLogo</th><td> : {{ setting.width_logo }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>LargeurLogo</th><td> : {{ setting.height_logo }}</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

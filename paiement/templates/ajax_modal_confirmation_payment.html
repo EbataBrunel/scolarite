@@ -1,0 +1,38 @@
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">Voulez-vous vraiment confirmer ce paiement ?</h3>
+        <table class="table">
+            <tr>
+                <th>Id</th>
+                <td>{{ payment.id }}</td>
+            </tr>
+            <tr>
+                <th>Mois</th>
+                <td>{{ payment.month }}</td>
+            </tr>
+            <tr>
+                <th class="white-space">Nombre d'élèves</th>
+                <td>{{ payment.id }}</td>
+            </tr>
+            <tr>
+                <th>Montant par élève</th>
+                <td>{{ payment.number_student }}</td>
+            </tr>
+            <tr>
+                <th>Montant</th>
+                <td>{{ payment.amount }}</td>
+            </tr>
+            <tr>
+                <th>Auteur</th>
+                <td>{{ payment.user.last_name|title }} {{ payment.user.first_name|title }}</td>
+            </tr>
+            <tr>
+                <th class="white-space">Date de paiement</th>
+                <td>{{ payment.date_payment|date:"d/m/Y" }}</td>
+            </tr>
+        </table>
+        <p class="text-center">
+            <a href="#" class="btn btn-primary btn-sm confirmer-payment" id="{{ payment.id }}"><i class="bi bi-check-circle"></i> Confirmer</a>
+        </p>
+    </div>
+</div>

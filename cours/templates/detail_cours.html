@@ -1,0 +1,72 @@
+
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Cours en ligne {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Gestion des études</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'cours' %}">Cours</a></li>
+          <li class="breadcrumb-item active">Détails</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ salle }} | <span>{{ matiere }}</span></h5>
+                    <div class="row">
+                    {% for c in cours %}
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ c.title }}</h5>
+                                <p>{{ c.comment }}</p>
+                                <p>
+                                    <small class="text-secondary">Publier le <span>{{ c.date|date:"d/m/Y" }} à {{ c.date|date:"h:m" }}</small>
+                                    <span style="float:right">
+                                      <a href="{% url 'edit_cours' c.id|crypter_id %}" title="Edition" class="text-warning"><i class="bi bi-pencil"></i></a>&nbsp;|
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ c.id }}" title="Supprimer" class="text-danger"><i class="bi bi-trash"></i></a>
+                                    </span>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ c.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-sm">
+                                          <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title">Suppression</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <p class="text-center">Voulez-vous vraiment supprimer ce cours ?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              <a href="{% url 'del_cours' c.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </p>
+                                <a href="{% url 'detail_coursligne' salle.id matiere.id|crypter_id %}">Commentaire | {{ m.nb_newcomment }}</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

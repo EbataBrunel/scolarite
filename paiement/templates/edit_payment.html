@@ -1,0 +1,109 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'un paiement {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Paiements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'payments' %}" > Salles Paiements </a></li>
+          <li class="breadcrumb-item"><a href="{% url 'detail_payment' payment.salle.id|crypter_id payment.student.id|crypter_id %}" > Elèves paiemnets </a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'un paiement</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdatePayment" class="row g-3">
+                {% csrf_token %}
+                    <input type="text" name="id" value="{{ payment.id }}" hidden="True" required="True">
+                    <div class="col-12">
+                        <label for="salle_paye" class="form-label">Salle : </label>
+                        <select name="salle" id="salle_paye" class="form-select" aria-label="Default select example">
+                            <option value="{{ payment.salle.id}}">{{ payment.salle }}</option>
+                            {% for salle in salles %}
+                            <option value="{{ salle.id }}">{{ salle }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="studentview">
+                      <div class="col-12">
+                          <label for="student" class="form-label">Elève : </label>
+                          <select name="student" id="student" class="form-select" aria-label="Default select example" required>
+                              <option value="{{ payment.student.id }}">{{ payment.student }}</option>
+                              {% for student in students %}
+                              <option value="{{ student.id }}">{{ student }}</option>
+                              {% endfor %}
+                          </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <label for="month" class="form-label">Mois : </label>
+                      <select name="month" id="month" class="form-select" aria-label="Default select example">
+                          <option value="{{ payment.month }}">{{ payment.month }}</option>
+                          {% for month in months %}
+                          <option value="{{ month }}">{{ month }}</option>
+                          {% endfor %}
+                      </select>
+                    </div>
+                    <div class="col-12 margin-bottom">
+                        <label for="amount" class="form-label">Montant : </label>
+                        <input type="text" name="amount" value={{ payment.amount }} class="form-control" id="Volumehoraire" required>
+                    </div>
+
+                    <div class="col-12">
+                      <label for="mode_paiement" class="form-label">Mode de paiement : </label>
+                      <select name="mode_paiement" id="mode_paiement" class="form-select" aria-label="Default select example">
+                          <option value="{{ payment.mode_paiement }}">{{ payment.mode_paiement }}</option>
+                          {% for mode_paiement in mode_paiements %}
+                          <option value="{{ mode_paiement }}">{{ mode_paiement }}</option>
+                          {% endfor %}
+                      </select>
+                    </div>
+
+                <div class="text-center">
+                    <a href="{% url 'detail_payment' payment.salle.id|crypter_id payment.student.id|crypter_id  %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

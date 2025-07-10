@@ -1,0 +1,417 @@
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Accueil {% endblock %}
+{% block content %}
+{% load static %}
+
+  <!-- ======= Sidebar ======= -->
+{% if request.session.student_id %}
+
+  <main id="main" class="main">
+    <div class="row">
+        <div class="col-md-10">
+            <div class="pagetitle">
+                <h1>Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+          
+            <section class="section contact">
+          
+                <div class="row gy-4">
+          
+                  <div class="col-xl-12">
+          
+                    <div class="row">
+                      <div class="col-lg-4">
+                        <a href="{% url 'emploitemps_student' %}">
+                          <div class="info-box card text-center bg-secondary height_min_max_home">
+                            <i class="bi bi-building text-light"></i>
+                            <h3>Mon emploi de temps</h3>
+                          </div>
+                        </a>
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'settings/resources_admin' %}">
+                          <div class="info-box card text-center bg-success height_min_max_home txet-light">
+                            <i class="bi bi-file-post-fill text-light"></i>
+                            <h3>Resources administratives</h3>
+                          </div>
+                        </a>
+                      </div>
+                      <div class="col-lg-4">
+                        {% if nombre_gestions_etudes %}
+                          <a href="#"  data-bs-toggle="modal" data-bs-target="#etudesModal">
+                            <div class="info-box card text-center bg-primary height_min_max_home text-light">
+                              <i class="bi bi-card-list text-light"></i>
+                              <h3><span class="badge rounded-pill bg-success">{{ nombre_gestions_etudes }}</span> Gestion des études</h3>
+                            </div>
+                          </a>
+                          <!-- Start de delete Modal -->
+                          <div class="modal fade" id="etudesModal" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered modal-sm modal-dialog-scrollable">
+                              <div class="modal-content">
+                                <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                  <h5 class="modal-title">Liste de notifications</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                  <br>
+                                  <div class="card">
+                                    <div class="card-body">
+                                      <div class="table-responsive">
+                                        <table class="table">
+                                          {% if nombre_absences_students %}
+                                          <tr>
+                                            <th>NombreAbsences</th>
+                                            <th><span class="badge rounded-pill bg-success">{{ nombre_absences_students }}</span></th>
+                                          </tr>
+                                          {% endif %}
+                                          {% if nombre_nouvelles_compositions %}
+                                          <tr>
+                                            <th>NombreCompositions</th>
+                                            <th><span class="badge rounded-pill bg-success">{{ nombre_nouvelles_compositions }}</span></th>
+                                          </tr>
+                                          {% endif %}
+                                        </table>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <p class="text-center">
+                                    <a href="{% url 'gestion_etude' %}">
+                                      <span class="text-danger small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                                    </a>
+                                  </p>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div><!-- Fin de delete Modal-->
+                        {% else %}
+                        <a href="{% url 'gestion_etude' %}">
+                          <div class="info-box card text-center bg-primary height_min_max_home text-light">
+                            <i class="bi bi-card-list text-light"></i>
+                            <h3>Gestion des études</h3>
+                          </div>
+                        </a>
+                        {% endif %}
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'dossier_financier' %}">
+                          <div class="info-box card text-center bg-info height_min_max_home text-light">
+                            <i class="bi bi-cash text-light"></i>
+                            {% if nombre_nouveaux_payments %}
+                            <h3><span class="badge rounded-pill bg-success">{{ nombre_nouveaux_payments }}</span>  Dossier financier</h3>
+                            {% else %}
+                            <h3>Dossier financier</h3>
+                            {% endif %}
+                          </div>
+                        </a>
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'contacts' %}">
+                          <div class="info-box card text-center bg-danger height_min_max_home text-light">
+                            <i class="bi bi-envelope text-light"></i>
+                            {% if nombre_contacts_students > 0 %}
+                            <h3><th><span class="badge rounded-pill bg-success">{{ nombre_contacts_students }}</span> Messagerie</h3>
+                            {% else %}
+                            <h3>Messagerie</h3>
+                            {% endif %}
+                          </div>
+                        </a>
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'activity_student' %}">
+                          <div class="info-box card text-center bg-warning height_min_max_home text-light">
+                            <i class="bi bi-info-circle text-light"></i>
+                            <h3>Actualités récentes</h3>
+                          </div>
+                        </a>
+                      </div>
+
+                      <div class="col-lg-4">
+                        <a href="{% url 'cours_ligne' %}">
+                          <div class="info-box card text-center bg-dark height_min_max_home text-light">
+                            <i class="bi bi-file-earmark-text-fill text-light"></i>
+                            <h3>Cours en ligne</h3>
+                          </div>
+                        </a>
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'eval_enseignant' %}">
+                          <div class="info-box card text-center color-1 height_min_max_home text-light">
+                            <i class="bi bi-patch-check-fill text-light"></i>
+                            <h3>Evaluation des enseignants</h3>
+                          </div>
+                        </a>
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'pub_student' %}">
+                          <div class="info-box card text-center color-2 height_min_max_home text-light">
+                            <i class="bi bi-gear-fill text-light"></i>
+                            <h3>Publication</h3>
+                          </div>
+                        </a>
+                      </div>
+
+                    </div>
+          
+                  </div>
+          
+                </div>
+          
+            </section>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+  </main><!-- End #main -->
+
+
+  {% else %}
+  <main id="main" class="main">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="pagetitle">
+                <h1>Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+          
+            <section class="section contact">
+          
+                <div class="row gy-4">
+          
+                  <div class="col-xl-12">
+          
+                    <div class="row">
+                      <div class="col-lg-4">
+                        <a href="#"  data-bs-toggle="modal" data-bs-target="#enfantModal">
+                          <div class="info-box card text-center color-1 height_min_max_home">
+                            <i class="bi bi-person text-light"></i>
+                            <h3>Enfants</h3>
+                          </div>
+                        </a>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="enfantModal" tabindex="-1">
+                          <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                              <div class="modal-header color-1 {{ setting.text_color }}">
+                                <h5 class="modal-title">Liste de vos enfants</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body">
+                                <br>
+                                <div class="card">
+                                  <div class="card-body">
+                                    <div class="table-responsive">
+                                      <table class="table">
+                                        <tr>
+                                          <th>Noms</th>
+                                          <th>Prénoms</th>
+                                          <th>Salle</th>
+                                        </tr>
+                                        {% for inscription in inscriptions_parents %}
+                                        <tr>
+                                          <td>{{ inscription.student.lastname|title }}</td>
+                                          <td>{{ inscription.student.firstname|title }}</td>
+                                          <td>{{ inscription.salle }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div><!-- Fin enafant Modal-->
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'emploitemps_parent' %}">
+                          <div class="info-box card text-center bg-secondary height_min_max_home">
+                            <i class="bi bi-building text-light"></i>
+                            <h3>Mon emploi de temps</h3>
+                          </div>
+                        </a>
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'settings/resources_admin_parent' %}">
+                          <div class="info-box card text-center bg-success height_min_max_home txet-light">
+                            <i class="bi bi-file-post-fill text-light"></i>
+                            <h3>Resources administratives</h3>
+                          </div>
+                        </a>
+                      </div>
+                      <div class="col-lg-4">
+                        {% if total_gestion_etudes %}
+                          <a href="#"  data-bs-toggle="modal" data-bs-target="#gestionModal">
+                            <div class="info-box card text-center bg-primary height_min_max_home text-light">
+                              <i class="bi bi-card-list text-light"></i>
+                              <h3><span class="badge rounded-pill bg-success">{{ total_gestion_etudes }}</span> Gestion des études</h3>
+                            </div>
+                          </a>
+                          <!-- Start de delete Modal -->
+                          <div class="modal fade" id="gestionModal" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                              <div class="modal-content">
+                                <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                  <h5 class="modal-title">Liste de notifications</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                  <br>
+                                  <div class="card">
+                                    <div class="card-body">
+                                      <div class="table-responsive">
+                                        <table class="table">
+                                          <tr>
+                                            <th>Noms</th>
+                                            <th>Prénoms</th>
+                                            <th>NbAbsences</th>
+                                            <th>NbCompositions</th>
+                                          </tr>
+                                          {% for gestion in gestions %}
+                                            <tr>
+                                              <td>{{ gestion.inscription.student.lastname|title }}</td>
+                                              <td>{{ gestion.inscription.student.firstname|title }}</td>
+                                              <td><span class="badge rounded-pill bg-success">{{ gestion.nombre_absences }}</span></td>
+                                              <td><span class="badge rounded-pill bg-success">{{ gestion.nombre_compositions }}</span></td>
+                                            </tr>
+                                          {% endfor %}
+                                        </table>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <p class="text-center">
+                                    <a href="{% url 'gestion_etude_parent' %}">
+                                      <span class="text-danger small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                                    </a>
+                                  </p>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div><!-- Fin de delete Modal-->
+                        {% else %}
+                        <a href="{% url 'gestion_etude_parent' %}">
+                          <div class="info-box card text-center bg-primary height_min_max_home text-light">
+                            <i class="bi bi-card-list text-light"></i>
+                            <h3>Gestion des études</h3>
+                          </div>
+                        </a>
+                        {% endif %}
+                      </div>
+                      <div class="col-lg-4">
+                        {% if nombres_nouveaux_paiements_parents %}
+                        <a href="#"  data-bs-toggle="modal" data-bs-target="#paiementModal">
+                          <div class="info-box card text-center bg-info height_min_max_home text-light">
+                            <i class="bi bi-cash text-light"></i>
+                            <h3><span class="badge rounded-pill bg-success">{{ nombres_nouveaux_paiements_parents }}</span>  Dossier financier</h3>
+                          </div>
+                        </a>
+                        <!-- Start de delete Modal -->
+                        <div class="modal fade" id="paiementModal" tabindex="-1">
+                          <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content">
+                              <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                <h5 class="modal-title">Liste de notifications</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body">
+                                <br>
+                                <div class="card">
+                                  <div class="card-body">
+                                    <div class="table-responsive">
+                                      <table class="table">
+                                        <tr>
+                                          <th>Noms</th>
+                                          <th>Prénoms</th>
+                                          <th>NombrePayes</th>
+                                        </tr>
+                                        {% for p in paiements_parents %}
+                                        <tr>
+                                          <td>{{ p.student.lastname|title }}</td>
+                                          <th>{{ p.student.firstname|title }}</th>
+                                          <th><span class="badge rounded-pill bg-success">{{ p.nombre_payes }}</span></th>
+                                        </tr>
+                                        {% endfor %}
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                                <p class="text-center">
+                                  <a href="{% url 'dossier_financier_parent' %}">
+                                    <span class="text-danger small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                                  </a>
+                                </p>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div><!-- Fin de delete Modal-->
+                        {% else %}
+                        <a href="{% url 'dossier_financier_parent' %}">
+                          <div class="info-box card text-center bg-info height_min_max_home text-light">
+                            <i class="bi bi-cash text-light"></i>
+                            <h3>Dossier financier</h3>
+                          </div>
+                        </a>
+                        {% endif %}
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'contacts' %}">
+                          <div class="info-box card text-center bg-danger height_min_max_home text-light">
+                            <i class="bi bi-envelope text-light"></i>
+                            <h3>Messagerie</h3>
+                          </div>
+                        </a>
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'activity_student' %}">
+                          <div class="info-box card text-center bg-warning height_min_max_home text-light">
+                            <i class="bi bi-info-circle text-light"></i>
+                            <h3>Actualités récentes</h3>
+                          </div>
+                        </a>
+                      </div>
+                      <div class="col-lg-4">
+                        <a href="{% url 'notification_parent' %}">
+                          <div class="info-box card text-center color-2 height_min_max_home text-light">
+                            <i class="bi bi-bell text-light"></i>
+                            {% if nombre_notifications_parents > 0 %}
+                            <h3><th><span class="badge rounded-pill bg-success">{{ nombre_notifications_parents }}</span> Notification</h3>
+                            {% else %}
+                            <h3>Notification</h3>
+                            {% endif %}
+                          </div>
+                        </a>
+                      </div>
+
+                    </div>
+          
+                  </div>
+          
+                </div>
+          
+            </section>
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+  </main><!-- End #main -->
+  {% endif %}
+
+  {% endblock %}

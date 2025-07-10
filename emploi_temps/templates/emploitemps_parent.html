@@ -1,0 +1,63 @@
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Mon emploi du temps {% endblock %}
+{% block content %}
+{% load static %}
+
+  <!-- ======= Sidebar ======= -->
+
+  <main id="main" class="main">
+    <div class="row">
+        <div class="col-md-10">
+            <div class="pagetitle">
+                <h1>Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item active">Emploi du temps</li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+          
+            <section class="section contact">
+                <div class="bg-secondary {{ setting.text_color }}">
+                    <h3 class="content-title text-center"><i class="bi bi-building"></i> Emploi du temps</h3>
+                </div>
+                <hr>
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title text-centerS">Selectionnez un(e) enfant pour afficher son emploi du temps</h3>
+                        <div class="row">
+                            <div class="col-lg-2"></div>
+                            <div class="col-lg-8">
+                                <br>
+                                <!-- Vertical Form -->
+                                <form method="post" action="" class="row g-3">
+                                    {% csrf_token %}
+                                    <div class="col-12">
+                                        <select name="salle_emp" id="salle_emp" class="form-select" aria-label="Default select example" required>
+                                            <option value="">-- Selectionnez un(e) enfant --</option>
+                                            {% for i in inscriptions %}
+                                            <option value="{{ i.inscription.salle.id }}">{{ i.inscription.student.lastname|title }} {{ i.inscription.student.firstname|title }} ({{ i.inscription.salle }})</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-lg-2"></div>
+                        </div>
+                        <br><br>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="content_emploitemps_parent"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+  </main><!-- End #main -->
+  {% endblock %}

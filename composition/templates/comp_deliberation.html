@@ -1,0 +1,67 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Délibération {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Examens</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Délibération</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+      <div class="row">
+
+        <div class="col-xl-12">
+
+          <div class="card">
+            <div class="card-body pt-3">
+              
+                <div class="row">
+                    <div class="col-lg-4"></div>
+                    <div class="col-lg-4">
+                      <div class="card">
+                        <div class="card-body">
+                          <br>
+                          <!-- On inclut l'image de chargement -->
+                          {% include 'global/_loading.html' %}
+                          <!-- Vertical Form -->
+                          <form method="post" action="" class="row g-3">
+                              {% csrf_token %}
+                              <div class="col-12">
+                                  <select name="salle_delib" id="salle_delib" class="form-select" aria-label="Default select example" required>
+                                      <option value="">-- Selectionnez une salle --</option>
+                                      {% for salle in salles %}
+                                      <option value="{{ salle.id }}">{{ salle }}</option>
+                                      {% endfor %}
+                                  </select>
+                              </div>
+
+                              <div id="trimestreview"></div>
+                              
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-4"></div>
+                </div>
+                <br>
+
+                <div id="content_delib">
+
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

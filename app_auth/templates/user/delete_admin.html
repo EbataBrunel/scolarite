@@ -1,0 +1,182 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Suppression d'un administeur {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Utilisateurs</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'user/admin' %}" >Utilisateurs</a></li>
+          <li class="breadcrumb-item active">Suppression</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Suppression de l'administrateur</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <th>Id</th>
+                                <td>{{ admin.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Noms</th>
+                                <td class="white-space">{{ admin.last_name|upper }}</td>
+                            </tr>
+                            <tr>
+                                <th>Prénoms</th>
+                                <td class="white-space">{{ admin.first_name|upper }}</td>
+                            </tr>
+                            <tr>
+                                <th>Groupes</th>
+                                <td>
+                                    <ul>
+                                    {% for group in groups %}
+                                    <li>{{ group.name }}</li>
+                                    {% endfor %}
+                                    </ul>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-body">
+                    {% if nombre_total %}
+                      <h5 class="card-title">La suppression de cette administrateur entrainera la suppession des éléments suivants :</h5>
+                      <hr>
+                      <ul>
+                        {% if nombre.nombre_contrat %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_contrat }}</span> contrats enseignants</li>
+                        <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_contrat_admin %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_contrat_admin }}</span> contrats administrateurs</li>
+                        <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_enseignements %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_enseignements }}</span> enseignements</li>
+                        <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_renumerations %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_renumerations }}</span> rénumérations enseignants</li>
+                        <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_renumerations_admin %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_renumerations_admin }}</span> rénumérations administrateurs</li>
+                        <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_absences_enseignants %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_absences_enseignants }}</span> absences des énseignants</li>
+                        <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_absences_admin %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_absences_admin }}</span> absences des administrateurs</li>
+                        <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_payments %}
+                          <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_payments }}</span> paiements</li>
+                          <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_autorisation_payements_students %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_autorisation_payements_students }}</span> autorisations de paiements d'un(e) élève</li>
+                        <hr>
+                        {% endif %}
+                        
+                        {% if nombre.nombre_autorisation_payements_salles %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_autorisation_payements_salles }}</span> autorisations de paiements des élèves de cette salle</li>
+                        <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_emarements_admin %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_emargements_admin }}</span> émargements administrateurs</li>
+                        <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_compositions %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_compositions }}</span> nombre de compositions</li>
+                        <hr>
+                        {% endif %}
+
+                        {% if nombre.nombre_depenses %}
+                        <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_depenses }}</span> dépenses</li>
+                        <hr>
+                        {% endif %}
+                      </ul>
+                      <br>
+                      <p class="text-center">
+                        <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ admin.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                      </p>
+                    {% else %}
+                      <br>
+                      <p class="text-center">
+                        <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ admin.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                      </p>
+                    {% endif %}
+                    
+                    <!-- Start de delete Modal -->
+                    <div class="modal fade" id="deleteModal{{ admin.id }}" tabindex="-1">
+                          <div class="modal-dialog modal-sm">
+                              <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title">Suppression</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <p class="text-center">Voulez-vous vraiment supprimer cet administrateur ?</p>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                    <a href="{% url 'del_admin' admin.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                  </div>
+                              </div>
+                          </div>
+                    </div><!-- Fin de delete Modal-->
+                  </div>
+                </div>
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+        <div class="col-md-1"></div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

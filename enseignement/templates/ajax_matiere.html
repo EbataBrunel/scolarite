@@ -1,0 +1,18 @@
+{% if matieres %}
+<div class="col-12 margin-bottom">
+    <label for="Matiere" class="form-label">Matière : </label>
+    <select name="matiere" id="Matiere" class="form-select" aria-label="Default select example" required>
+        <option value="">-- Selectionnez --</option>
+        {% for matiere in matieres %}
+            <option value="{{ matiere.id }}">{{ matiere }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% else %}
+<div class="col-12 margin-bottom">
+    <label for="Matiere" class="form-label">Matière : </label>
+    <select name="matiere" id="Matiere" class="form-select" aria-label="Default select example" required>
+        <option value="">Aucune donnée n'a été enregistrée</option>
+    </select>
+</div>
+{% endif %}

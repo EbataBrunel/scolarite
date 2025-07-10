@@ -1,0 +1,154 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'un émargement {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Emargements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'emargements' %}">Emargements</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'salles_emargements' emargement.enseignant.id|crypter_id %}">Salles</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'matieres_emargements' emargement.enseignant.id|crypter_id emargement.salle.id|crypter_id %}">Matières</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'months_emargements' emargement.enseignant.id|crypter_id emargement.salle.id|crypter_id emargement.matiere.id|crypter_id %}"></a>Mois</li>
+          <li class="breadcrumb-item"><a href="{% url 'detail_emargements' emargement.enseignant.id|crypter_id emargement.salle.id|crypter_id emargement.matiere.id|crypter_id emargement.month|crypter_id %}">Détails</a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'un émargement</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row {{ setting.theme }} {{ setting.text_color }}" style="padding:10px; border-radius:10px">
+                            <div class="col-md-6 table-responsive">
+                                <table class="table">
+                                    <tr>
+                                        <th>Prof :</th>
+                                        <td>{{ emargement.enseignant.last_name }} {{ absence.enseignant.first_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Classe :</th>
+                                        <td>{{ emargement.salle }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Matière :</th>
+                                        <td>{{ emargement.matiere }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Jour :</th>
+                                        <td>{{ emargement.jour }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="col-md-6 table-responsive">
+                                <table class="table">
+                                    <tr>
+                                        <th>Horaire :</th>
+                                        <td>{{ emargement.heure_debut }} {{ emargement.heure_fin }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date :</th>
+                                        <td>{{ emargement.date_emargement|date:"d/m/Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Séance :</th>
+                                        <td>{{ emargement.seance }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Titre :</th>
+                                        <td>{{ emargement.titre }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+              
+              <div class="card-body">
+                <div class="row">
+                  <div class="row">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                    <!-- On inclut l'image de chargement -->
+                    {% include 'global/_loading.html' %}
+                    <!-- Vertical Form -->
+                    <form method="post" action="" id="formUpdateEmargement" class="row g-3">
+                      {% csrf_token %}
+                      <input type="text" name="id" value="{{ emargement.id }}" hidden>
+                      <div class="col-12">
+                        <label for="date_emargement" class="form-label">Date d'émargement : </label>
+                        <input type="date" name="date_emargement" value="{{ emargement.date_emargement|date:"Y-m-d" }}" class="form-control" id="date_emargement" required>
+                      </div>
+
+                      <div class="col-12 margin-bottom">
+                        <label for="month" class="form-label">Mois : </label>
+                        <select name="month" id="month" class="form-select" aria-label="Default select example">
+                            <option value="{{ emargement.month }}">{{ emargement.month }}</option>
+                            {% for month in months %}
+                            <option value="{{ month }}">{{ month }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                      <div class="col-12 margin-bottom">
+                        <label for="seance" class="form-label">Séance : </label>
+                        <select name="seance" id="seance" class="form-select" aria-label="Default select example">
+                            <option value="{{ emargement.seance }}">{{ emargement.seance }}</option>
+                            {% for seance in seances %}
+                            <option value="{{ seance }}">{{ seance }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                      <div class="col-12">
+                        <label for="motif" class="form-label">Titre : </label>
+                        <textarea class="form-control" name="titre" id="titre" style="height: 50px;">{{ emargement.titre }}</textarea>
+                    </div>
+                    
+                      <div class="text-center">
+                        <a href="{% url 'detail_emargements' emargement.enseignant.id|crypter_id emargement.salle.id|crypter_id emargement.matiere.id|crypter_id emargement.month|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                      </div>
+                    </form><!-- Vertical Form -->
+                    <div class="col-md-4"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

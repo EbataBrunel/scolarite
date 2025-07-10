@@ -1,0 +1,57 @@
+{% load crypto_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Font Awesome -->
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+     <!-- Ionicons -->
+     <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css" integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e" crossorigin="anonymous">
+    <title>Email</title>
+    <style>
+        body{
+            color:black;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .right{
+            float: right
+        }
+
+        .space{
+            padding-left: 30px
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 10px;
+            margin-top: 20px;
+            background-color: rgb(36, 37, 38);
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .white-color{
+            color: white;
+        }
+        
+    </style>
+</head>
+<body>
+        <h1>Paiement des frais du site de l'établissement {{ setting.appname }}</h1>
+        <p> Vous recevez ce message en réponse à votre paiment au groupe {{ setting_group.appname }}.</p>
+        
+        <b>Cliquez sur le button suivant pour télécharger le document :</b><br>
+        <a href="http://{{ domain }}/paiement/recu-paye-etablissement/{{ payment.id|crypter_id }}" class="button"><span class="white-color"> Télécharger la facture </span></a>
+
+        <p>Paiement effectué au nom de {{ user.first_name|title }} {{ user.last_name|upper}} avec l'adresse e-mail <span style="text-decoration: none;">{{ user.email }}</span></p>
+        <h3>Nos contacts : </h3>
+        <p class="space">Téléphone : {{ setting_group.phone }}</p>
+        <p class="space">Email : <span style="text-decoration: none;">{{ setting_group.email }} </span></p>
+        <p class="right"><small>Paiement effectué le {{ date|date:"d/m/Y H:m" }}</small></p>
+        
+</body>
+</html>

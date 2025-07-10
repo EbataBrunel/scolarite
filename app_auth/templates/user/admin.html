@@ -1,0 +1,137 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Administrateurs {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Utilisateurs</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Administrateurs</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des administrateurs</h5>
+                {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>NomUt</th>
+                                <th>Groupes</th>
+                                {% if request.session.group_name in permission %}
+                                <th>Actions</th>
+                                {% else %}
+                                <th>Action</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in administrateurs %}
+                            <tr>
+                                <td>{{ a.user.id }}</td>
+                                <td>{{ a.user.last_name }}</td>
+                                <td>{{ a.user.first_name }}</td>
+                                <td>{{ a.user.email }}</td>
+                                <td>{{ a.user.username }}</td>
+                                <td>
+                                  <a href="#"  data-bs-toggle="modal" data-bs-target="#groupModal{{ a.user.id }}">
+                                    <span class="badge rounded-pill bg-secondary">{{ a.nombre_groupes }} <i class="bi bi-eye"></i></span>
+                                  </a>
+                                  <!-- Start de delete Modal -->
+                                  <div class="modal fade" id="groupModal{{ a.user.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                                      <div class="modal-content">
+                                        <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                          <h5 class="modal-title">Liste des groupes</h5>
+                                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <br>
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h3 class="card-title text-center"><b>{{ a.user.last_name|title }} {{ a.user.first_name|title }}</b></h3>
+                                                    <hr>
+                                                    <ul>
+                                                    {% for group in a.groups %}
+                                                        <li>{{ group.name }}</li>
+                                                    {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                          </div>
+                                          <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                                {% if request.session.group_name in permission %}
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ a.user.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                    <a href="{% url 'user/detail_admin' a.user.id|crypter_id %}" title="Detail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ a.user.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-sm">
+                                          <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title">Suppression</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <p class="text-center">Voulez-vous vraiment supprimer cet administeur ?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              <a href="{% url 'user/delete_admin' a.user.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                                {% else %}
+                                <td>
+                                  <a href="{% url 'user/detail_admin' a.user.id|crypter_id %}" title="Detail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

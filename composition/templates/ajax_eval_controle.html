@@ -1,0 +1,11 @@
+{% if evaluation == "Contrôle" %}
+<div class="col-12 margin-bottom">
+    <label for="NumeroControle" class="form-label">Numéro du controle : </label>
+    <select name="numerocontrole" id="NumeroControle" class="form-select" aria-label="Default select example" required>
+        <option value="">-- Selectionnez --</option>
+        {% for controle in controles %}
+        <option value="{{ controle }}">{{ controle }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% endif %}

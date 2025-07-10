@@ -1,0 +1,159 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Détail de comp par classe et élève {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Examens</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'compositions' %}">Salles</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'detail_cmp_salle' salle.id|crypter_id %}">Trimestres</a></li>
+          <li class="breadcrumb-item active">Matières-Elèves</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+      <div class="row">
+
+        <div class="col-xl-12">
+
+          <div class="card">
+            <div class="card-body pt-3">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="{{ setting.theme }} {{ setting.text_color }}"  style="padding:10px; border-radius:10px">
+                    <table class="table">
+                      <tr>
+                        <th>Salle</th><td> : {{ salle }}</td>
+                      </tr>
+                      <tr>
+                        <th>Trimestre</th><td> : {{ trimestre }}</td> 
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                  <!-- Bordered Tabs -->
+                  <ul class="nav nav-tabs nav-tabs-bordered">
+
+                    <li class="nav-item">
+                      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Liste des matières</button>
+                    </li>
+
+                    <li class="nav-item">
+                      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Liste des élèves</button>
+                    </li>
+
+                  </ul>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="tab-content pt-2">
+
+                <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                    <h5 class="card-title">Liste des matières auxquelles les élèves ont composé</h5>
+                    {% if anneeacademique.status_cloture %}
+                    <div align="right">
+                      {% if setting.theme == "bg-default" %}
+                      <a href="{% url 'add_composition' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                      {% else %}
+                      <a href="{% url 'add_composition' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                      {% endif %}
+                    </div>
+                    {% endif %}
+                    <!-- Table with stripped rows -->
+                    <div class="table-responsive">
+                        <table class="table datatable">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Matières</th>
+                                    <th>NombreExamens</th>
+                                    <th>NombreContrôles</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in matieres %}
+                                <tr>
+                                    <td>{{ m.matiere.id }}</td>
+                                    <td class="white-space">{{ m.matiere }}</td>
+                                    <td><span class="badge rounded-pill bg-secondary">{{ m.nb_examens }}</span></td>
+                                    <td><span class="badge rounded-pill bg-secondary">{{ m.nb_controles }}</span></td>
+                                    <td>
+                                        <a href="{% url 'detail_comp_matiere' salle.id|crypter_id trimestre|crypter_id m.matiere.id|crypter_id %}" title="Détails" class="btn btn-info btn-sm"><i class="bi bi-eye "></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- End Table with stripped rows -->
+
+                </div>
+
+
+
+
+                <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+                  <h5 class="card-title">Liste des élèves qui ont passé les examens</h5>
+                  {% if anneeacademique.status_cloture %}
+                  <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'add_composition' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                    {% else %}
+                    <a href="{% url 'add_composition' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                    {% endif %}
+                  </div>
+                  {% endif %}
+                    <!-- Table with stripped rows -->
+                    <div class="table-responsive">
+                        <table class="table datatable">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Noms</th>
+                                    <th>Prénoms</th>
+                                    <th>NombreMatières</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in students %}
+                                <tr>
+                                    <td>{{ s.student.id }}</th>
+                                    <td class="white-space">{{ s.student.lastname|title }}</td>
+                                    <td class="white-space">{{ s.student.firstname|title }}</td>
+                                    <td><span class="badge rounded-pill bg-secondary">{{ s.nb_matieres }}</span></td>
+                                    <td>
+                                        <a href="{% url 'detail_comp_student' salle.id|crypter_id trimestre|crypter_id s.student.id|crypter_id %}" title="Détails" class="btn btn-info btn-sm"><i class="bi bi-eye "></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- End Table with stripped rows -->
+
+                </div>
+
+              </div><!-- End Bordered Tabs -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

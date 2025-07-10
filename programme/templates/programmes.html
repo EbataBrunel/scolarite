@@ -1,0 +1,69 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Liste des programmes {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Programmes</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Programmes</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des programmes</h5>
+                {% if anneeacademique.status_cloture %}
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'add_programme' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer un programme</a>
+                    {% else %}
+                    <a href="{% url 'add_programme' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un programme</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Salles</th>
+                                <th>NombreMatières</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for programme in programmes %}
+                            <tr>
+                                <td>{{ programme.salle.id }}</td>
+                                <td>{{ programme.salle }}</td>
+                                <td><span class="badge rounded-pill bg-secondary">{{ programme.effectif }}</span></td>
+                                <td>
+                                    <a href="{% url 'detail_programme' programme.salle.id|crypter_id  %}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye "></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

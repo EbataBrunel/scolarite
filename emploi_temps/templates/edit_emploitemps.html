@@ -1,0 +1,112 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'un emploi du temps {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Emploi du temps</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'emploitemps' %}" > Emploi du temps </a></li>
+          <li class="breadcrumb-item active">Ajout</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'un emploi du temps</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdateEmploitemps" class="row g-3">
+                {% csrf_token %}
+                <div class="col-12">
+                    <input type="text" name="id" value="{{ emploitemps.id }}" hidden="True" required="True">
+                    <label for="Salle" class="form-label">Salle : </label>
+                    <select name="salle" id="Salle" class="form-select" aria-label="Default select example">
+                        <option value="{{ emploitemps.salle.id}}">{{ emploitemps.salle }}</option>
+                        {% for salle in salles %}
+                        <option value="{{ salle.id }}">{{ salle }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="enseignantview">
+                  <div class="col-12">
+                    <label for="enseignant" class="form-label">Enseignant : </label>
+                    <select name="enseignant" id="enseignant" class="form-select" aria-label="Default select example">
+                        <option value="{{ emploitemps.enseignant.id }}">{{ emploitemps.enseignant.last_name }} {{ emploitemps.enseignant.first_name }}</option>
+                        {% for enseignant in enseignants %}
+                        <option value="{{ enseignant.id }}">{{ enseignant.last_name|upper }} {{ enseignant.first_name|title }}</option>
+                        {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div id="matiereview">
+                  <div class="col-12">
+                      <label for="matiere" class="form-label">Matière : </label>
+                      <select name="matiere" id="matiere" class="form-select" aria-label="Default select example" required>
+                          <option value="{{ emploitemps.matiere.id }}">{{ emploitemps.matiere }}</option>
+                          {% for matiere in matieres %}
+                          <option value="{{ matiere.id }}">{{ matiere }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
+                </div>
+                <div class="col-12">
+                    <label for="Jour" class="form-label">Jour : </label>
+                    <select name="jour" id="Jour" class="form-select" aria-label="Default select example" required>
+                        <option value="{{ emploitemps.jour }}">{{ emploitemps.jour }}</option>
+                        {% for jour in jours %}
+                        <option value="{{ jour }}">{{ jour }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <label for="Heure_debut" class="form-label">Heure début : </label>
+                    <input type="time" name="heure_debut" value="{{ emploitemps.heure_debut }}" class="form-control" id="Heure_debut" required>
+                </div>
+                <div class="col-12">
+                    <label for="Heure_fin" class="form-label">Heure fin: </label>
+                    <input type="time" name="heure_fin" value="{{ emploitemps.heure_fin }}" class="form-control" id="Heure_fin" required>
+                </div>
+                
+                <div class="text-center">
+                    <a href="{% url 'emploitemps' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

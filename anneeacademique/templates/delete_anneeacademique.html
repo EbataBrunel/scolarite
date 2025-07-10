@@ -1,0 +1,346 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Suppression d'une année académique {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Années académiques</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'annee_academiques' %}" >Années scolaires</a></li>
+          <li class="breadcrumb-item active">Suppression</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Suppression de l'année académique</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <th>Année du début</th>
+                                <td>{{ anneeacademique.annee_debut }}</td>
+                            </tr>
+                            <tr>
+                                <th>Année de fin</th>
+                                <td>{{ anneeacademique.annee_fin }}</td>
+                            </tr>
+                            <tr>
+                                <th>Séparateur</th>
+                                <td>{{ anneeacademique.separateur }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date du début</th>
+                                <td>{{ anneeacademique.start_date|date:"d/m/Y" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date de fin</th>
+                                <td>{{ anneeacademique.end_date|date:"d/m/Y" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        {% if nombre_total == 0 %}
+                          <p></p>
+                        {% elif nombre_total == 1 %}
+                          <h5 class="card-title">La suppression de cette année académique entrainera la suppression de l'élément suivant :</h5>
+                          <hr>
+                          <ul>
+                            {% if nombre.nombre_calendriers %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_calendriers }}</span> calendriers</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_classes %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_classes }}</span> classes</li>
+                            <hr>
+                            {% endif %}
+                            
+                            {% if nombre.nombre_series %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_series }}</span> séries</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_salles %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_salles }}</span> salles</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_matieres %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_matieres }}</span> matières</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_programmes %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_programmes }}</span> programmes</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_enseignements %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_enseignements }}</span> enseignements</li>
+                            <hr>
+                            {% endif %}
+                            
+                            {% if nombre.nombre_autorisation_payements_students %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_autorisation_payements_students }}</span> autorisations de paiements d'un(e) élève</li>
+                            <hr>
+                            {% endif %}
+                            
+                            {% if nombre.nombre_autorisation_payements_salles %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_autorisation_payements_salles }}</span> autorisations de paiements des élèves de cette salle</li>
+                            <hr>
+                            {% endif %}
+                          
+                            {% if nombre.nombre_payments %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_payments }}</span> paiements</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_contrats %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_contrats }}</span> contrats</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_renumerations_enseignants %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_renumerations_enseignants }}</span> rénumérations des énseignants</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_renumerations_admin %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_renumerations_admin }}</span> rénumérations des administrateurs</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_absences_enseignants %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_absences_enseignants }}</span> absences des énseignants</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_absences_personnels %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_absences_personnels }}</span> absences des administrateurs</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_emargements %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_emargements }}</span> émargements des enseignants</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_emargements %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_emargements }}</span> émargements des enseignants</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_inscriptions %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_inscriptions }}</span> inscriptions</li>
+                            <hr>
+                            {% endif %}
+                            
+                            {% if nombre.nombre_compositions %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_compositions }}</span> compositions</li>
+                            <hr>
+                            {% endif %}
+                            
+                            {% if nombre.nombre_deliberations %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_deliberations }}</span> délibérations</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_emploitemps %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_emploitemps }}</span> emploi du temps</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_activites %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_activites }}</span> activités</li>
+                            <hr>
+                            {% endif %}
+
+                            {% if nombre.nombre_publications %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_publications }}</span> publications</li>
+                            <hr>
+                            {% endif %}
+                            {% if nombre.nombre_settings %}
+                            <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_settings }}</span> paramètres</li>
+                            <hr>
+                            {% endif %}
+                          </ul>
+                        {% else %}
+                            <h5 class="card-title">La suppression de cette année académique entrainera la suppression des éléments suivants :</h5>
+                            <hr>
+                            <ul>
+                              {% if nombre.nombre_calendriers %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_calendriers }}</span> calendriers</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_classes %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_classes }}</span> classes</li>
+                              <hr>
+                              {% endif %}
+                              
+                              {% if nombre.nombre_series %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_series }}</span> séries</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_salles %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_salles }}</span> salles</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_matieres %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_matieres }}</span> matières</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_programmes %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_programmes }}</span> programmes</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_enseignements %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_enseignements }}</span> enseignements</li>
+                              <hr>
+                              {% endif %}
+                              
+                              {% if nombre.nombre_autorisation_payements_students %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_autorisation_payements_students }}</span> autorisations de paiements d'un(e) élève</li>
+                              <hr>
+                              {% endif %}
+                              
+                              {% if nombre.nombre_autorisation_payements_salles %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_autorisation_payements_salles }}</span> autorisations de paiements des élèves de cette salle</li>
+                              <hr>
+                              {% endif %}
+                            
+                              {% if nombre.nombre_payments %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_payments }}</span> paiements</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_contrats %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_contrats }}</span> contrats</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_renumerations_enseignants %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_renumerations_enseignants }}</span> rénumérations des énseignants</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_renumerations_admin %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_renumerations_admin }}</span> rénumérations des administrateurs</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_absences_enseignants %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_absences_enseignants }}</span> absences des énseignants</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_absences_personnels %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_absences_personnels }}</span> absences des administrateurs</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_emargements %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_emargements }}</span> émargements des enseignants</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_inscriptions %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_inscriptions }}</span> inscriptions</li>
+                              <hr>
+                              {% endif %}
+                              
+                              {% if nombre.nombre_compositions %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_compositions }}</span> compositions</li>
+                              <hr>
+                              {% endif %}
+                              
+                              {% if nombre.nombre_deliberations %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_deliberations }}</span> délibérations</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_emploitemps %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_emploitemps }}</span> emploi du temps</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_activites %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_activites }}</span> activités</li>
+                              <hr>
+                              {% endif %}
+
+                              {% if nombre.nombre_publications %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_publications }}</span> publications</li>
+                              <hr>
+                              {% endif %}
+                              {% if nombre.nombre_settings %}
+                              <li><span class="badge rounded-pill bg-danger">{{ nombre.nombre_settings }}</span> paramètres</li>
+                              <hr>
+                              {% endif %}
+                            </ul>
+                        {% endif %}
+                        <p class="text-center">
+                          <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ anneeacademique.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                          <!-- Start de delete Modal -->
+                          <div class="modal fade" id="deleteModal{{ anneeacademique.id }}" tabindex="-1">
+                              <div class="modal-dialog modal-sm">
+                                  <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h5 class="modal-title">Suppression</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body">
+                                        <p class="text-center">Voulez-vous vraiment supprimer cette année académique ?</p>
+                                      </div>
+                                      <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                        <a href="{% url 'del_anneeacademique' anneeacademique.id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div><!-- Fin de delete Modal-->
+                        </p>
+                    </div>
+                </div>
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+        <div class="col-md-1"></div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

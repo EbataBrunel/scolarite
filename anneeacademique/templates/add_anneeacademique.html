@@ -1,0 +1,93 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Ajout d'une année académique {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Années académiques</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'annee_academiques' %}" >Années scolaires</a></li>
+          <li class="breadcrumb-item active">Ajout</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Enregistrer une année scolaire</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formAnneeAcademqiue" class="row g-3">
+                {% csrf_token %}
+                <div class="col-12">
+                  <label for="etablissement" class="form-label">Etablissement : </label>
+                  <select name="etablissement" id="etablissement" class="form-select" aria-label="Default select example">
+                      <option value=""></option>
+                      {% for etablissement in etablissements %}
+                      <option value="{{ etablissement.id }}">{{ etablissement }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="Annee_debut" class="form-label">Année début : </label>
+                  <input type="number" name="annee_debut" class="form-control" id="Annee_debut" required>
+                </div>
+                <div class="col-12">
+                  <label for="Annee_fin" class="form-label">Annee fin : </label>
+                  <input type="number" name="annee_fin" class="form-control" id="Annee_fin" required>
+                </div>
+                <div class="col-12">
+                  <label for="Separateur" class="form-label">Séparateur : </label>
+                  <select name="separateur" id="Separateur" class="form-select" aria-label="Default select example" required>
+                      <option value="">-- Selectionnez --</option>
+                      <option value="-">-</option>
+                      <option value="/">/</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="start_date" class="form-label">Date de fin : </label>
+                  <input type="date" name="start_date" class="form-control" id="start_date" required>
+                </div>
+                <div class="col-12">
+                  <label for="end_date" class="form-label">Date du début : </label>
+                  <input type="date" name="end_date" class="form-control" id="end_date" required>
+                </div>
+                <div class="text-center">
+                  <a href="{% url 'annee_academiques' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

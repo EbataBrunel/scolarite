@@ -1,0 +1,195 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Mes émargements {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Mes émargements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Mes émargements</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Mes émargements</h5>
+                    <div class="row">
+                    {% for emargement in emargements %}
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ emargement.salle }}</h5>
+                                
+                                <div class="card">
+                                    <div class="card-body">
+                                      <h5 class="card-title">Matières</h5>
+                                      {% for m in emargement.matieres %}
+                                      <!-- Accordion without outline borders -->
+                                      <div class="accordion accordion-flush" id="accordionFlushExample">
+                                        <div class="accordion-item">
+                                          <h2 class="accordion-header" id="flush-headingOne">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ m.matiere.id }}" aria-expanded="false" aria-controls="flush-collapseOne">
+                                                {{ m.matiere }}
+                                            </button>
+                                          </h2>
+                                          <div id="flush-collapse{{ m.matiere.id }}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                                            <div class="accordion-body">
+                                                {% for mt in m.months %}
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                              <h5 class="card-title">{{ mt.month }}
+                                                                <button type="button" class="btn btn-secondary btn-sm" style="float:right" data-bs-toggle="modal" data-bs-target="#verticalycentered{{ mt.month }}{{ m.matiere.id }}">
+                                                                  Voir plus
+                                                                </button>
+                                                              </h5>
+                                                              <!-- Vertically centered Modal -->
+                                                              <div class="modal fade" id="verticalycentered{{ mt.month }}{{ m.matiere.id }}" tabindex="-1">
+                                                                <div class="modal-dialog modal-dialog-centered modal-xl">
+                                                                  <div class="modal-content">
+                                                                    <div class="modal-header text-center {{ setting.theme }} {{ setting.text_color }} ">
+                                                                      <h5>Emargement</h5>
+                                                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <div class="row">
+                                                                          <div class="col-md-2"></div>
+                                                                          <div class="col-md-8">
+                                                                            <div class="card">
+                                                                              <div class="card-body">
+                                                                                <div class="table-responsive">
+                                                                                  <table class="table">
+                                                                                    <tr>
+                                                                                      <th>Salle</th>
+                                                                                      <td> : {{ emargement.salle }}</td>
+                                                                                    </tr>
+                                                                                    <tr>
+                                                                                      <th>Matière</th>
+                                                                                      <td> : {{ m.matiere }}</td>
+                                                                                    </tr>
+                                                                                    <tr>
+                                                                                      <th>Mois</th>
+                                                                                      <td> : {{ mt.month }}</td>
+                                                                                    </tr>
+                                                                                  </table>
+                                                                                </div>
+                                                                              </div>
+                                                                            </div>
+                                                                          </div>
+                                                                          <div class="col-md-2"></div>
+                                                                        </div>
+
+                                                                        <div class="card">
+                                                                          <div class="card-body">
+                                                                            <br>
+                                                                            <!-- Table with stripped rows -->
+                                                                            <div class="table-responsive">
+                                                                                <table class="table table-bordered">
+                                                                                    <thead>
+                                                                                        <tr>
+                                                                                            <th>Horaires</th>
+                                                                                            <th>Jours</th>
+                                                                                            <th>Dates</th>
+                                                                                            <th>Séances</th>
+                                                                                            <th>Titres</th>
+                                                                                            <th>Résponsables</th>
+                                                                                            <th></th>
+                                                                                        </tr>
+                                                                                    </thead>
+                                                                                    <tbody>
+                                                                                        {% for e in mt.liste_emargements %}
+                                                                                        <tr>
+                                                                                            <td>{{ e.heure_debut }}-{{ e.heure_fin }}</td>
+                                                                                            <td>{{ e.jour }}</td>
+                                                                                            <td>{{ e.date_emargement|date:"d/m/Y" }}</td>
+                                                                                            <td>{{ e.seance }}</td>
+                                                                                            <td>{{ e.titre }}</td>
+                                                                                            <td>{{ e.user.last_name|title}} {{ e.user.first_name|title}}</td>
+                                                                                            <td><a href="{% url 'presence_student' e.id|crypter_id %}" class="btn btn-secondary btn-sm">Absence des élèves</a></td>
+                                                                                        </tr>
+                                                                                        {% endfor %}
+                                                                                    </tbody>
+                                                                                    <tfooter>
+                                                                                        <tr>
+                                                                                            <td class="text-center" colspan="6"><b>Heures Totales</b></td>
+                                                                                            <td>{{ mt.total_time }}</td>
+                                                                                        </tr>
+                                                                                        <tr>
+                                                                                          <td class="text-center" colspan="4"><b>Cout par heure</b></td>
+                                                                                          <td>{{ mt.cout_heure }}{{ setting.devise }}</td>
+                                                                                          <td>Montant net</td><td class="text-danger"><b>{{ mt.montant_payer|floatformat:2 }}{{ setting.devise }}</b></td>
+                                                                                      </tr>
+                                                                                    </tfooter>
+                                                                                </table>
+                                                                            </div>
+                                                                            <!-- End Table with stripped rows -->
+                                                                          </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer la fenêtre</button>
+                                                                    </div>
+                                                                  </div>
+                                                                </div>
+                                                              </div><!-- End Vertically centered Modal-->
+                                                
+                                                            </div>
+                                                          </div>
+                                                {% endfor %}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div><!-- End Accordion without outline borders -->
+                                      {% endfor %}
+                                    </div>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    </div>
+
+                    <div class="col-lg-12">
+                      <div class="card">
+                          <div class="card-body">
+                            <h3 class="card-title">Montant total par mois</h3>
+                            <br>
+                            <!-- Vertical Form -->
+                            <form method="post" action="" class="row g-3">
+                              {% csrf_token %}
+                              <div class="row">
+                                <div class="col-md-4">
+                                  <div class="col-12">
+                                      <select name="month" id="month" class="form-select" aria-label="Default select example" required>
+                                          <option value="">-- Selectionnez un mois --</option>
+                                          {% for month in months %}
+                                          <option value="{{ month }}">{{ month }}</option>
+                                          {% endfor %}
+                                      </select>
+                                  </div>
+                                </div>
+                                <div class="col-md-8">
+                                  <div id="content_emargement_ens"></div>
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

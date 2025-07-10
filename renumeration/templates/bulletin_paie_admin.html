@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bulletin de Paie</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f9;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .logo img {
+      max-height: 80px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #3e64ff;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 25px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f0f4ff;
+      color: #333;
+    }
+
+    .section-title {
+      background-color: #e7f0ff;
+      font-weight: bold;
+      text-align: center;
+      padding: 8px;
+      color: #2a4365;
+    }
+
+    .net-pay {
+      text-align: center;
+      font-size: 1.4em;
+      background-color: #d1f7f0;
+      color: #157a6e;
+      font-weight: bold;
+      border-radius: 8px;
+      padding: 15px;
+    }
+
+    .footer {
+        font-size: 12px;
+        color: #888;
+        text-align: center;
+        margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+        {% if setting.logo %}
+            <img src="data:image/png;base64,{{ base64_image }}" alt="Logo de {{ setting.appname }}">
+        {% endif %}
+    </div>
+
+    <h3>Bulletin de Paie numéro {{ renumeration.id }}</h3>
+
+    <table>
+      <tr><td colspan="2" class="section-title">Informations Employé</td></tr>
+      <tr><th>Nom</th><td>{{ renumeration.user.last_name|title }} {{ renumeration.user.first_name|title }}</td></tr>
+      <tr><th>Poste</th><td>{{ poste }}</td></tr>
+      <tr><th>Matricule</th><td>EMP0{{ renumeration.user.id }}</td></tr>
+    </table>
+
+    <table>
+      <tr><td colspan="2" class="section-title">Entreprise</td></tr>
+      <tr><th>École</th><td>{{ setting.appname }}</td></tr>
+      <tr><th>Adresse</th><td>{{ setting.address }}</td></tr>
+      <tr><th>Téléphone</th><td>{{ setting.phone }} </td></tr>
+      <tr><th>Email</th><td>{{ setting.email }}</td></tr>
+      <tr><th>Période</th><td>{{ renumeration.month }} 2025</td></tr>
+    </table>
+
+    <table>
+      <tr><td colspan="2" class="section-title">Rémunération</td></tr>
+      <tr><th>Salaire de base</th><td>{{ renumeration.amount|floatformat:2 }} {{ setting.devise }}</td></tr>
+      <tr><th>Heures supplémentaires</th><td>0,00 {{ setting.devise }}</td></tr>
+      <tr><th>Primes (Transport, repas)</th><td>{{ renumeration.indemnite|floatformat:2 }} {{ setting.devise }}</td></tr>
+    </table>
+
+    <table>
+      <tr><td colspan="2" class="section-title">Retenues</td></tr>
+      <tr><th>Cotisations sociales</th><td>0,00 {{ setting.devise }}</td></tr>
+      <tr><th>Epargne</th><td>0,00 {{ setting.devise }}</td></tr>
+    </table>
+
+    <div class="net-pay">Net à payer : {{ renumeration.total_amount|floatformat:2 }} {{ setting.devise }}</div>
+
+    <div class="footer">
+        Dans votre intérêt et pour vous aider à faire valoir vos droits, conservez ce bulletin sans limitation de durée<br>
+        Pour la définition des termes employés, contater le {{ setting.phone }}
+    </div>
+  </div>
+</body>
+</html>
+

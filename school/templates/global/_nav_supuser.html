@@ -1,0 +1,104 @@
+{% load static %}
+<!-- ======= Sidebar ======= -->
+<aside id="sidebar" class="sidebar {{ setting.theme }}">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+      {% if request.session.group_name == "Super user" or request.session.group_name == "Super admin" %}
+          
+        <li class="nav-item">
+          <a class="nav-link collapsed" href="{% url 'index' %}">
+            <i class="bi bi-house"></i>
+            <span>Accueil</span>
+          </a>
+        </li><!-- End Dashboard Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'settings/db_supuser' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/db_supuser' %}">
+              <i class="bi bi-grid"></i>
+              <span>Tableau de bord</span>
+            </a>
+          </li><!-- End Dashboard Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'group/groups' in request.path or 'group/add_group' in request.path or 'group/edit_group' in request.path or 'group/group_users' in request.path or 'group/group_add_user' in request.path or 'group/group_edit_user' in request.path or 'group/admin_group' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-emar" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-hdd-rack-fill"></i><span>Gestion de groupes</span><i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+            <ul id="icons-emar" class="nav-content collapse {% if 'group/groups' in request.path or 'group/add_group' in request.path or 'group/edit_group' in request.path or 'group/group_users' in request.path or 'group/group_add_user' in request.path or 'group/group_edit_user' in request.path or 'group/admin_group' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+              <li>
+                <a href="{% url 'group/groups' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Groupes sup utilisateurs</span>
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'group/group_users' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Groupes utilisateurs</span>
+                </a>
+              </li>
+            </ul>
+          </li><!-- End Icons Nav -->
+          <li class="nav-heading">Pages</li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'user/promoteurs' in request.path or 'delete_promoteur' in request.path or 'detail_promoteur' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'user/promoteurs' %}">
+              <i class="bi bi-people"></i>
+              <span>Promoteurs</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'etabs' in request.path or 'delete_etablissement' in request.path or 'add_etablissement' in request.path or 'edit_etablissement' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'etabs' %}">
+              <i class="bi bi-shop"></i>
+              <span>Etablissements</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'annee_academiques' in request.path or 'droit_acces_anneeacademique' in request.path or 'add_anneeacademique' in request.path or 'edit_anneeacademique' in request.path or 'delete_anneeacademique' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'annee_academiques' %}">
+              <i class="bi bi-calendar"></i>
+              <span>Années académiques</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'contrat_etablissement/contrat_etablissements' in request.path or 'contrat_etablissement/add_contrat_etablissement' in request.path or 'contrat_etablissement/edit_contrat_etablissement' in request.path or 'contrat_etablissement/mes_contrats_supuser' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#calendar-nav" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-layers-fill"></i><span>Gestion de contrats</span><i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+            <ul id="calendar-nav" class="nav-content collapse {% if 'contrat_etablissement/contrat_etablissements' in request.path or 'contrat_etablissement/add_contrat_etablissement' in request.path or 'contrat_etablissement/edit_contrat_etablissement' in request.path or 'contrat_etablissement/mes_contrats_supuser' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+              <li>
+                <a href="{% url 'contrat_etablissement/contrat_etablissements' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Contrats</span>
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'contrat_etablissement/mes_contrats_supuser' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Mes contrats</span>
+                </a>
+              </li>
+            </ul>
+          </li><!-- End Components Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'autorisation_paye_etablissement/autorisation_paye_etablissements' in request.path or 'autorisation_paye_etablissement/add_autorisation_paye_etablissement' in request.path or 'autorisation_paye_etablissement/edit_autorisation_paye_etablissement' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'autorisation_paye_etablissement/autorisation_paye_etablissements' %}">
+              <i class="bi bi-pip-fill"></i>
+              <span>Autorisations</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'payment_etablissement/payment_etablissements' in request.path or 'payment_etablissement/add_payment_etablissement' in request.path or 'payment_etablissement/edit_payment_etablissement' in request.path  %} {% else %}collapsed{% endif %}" href="{% url 'payment_etablissement/payment_etablissements' %}">
+              <i class="bi bi-cash"></i>
+              <span>Paiements</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'payment_etablissement/comptabilite_supuser' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'payment_etablissement/comptabilite_supuser' %}">
+              <i class="bi bi-door-closed-fill"></i>
+              <span>Comptabilité</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'settings/setting_supuser' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/setting_supuser' %}">
+              <i class="bi bi-gear"></i>
+              <span>Paramètre</span>
+            </a>
+          </li><!-- End Contact Page Nav -->
+        </li><!-- End Contact Page Nav -->
+    
+      {% endif %}
+
+    </ul>
+
+  </aside><!-- End Sidebar-->

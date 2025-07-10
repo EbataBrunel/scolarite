@@ -1,0 +1,212 @@
+{% load static %}
+{% load crypto_filters %}
+{% if deliberation %}
+    {% if deliberation.status %}
+    <!-- Table with stripped rows -->
+    <div class="table-responsive">
+        <table class="table datatable">
+            <thead>
+                <tr>
+                    <th class="bg-secondary">Rang</th>
+                    <th class="bg-secondary">Noms</th>
+                    <th class="bg-secondary">Prénoms</th>
+                    <th class="bg-secondary">Moyenne</th>
+                    <th class="bg-secondary">Mention</th>
+                    {% if deliberation %}
+                    <th class="bg-secondary">Décision du jury</th>
+                    {% endif %}
+                    <th class="bg-secondary"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for moyenne in moyenne_students %}
+                <tr>
+                    <td>{{ moyenne.rang }}</td>
+                    <td>{{ moyenne.student.lastname|title }}</td>
+                    <td>{{ moyenne.student.firstname|title }}</td>
+                    <td>{{ moyenne.moyenne|floatformat:2 }}</td>
+                    <td>{{ moyenne.mention }}</td>
+                    {% if deliberation %}
+                        {% if moyenne.moyenne >= deliberation.moyennevalidation %}
+                            {% if moyenne.student.gender == 'Masculin' %}
+                            <td class="text-success">Admis</td>
+                            {% else %}
+                            <td class="text-success">Admise</td>
+                            {% endif %}
+                        {% else %}
+                            {% if moyenne.student.gender == 'Masculin' %}
+                            <td class="text-danger">Ajourné</td>
+                            {% else %}
+                            <td class="text-danger">Ajournée</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %} 
+                    <td>
+                        <!-- Large Modal -->
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#largeModal{{ moyenne.student.id }}">
+                            Détail
+                        </button>
+
+                        <div class="modal fade" id="largeModal{{ moyenne.student.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-fullscreen modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="text-center">
+                                    <div class="row">
+                                        <div class="col-md-3"></div>
+                                        <div class="col-md-6 bg-secondary" style="border-radius:20px">
+                                            <br>
+                                            <h4 class="text-center"><b>Bulletin de notes du {{ trimestre }}</b></h4>
+                                            <h5 class="text-center">Année scolaire : {{ request.session.annee_debut }} {{ request.session.separateur }} {{ request.session.annee_fin }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="col-md-3"></div>
+                                    </div>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <table class="">
+                                                <tr>
+                                                    <td>Matricule de l'élève :</td>
+                                                    <td>EAJC0{{ moyenne.student.id }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Nom et prénom :</td>
+                                                    <td>{{ moyenne.student.lastname|title }} {{ moyenne.student.firstname|title }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Date et lieu de naissance : </td>
+                                                    <td>{{ moyenne.student.datenais|date:"d/m/Y" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Classe / Effectif : </td>
+                                                    <td>{{ salle.classe }} {{salle.serie }}{{ salle.number }} / {{ nb_students_inscris }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Adresse : </td>
+                                                    <td>{{ moyenne.student.address }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p style="float:right">
+                                                {% if moyenne.student.photo %}
+                                                  <img src="{{ moyenne.student.photo.url }}" class="img-responsive img-detail" />
+                                                {% else %}
+                                                <img class="img-responsive img-detail" src="{% static 'assets/img/user.png' %}">
+                                                {% endif %}
+                                              </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th rowspan="2" class="item-table-center bg-secondary">Matières</th>
+                                                    <th class="text-center bg-secondary" colspan="3">Notes</th>
+                                                    <th rowspan="2" class="item-table-center bg-secondary">Coefficients</th>
+                                                    <th rowspan="2" class="item-table-center bg-secondary">Total</th>
+                                                    <th rowspan="2" class="item-table-center bg-secondary">Min<br>Max</th>
+                                                    <th rowspan="2" class="item-table-center bg-secondary">Observations</th>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-center bg-secondary">M. Classe</th>
+                                                    <th class="text-center bg-secondary">M. Comp</th>
+                                                    <th class="text-center bg-secondary">M. Gle</th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for d in moyenne.details %}
+                                            <tr>
+                                                <td>
+                                                    {{ d.matiere }}<br>
+                                                    <span style="float:right">{{ d.enseignant.last_name|title }}</span>
+                                                </td>
+                                                <td class="item-table-center">{{ d.moyenne_controle|floatformat:2 }}</td>
+                                                <td class="item-table-center">{{ d.note_examen|floatformat:2 }}</td>
+                                                <td class="item-table-center">{{ d.moyenne_finale_matiere|floatformat:2 }}</td>
+                                                <td class="item-table-center">{{ d.coefficient }}</td>
+                                                <td class="text-center">{{ d.total_note|floatformat:2 }}</td>
+                                                <td class="text-center">{{ d.note_minimale|floatformat:2 }}<br>{{ d.note_maximale|floatformat:2 }}</td>
+                                                <td class="item-table-center">{{ d.mention_note_matiere }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                            <tfooter>
+                                                <tr>
+                                                    <td colspan="4" class="text-center"><b>Total : </b></td>
+                                                    <td class="text-center">{{ somme_coefficient }}</td>
+                                                    <td class="text-center">{{ moyenne.somme_note|floatformat:2 }}</td>
+                                                    <td></td>
+                                                    <td></td>
+                                                <tr>
+                                                <tr>
+                                                    <td colspan="2" class="text-center">Moyenne : </td>
+                                                    <td class="text-center text-light bg-secondary">{{ moyenne.moyenne|floatformat:2 }}</b></td>
+                                                    <td class="text-center">Min : {{ moyenne_min|floatformat:2 }}| Max : {{ moyenne_max|floatformat:2 }}</td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td class="text-center">Mention</td>
+                                                    <td class="text-center"><b>{{ moyenne.mention }}</b></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>RESULTATS TRIMESTRIELS</td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td class="text-center"><b>Rang : </b></td>
+                                                    <td class="text-center text-light bg-secondary">{{ moyenne.rang }}</td>
+                                                    <td colspan="3"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th colspan="8" class="text-center">DECISION DU CONSEIL DE CLASSE</th>
+                                                </tr>
+                                                <tr>
+                                                    <th colspan="4" class="text-center">Discipline</th>
+                                                    <th colspan="4" class="text-center">Décision</th>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2" class="text-center">Absence</td>
+                                                    <td colspan="2"  class="text-center">Travail</td>
+                                                    {% if moyenne.moyenne >= deliberation.moyennevalidation  %}
+                                                        {% if moyenne.student.gender == "Masculin" %}
+                                                        <td colspan="4"  class="text-center text-success">Admis</td>
+                                                        {% else %}
+                                                        <td colspan="4"  class="text-center text-success">Admise</td>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% if moyenne.student.gender == "Masculin" %}
+                                                        <td colspan="4"  class="text-center">Ajourné</td>
+                                                        {% else %}
+                                                        <td colspan="4"  class="text-center">Ajournée</td>
+                                                        {% endif %}
+                                                    {% endif%}
+                                                </tr>
+                                            </tfooter>
+                                        </table>
+                                    </div>
+                                    <div class="text-center">
+                                        <a href="{% url 'bulletin_etudiant' moyenne.student.id|crypter_id trimestre|crypter_id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i> Télécharger le bulletin</a>
+                                    </div>
+                                </div>
+                                <div class="modal-footer text-center">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                </div>
+                            </div>
+                            </div>
+                        </div><!-- End Large Modal-->
+                    </td>   
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="text-center"><a href="{% url 'proces_verbal_examen' salle.id|crypter_id trimestre|crypter_id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i>  Téléchager le fichier </a></p>
+    <!-- End Table with stripped rows -->
+    {% else %}
+     <h3 class="text-center"><span class="text-warning"><i class="bi bi-circle-fill"></i></span> Les résultats ne sont pas encore disponibles.</h3>
+    {% endif %}
+{% else %}
+<h3 class="text-center"><span class="text-warning"><i class="bi bi-circle-fill"></i></span> Les résultats ne sont pas encore disponibles.</h3>
+{% endif %}

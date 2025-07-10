@@ -1,0 +1,16 @@
+{% if trimestres %}
+<div class="col-12">
+    <select name="trimestre_resultat" id="trimestre_resultat" class="form-select" aria-label="Default select example" required>
+        <option value="">-- Selectionnez --</option>
+        {% for trimestre in trimestres %}
+        <option value="{{ trimestre }}">{{ trimestre }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% else %}
+<div class="col-12">
+    <select name="trimestre_resultat" id="trimestre_resultat" class="form-select" aria-label="Default select example" required>
+        <option value="">Aucune donnée n'a été enregistrée</option>
+    </select>
+</div>
+{% endif %}

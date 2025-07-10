@@ -1,0 +1,78 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Liste des matières émargées par un énseignant {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Enseignements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'emargements' %}">Enseignants</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'salles_emargements' enseignant.id|crypter_id %}">Salles</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'matieres_emargements' enseignant.id|crypter_id salle.id|crypter_id %}">Matières</a></li>
+          <li class="breadcrumb-item active">Mois</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des émargement</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                      <div class=" table-responsive {{ setting.theme }} {{ setting.text_color }}" style="padding:10px; border-radius:10px">
+                        <table class="table">
+                          <tr>
+                            <th>Enseignant </th> <td> : {{ enseignant.last_name|title }} {{ enseignant.first_name|title }}</td>
+                          </tr>
+                          <tr>
+                            <th>Salle  </th><td> : {{ salle }}</td>
+                          </tr>
+                          <tr>
+                            <th>Matières  </th><td> : {{ matiere }}</td>
+                          </tr>
+                        </table>
+                      </div>
+                    </div>
+                </div>
+                <br>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Matières</th>
+                                <th class="text-center">NombreEmargements</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emargement in emargements %}
+                            <tr>
+                                <td>{{ emargement.month }}</td>
+                                <td class="text-center"><span class="badge rounded-pill bg-secondary">{{ emargement.nb_emargements }}</span></td>
+                                <td>
+                                  <a href="{% url 'detail_emargements' enseignant.id|crypter_id salle.id|crypter_id matiere.id|crypter_id emargement.month|crypter_id  %}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye "></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

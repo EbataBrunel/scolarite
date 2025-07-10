@@ -1,0 +1,19 @@
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title text-center">Resultat du {{ trimestre }}</h5>
+        <div class="row">
+            {% for s in salles %}
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <br>
+                        <h5 class="text-center"><b>{{ s.salle }}</b></h5>
+                        <p class="text-center text-success"><em><strong>{{ s.pourcentage|floatformat:2 }}%</strong></em></p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

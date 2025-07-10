@@ -1,0 +1,33 @@
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">Associer {{ user.last_name|title }} {{ user.first_name|title }} à un groupe </h3>
+        <!-- On inclut l'image de chargement -->
+        {% include 'global/_loading.html' %}
+        <!-- Vertical Form -->
+        <form method="post" action="{% url 'add_new_user_to_group' %}"  class="row g-3">
+          {% csrf_token %}
+          <div class="row">
+              <div class="col-md-12">
+                  <div class="card">
+                      <div class="card-body">
+                          <input type="text" name="id" value="{{ user.id }}" hidden="True" required>
+                          <div class="col-12">
+                              <label for="name" class="form-label">Groupe : </label>
+                              <select name="name" id="name" class="form-select" aria-label="Default select example" required>
+                                  <option value="">-- Selectionnez un groupe --</option>
+                                  {% for group in groups %}
+                                  <option value="{{ group.name }}">{{ group.name }}</option>
+                                  {% endfor %}
+                              </select>
+                          </div>
+                          <br>
+                          <div class="text-center">
+                              <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </form><!-- Vertical Form -->
+    </div>
+</div>

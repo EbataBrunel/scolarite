@@ -1,0 +1,18 @@
+{% if students %}
+<div class="col-12 margin-bottom">
+    <label for="student" class="form-label">Elève : </label>
+    <select name="student" id="student" class="form-select" aria-label="Default select example" required>
+        <option value="">-- Selectionnez --</option>
+        {% for student in students %}
+            <option value="{{ student.id }}">{{ student }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% else %}
+<div class="col-12 margin-bottom">
+    <label for="student" class="form-label">Elève : </label>
+    <select name="student" id="student" class="form-select" aria-label="Default select example" required>
+        <option value="">Aucun élève n'a été enregistrée</option>
+    </select>
+</div>
+{% endif %}

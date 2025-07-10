@@ -1,0 +1,57 @@
+
+
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Mon emploi du temps {% endblock %}
+{% block content %}
+{% load static %}
+
+  <!-- ======= Sidebar ======= -->
+
+<main id="main" class="main">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="pagetitle">
+                <h1>Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item active">Notification</li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+          
+            <section class="section contact">
+                <div class="color-2 text-light">
+                    <h3 class="content-title text-center"><i class="bi bi-bell"></i> Notification</h3>
+                </div>
+                <hr>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Liste des notifications</h5>
+                       
+                        {% for notification in notifications %}
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3 class="card-title">Notification de {{ notification.date_notification|date:"d/m/Y" }} à {{ notification.date_notification|date:"h:m" }}</h3>
+                                    {% if notification.parent.gender == "Masculin" %}
+                                    <p>Monsieur,</p>
+                                    {% else %}
+                                    <p>Madame,</p>
+                                    {% endif %}
+                                    <p>Nous vous prions de bien vouloir régulariser la dette de <span class="text-danger">{{ notification.amount }} {{ setting.devise }}</span> de frais de scolarité de votre enfant dans les plus brefs délais. Pour toute question, merci de contacter le service comptable.</p>
+
+                                    <p>Cordialement,</p>
+                                    <p>Gestionnaire {{ notification.user.last_name|title }} {{ notification.user.first_name|title }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+</main><!-- End #main -->
+{% endblock %}
+

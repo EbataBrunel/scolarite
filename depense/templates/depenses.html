@@ -1,0 +1,203 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Dépenses {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Dépenses</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Dépenses</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des dépenses</h5>
+                {% if anneeacademique.status_cloture %}
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'add_depense' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une dépense</a>
+                    {% else %}
+                    <a href="{% url 'add_depense' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une dépense</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if messages %}
+                  {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th>NombreDépenses</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in depenses %}
+                            <tr>
+                                <td>{{ d.month }}</td>
+                                <td><span class="badge rounded-pill bg-secondary">{{ d.nb_depenses }}</span></td>
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#detailModal{{ d.month }}" title="Plus d'info" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="detailModal{{ d.month }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                                          <div class="modal-content">
+                                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                              <h5 class="modal-title">Détail de dépense</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <h5 class="text-center"><b>Mois : </b>{{ d.month }}</h5>
+                                                <br>
+                                                {% for dp in d.depenses %}
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <br>
+                                                        <h5><b>Signe : </b> {{ dp.depense.signe }}</h5>
+                                                        <p><b>Type de dépense : </b> {{ dp.depense.type_depense }}</p>
+                                                        <p><b>Description : </b> {{ dp.depense.description }}</p>
+                                                        <p><b>Montant : </b> {{ dp.depense.amount }}{{ setting.devise }}</p>
+                                                        <p><b>Date de dépense: </b>{{ dp.depense.date_depense|date:"d/m/Y" }}</p> 
+                                                        {% if anneeacademique.status_clotures %}
+                                                        <p>
+                                                          <a class="btn btn-danger btn-sm delete_depense" id="{{ dp.depense.id }}"><i class="bi bi-trash"></i> Supprimer </a>
+                                                          <a href="{% url 'edit_depense' dp.depense.id|crypter_id %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier </a>
+                                                        </p>
+                                                        {% endif %}
+                                                        {% if request.session.group_name == "Promoteur" %}
+
+                                                        <!-- Accordion without outline borders -->
+                                                        <div class="accordion accordion-flush" id="accordionFlushExample">
+                                                          <div class="accordion-item">
+                                                            <h2 class="accordion-header" id="flush-headingOne">
+                                                              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne{{ dp.depense.id }}" aria-expanded="false" aria-controls="flush-collapseOne">
+                                                                <h4>Historique <span class="badge rounded-pill bg-secondary">{{ dp.nombre_histoires }}</span></h4>
+                                                              </button>
+                                                            </h2>
+                                                            <div id="flush-collapseOne{{ dp.depense.id }}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                                                              <div class="accordion-body">
+                                                                <div class="card">
+                                                                  <div class="card-body">
+                                                                    {% for history in dp.histories %}
+                                                                      {% if history.action == "Créé" %}
+                                                                        <h3 class="card-title">Ajout du {{ history.date|date:"d/m/Y h:m" }} par {{ history.user.last_name|title }} {{ history.user.first_name|title }}</h3>
+                                                                        <table class="table">
+                                                                          <tr>
+                                                                            <th>Champs</th>
+                                                                            <th>Valeur</th>  
+                                                                          </tr>
+                                                                          {% for add in history.tab_add %}
+                                                                          <tr>
+                                                                            <td> {{ add.field_name }}</td>
+                                                                            <td> {{ add.value }}</td>
+                                                                          </tr>
+                                                                          {% endfor %}
+                                                                        </table>
+                                                                      
+                                                                      {% elif history.action == "Modifié" %}
+                                                                        <h3 class="card-title">Modification du {{ history.date|date:"d/m/Y h:m" }} par {{ history.user.last_name|title }} {{ history.user.first_name|title }}</h3>
+                                                                        <table class="table">
+                                                                          <tr>
+                                                                            <th>Champs</th>
+                                                                            <th>Ancien</th>
+                                                                            <th>Nouveau</th>  
+                                                                          </tr>
+                                                                          {% for change in history.tab_update %}
+                                                                          <tr>
+                                                                            <td> {{ change.field }}</td>
+                                                                            <td> {{ change.old }}</td>
+                                                                            <td> {{ change.new }}</td>
+                                                                          </tr>
+                                                                          {% endfor %}
+                                                                        </table>
+                                                                      {% else %}
+                                                                        <h3 class="card-title">Suppression du {{ history.date|date:"d/m/Y h:m" }} par {{ history.user.last_name|title }} {{ history.user.first_name|title }}</h3>
+                                                                        <table class="table">
+                                                                          <tr>
+                                                                            <th>Champs</th>
+                                                                            <th>Valeur</th>  
+                                                                          </tr>
+                                                                          {% for add in history.tab_delete %}
+                                                                          <tr>
+                                                                            <td> {{ add.field_name }}</td>
+                                                                            <td> {{ ad.value }}</td>
+                                                                          </tr>
+                                                                          {% endfor %}
+                                                                        </table>
+                                                                      {% endif %}
+                                                                    {% endfor %}
+                                                                  </div>
+                                                                </div>
+                                                              </div>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+
+                                                      {% endif %}
+                                                        
+                                                    </div>
+                                                </div>
+                                                {% endfor%}
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+
+                <!-- Start groupe Modal -->
+                <div class="modal fade" id="content_delete" tabindex="-1">
+                  <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content">
+                      <div class="modal-header bg-danger text-light">
+                        <h5 class="modal-title">Suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true" class="badge bg-dark">x</span>
+                        </button>
+                      </div>
+                      <div class="modal-body" id="content-delete-item"></div>
+                    </div>
+                  </div>
+                </div><!-- End group Modal-->
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Mon emploi du temps {% endblock %}
+{% block content %}
+{% load static %}
+
+  <!-- ======= Sidebar ======= -->
+
+  <main id="main" class="main">
+    <div class="row">
+        <div class="col-md-10">
+            <div class="pagetitle">
+                <h1>Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item active">Emploi du temps</li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+          
+            <section class="section contact">
+                <div class="bg-secondary {{ setting.text_color }}">
+                    <h3 class="content-title text-center"><i class="bi bi-building"></i> Emploi du temps</h3>
+                </div>
+                <hr>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="text-center bg-secondary">Horaires</th>
+                                <th class="text-center bg-secondary">Lundi</th>
+                                <th class="text-center bg-secondary">Mardi</th>
+                                <th class="text-center bg-secondary">Mercredi</th>
+                                <th class="text-center bg-secondary">Jeudi</th>
+                                <th class="text-center bg-secondary">Vendredi</th>
+                                {% if count_emploi_samedi %}
+                                <th class="text-center bg-secondary">Samedi</th>
+                                {% endif %}
+                                {% if count_emploi_dimanche %}
+                                <th class="text-center bg-secondary">Dimanche</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emploi in emploitemps %}
+                            <tr>
+                                <td class="text-center item-table-center bg-secondary">{{ emploi.horaire }}</td>
+                                <td class="{{ emploi.lundi.matiere.theme }} {{ emploi.lundi.matiere.text_color }} min-height-cellule-table">
+                                    {% if emploi.lundi.id %}
+                                        <p class="text-center">
+                                            {{ emploi.lundi.matiere }}<br>
+                                            {{ emploi.lundi.enseignant.last_name|title }}
+                                        </p>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center {{ emploi.mardi.matiere.theme }} {{ emploi.mardi.matiere.text_color }}">
+                                    {% if emploi.mardi.id %}
+                                        {{ emploi.mardi.matiere }}<br>
+                                        {{ emploi.mardi.enseignant.last_name|title }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-center {{ emploi.mercredi.matiere.theme }} {{ emploi.mercredi.matiere.text_color }}">
+                                    {% if emploi.mercredi.id %}
+                                        {{ emploi.mercredi.matiere }}<br>
+                                        {{ emploi.mercredi.enseignant.last_name|title }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-center {{ emploi.jeudi.matiere.theme }} {{ emploi.jeudi.matiere.text_color }}">
+                                    {% if emploi.jeudi.id %}
+                                        {{ emploi.jeudi.matiere }}<br>
+                                        {{ emploi.jeudi.enseignant.last_name|title }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-center {{ emploi.vendredi.matiere.theme }} {{ emploi.vendredi.matiere.text_color }}">
+                                    {% if emploi.vendredi.id %}
+                                        {{ emploi.vendredi.matiere }}<br>
+                                        {{ emploi.vendredi.enseignant.last_name|title }}
+                                    {% endif %}
+                                </td>
+                                {% if count_emploi_samedi %}
+                                <td class="text-center {{ emploi.samedi.matiere.theme }} {{ emploi.samedi.matiere.text_color }}">
+                                    {% if emploi.samedi.id %}
+                                        {{ emploi.samedi.matiere }}<br>
+                                        {{ emploi.samedidi.enseignant.last_name|title }}
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                                {% if count_emploi_dimanche %}
+                                <td class="text-center {{ emploi.dimanche.matiere.theme }} {{ emploi.dimanche.matiere.text_color }}">
+                                    {% if emploi.dimanche.id %}
+                                        {{ emploi.dimanche.matiere }}<br>
+                                        {{ emploi.samedi.enseignant.last_name|title }}
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </section>
+
+
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+  </main><!-- End #main -->
+  {% endblock %}

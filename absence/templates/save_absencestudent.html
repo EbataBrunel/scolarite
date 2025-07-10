@@ -1,0 +1,13 @@
+{% if presence == "Présent" %}
+    {% if student.gender == "Masculin" %}
+        <span class="badge rounded-pill bg-success">Présent</span>
+    {% else %}
+        <span class="badge rounded-pill bg-success">Présente</span>
+    {% endif %}
+{% else %}
+    {% if student.gender == "Masculin" %}
+        <a href="#"><span class="badge rounded-pill bg-danger">Absent</span></a>
+    {% else %}
+        <a href="#"><span class="badge rounded-pill bg-danger">Absente</span></a>
+    {% endif %}
+{% endif %}

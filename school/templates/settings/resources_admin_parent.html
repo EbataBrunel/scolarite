@@ -1,0 +1,308 @@
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Resources administratives {% endblock %}
+{% block content %}
+{% load static %}
+
+  <!-- ======= Sidebar ======= -->
+
+  <main id="main" class="main">
+    <div class="row">
+        <div class="col-md-10">
+            <div class="pagetitle">
+                <h1>Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item active">Resources administratives</li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+            <section class="section contact">
+              <div class="bg-success text-light">
+                <h3 class="content-title text-center"><i class="bi bi-file-post-fill"></i> Resources administratives</h3>
+              </div>
+                <hr>
+                <div class="card">
+                    <div class="card-body">
+                        <br>
+                        <!-- Pills Tabs -->
+                        <div class="row">
+                            <div class="col-md-1"></div>
+                            <div class="col-md-10">
+                                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active text-dark" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true"><b>Calendrier</b></button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link text-dark" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false"><b>Règlement intérieur</b></button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link text-dark" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-program" type="button" role="tab" aria-controls="pills-contact" aria-selected="false"><b>Programme pédagogique</b></button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link text-dark" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false"><b>Contact</b></button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                      <div class="tab-content pt-2" id="myTabContent">
+                        <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="home-tab">
+                          <p class="card-title">Calendrier de l'année scolaire <b>{{ request.session.annee_debut }} {{ request.session.separateur }} {{ request.session.annee_fin }}</b>, allant du {{ anneeacademique.start_date|date:"d/m/Y" }} au {{ anneeacademique.end_date|date:"d/m/Y" }}</p>
+                          <hr>
+                          {% for e in evenements %}
+                          <div class="card">
+                            <div class="card-body">
+                              <h4><b>{{ e.trimestre }}</b></h4>
+                              <p><b>Durée :</b> du {{ e.trimestre.start_date|date:"d/m/Y" }} au {{ e.trimestre.end_date|date:"d/m/Y" }}</b>
+                              {% for evenement in e.evenements %}
+                              <div class="card">
+                                <div class="card-body">
+                                  <h3 class="card-title">{{ evenement.name }}</h3>
+                                  <table class="table">
+                                    <tr>
+                                      <th>Date </th><td> : du {{ evenement.start_date|date:"d/m/Y" }} au {{ evenement.end_date|date:"d/m/Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                      <th>Description </th><td>: {{ evenement.description }}</td>
+                                    </tr>
+                                  </table>
+                                </div>
+                              </div>
+                              {% endfor %}
+                            </div>
+                          </div>
+                          {% endfor %}
+                        </div>
+                        <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="profile-tab">
+                          <div class="card">
+                            <div class="card-body">
+                              <h4 class="card-title">RÈGLEMENT INTÉRIEUR DE L'ÉCOLE</h4>
+                              <h5><b>PRÉAMBULE</b></h5>
+                              <p>Le présent règlement intérieur définit les règles de vie commune au sein de l'école. Il vise à garantir un climat propice à l'apprentissage et au respect mutuel.</p>
+                              <hr>
+                              <h5><b>1. ADMISSION ET INSCRIPTION</b></h5>
+                              <p>1.1. L'inscription à l'école implique l'adhésion au présent règlement.</p>
+                              <p>1.2. Toute inscription est soumise à l'approbation de la direction et au paiement des frais requis.</p>
+                              <hr>
+
+                              <h5><b>2. HORAIRES ET ASSIDUITÉ</b></h5>
+                              <p>2.1. Les cours se déroulent selon un emploi du temps défini et communiqué aux élèves.</p>
+                              <P>2.2. La ponctualité est obligatoire. Tout retard doit être justifié.</p>
+                              <p>2.3. Toute absence doit être signalée par les parents et justifiée par un motif valable (certificat médical, raison familiale grave, etc.).</p>
+                              <hr>
+
+                              <h5><b>3. DISCIPLINE ET COMPORTEMENT</b></h5>
+                              <p>3.1. Les élèves doivent adopter un comportement respectueux envers leurs camarades, enseignants et personnels de l'école.</p>
+                              <p>3.2. Les violences verbales, physiques ou tout comportement perturbateur sont strictement interdits.</p>
+                              <p>3.3. L'usage du téléphone portable est interdit en classe sauf autorisation expresse de l'enseignant.</p>
+                              <p>3.4. Tout élève doit porter une tenue décente et conforme aux règles établies par l'école.</p>
+                              <hr>
+
+                              <h5><b>4. UTILISATION DU MATÉRIEL ET DES INSTALLATIONS</b></h5>
+                              <p>4.1. Le matériel scolaire et les infrastructures doivent être utilisés avec soin.</p>
+                              <p>4.2. Tout dégât causé volontairement sera facturé aux parents.</p>
+                              <p>4.3. Les salles de classe, bibliothèques et autres locaux doivent être maintenus propres et en bon état.</p>
+                              <hr>
+
+                              <h5><b>5. SÉCURITÉ ET HYGIÈNE</b></h5>
+                              <p>5.1. Il est strictement interdit d'introduire des objets dangereux dans l'école.</p>
+                              <p>5.2. Les consignes de sécurité (incendie, évacuation, premiers secours) doivent être respectées.</p>
+                              <p>5.3. Une hygiène personnelle et collective doit être observée pour assurer le bien-être de tous.</p>
+                              <hr>
+
+                              <h5><b>6. SANCTIONS DISCIPLINAIRES</b></h5>
+                              <p>6.1. Tout manquement au règlement entraîne des sanctions graduées :</p>
+                                <ul>
+                                  <li>Avertissement oral ou écrit.</li>
+                                  <li>Convocation des parents.</li>
+                                  <li>Exclusion temporaire ou définitive en cas de faute grave.</li>
+                                </ul>
+                              <p>6.2. Les décisions disciplinaires sont prises par la direction après concertation avec les enseignants.</p>
+                              <hr>
+
+                              <h5><b>7. RELATIONS AVEC LES PARENTS</b></h5>
+                              <p>7.1. Les parents sont invités à collaborer avec l'équipe pédagogique pour assurer le bon suivi scolaire de leur enfant.</p>
+                              <p>7.2. Toute demande de rendez-vous avec un enseignant ou un membre de l'administration doit être formulée à l'avance.</p>
+                              <p>7.3. Les parents sont tenus de s’informer régulièrement sur la scolarité de leur enfant.</p>
+                              <hr>
+
+                              <h5><b>8. APPLICATION ET MODIFICATION DU RÈGLEMENT</b></h5>
+                              <p>8.1. Ce règlement est applicable à tous dès son entrée en vigueur.</p>
+                              <p>8.2. La direction se réserve le droit de le modifier en cas de nécessité, après consultation du personnel éducatif et des représentants des parents.</p>
+                              <hr>
+                              <br>
+                              <p>Fait à Dijon, le 31/03/2025</p>
+                              <p>Le Directeur </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="tab-pane fade" id="pills-program" role="tabpanel" aria-labelledby="contact-tab">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Liste des matières programmées</h4>
+                                    <div class="row">
+                                    {% for resource in resources %}
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h3 class="card-title">{{ resource.inscription.salle }} ({{ resource.inscription.student.firstname|title }})</h3>
+                                                    <ul>
+                                                        {% for programme in resource.programmes %}
+                                                        <li>{{ programme.matiere }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Liste des matières enseignées</h5>
+                                    <div class="row">
+                                    {% for resource in resources %}
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h3 class="card-title">{{ resource.inscription.salle }} ({{ resource.inscription.student.firstname|title }})</h3>
+                                                    {% for e in resource.enseignements %}
+                                                    <!-- Vertically centered Modal -->
+                                                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#verticalycentered{{ e.i }}">
+                                                        {{ e.trimestre }}
+                                                    </button>
+                                                    <div class="modal fade" id="verticalycentered{{ e.i }}" tabindex="-1">
+                                                        <div class="modal-dialog modal-dialog-centered">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header bg-success text-light">
+                                                                <h5 class="modal-title">Enseignement du {{ e.trimestre }}</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <table>
+                                                                        {% for enseignement in e.enseignements %}
+                                                                        <tr>
+                                                                            <td>{{ enseignement.matiere }}</td>
+                                                                            <td class="padding-left">{{ enseignement.enseignant.last_name|title }} {{ enseignement.enseignant.first_name|title }}</td>
+                                                                        </tr>
+                                                                        {% endfor %}
+                                                                    </table>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer la fênetre</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div><!-- End Vertically centered Modal-->
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- tabs Contact -->
+                        <div class="tab-pane fade show" id="pills-contact" role="tabpanel" aria-labelledby="home-tab">
+                            <div class="row gy-4">
+
+                                <div class="col-xl-6">
+                        
+                                  <div class="row">
+                                    <div class="col-lg-6">
+                                      <div class="info-box card">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <h3>Adresse</h3>
+                                        <p>5 rue de Tours,<br>Orléans, 45100</p>
+                                      </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                      <div class="info-box card">
+                                        <i class="bi bi-telephone"></i>
+                                        <h3>Contactez-nous</h3>
+                                        <p>{{ setting.phone }}</p>
+                                      </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                      <div class="info-box card">
+                                        <i class="bi bi-envelope"></i>
+                                        <h3>Notre E-mail</h3>
+                                        <p>{{ setting.email }}</p>
+                                      </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                      <div class="info-box card">
+                                        <i class="bi bi-clock"></i>
+                                        <h3>Horaires d'ouverture</h3>
+                                        <p>Lundi - Vendredi<br>8:00 - 18:00</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                        
+                                </div>
+                        
+                                <div class="col-xl-6">
+                                  <div class="card p-4">
+                                    <!-- On inclut l'image de chargement -->
+                                    {% include 'global/_loading.html' %}
+                                    <form action="" method="post" id="formContact" class="php-email-form">
+                                      {% csrf_token %}
+                                      <div class="row gy-4">
+                                        <input type="text" name="type" value="parent" hidden>
+                                        <div class="col-md-12">
+                                          <select name="subject" id="subject" class="form-select" aria-label="Default select example">
+                                            <option value="">-- Selectionnez le sujet --</option>
+                                            {% for subject in subjects %}
+                                            <option value="{{ subject }}">{{ subject }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        </div>
+                        
+                                        <div class="col-md-12">
+                                          <textarea class="form-control" name="message" rows="6" placeholder="Message" required></textarea>
+                                        </div>
+                        
+                                        <div class="col-md-12 text-center">
+                                            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Envoyer le message </button>
+                                        </div>
+                        
+                                      </div>
+                                    </form>
+                                    <!-- Start message Modal -->
+                                    <div class="modal fade" id="message" tabindex="-1">
+                                      <div class="modal-dialog modal-sm">
+                                        <div class="modal-content">
+                                          <div class="modal-header">
+                                            <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                              <span aria-hidden="true" class="badge bg-dark">x</span>
+                                            </button>
+                                          </div>
+                                          <div class="modal-body" id="content-message"></div>
+                                        </div>
+                                      </div>
+                                    </div><!-- End message Modal-->
+                                  </div>
+                        
+                                </div>
+                        
+                              </div>
+                        
+                        </div>
+                        <!-- End Tabs Contact -->
+                      </div><!-- End Pills Tabs -->
+                    </div>
+                </div>
+            </section>
+
+
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+  </main><!-- End #main -->
+  {% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'une autorisation de paiement {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Paiements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'autorisation/autorisation_payments' %}">autorisations</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'autorisation/detail_autorisation_payments' autorisation.salle.id|crypter_id %}" > détail </a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'une autorisation de paiement</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdateAutorisationPayment" class="row g-3">
+                {% csrf_token %}
+                    <div class="col-12">
+                        <input type="text" name="id" value="{{ autorisation.id }}" hidden="True" required="True">
+                        <label for="salle_paye" class="form-label">Salle : </label>
+                        <select name="salle" id="salle_paye" class="form-select" aria-label="Default select example">
+                            <option value="{{ autorisation.salle.id}}">{{ autorisation.salle }}</option>
+                            {% for salle in salles %}
+                            <option value="{{ salle.id }}">{{ salle }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="studentview">
+                      <div class="col-12">
+                          <label for="student" class="form-label">Elève : </label>
+                          <select name="student" id="student" class="form-select" aria-label="Default select example" required>
+                              <option value="{{ autorisation.student.id }}">{{ autorisation.student }}</option>
+                              {% for student in students %}
+                              <option value="{{ student.id }}">{{ student }}</option>
+                              {% endfor %}
+                          </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <label for="month" class="form-label">Mois : </label>
+                      <select name="month" id="month" class="form-select" aria-label="Default select example">
+                          <option value="{{ autorisation.month }}">{{ autorisation.month }}</option>
+                          {% for month in months %}
+                          <option value="{{ month }}">{{ month }}</option>
+                          {% endfor %}
+                      </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="justification" class="form-label">justification : </label>
+                        <textarea class="form-control" name="justification" id="justification" style="height: 50px;">{{ autorisation.justification }}</textarea>
+                    </div>
+                <div class="text-center">
+                    <a href="{% url 'autorisation/detail_autorisation_payments' autorisation.salle.id|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

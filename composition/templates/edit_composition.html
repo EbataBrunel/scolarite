@@ -1,0 +1,163 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'une composition {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Examens</h1>
+      <nav>
+        <ol class="breadcrumb">
+          {% if request.session.group_name == "Promoteur" or request.session.group_name == "Super user" %}
+            <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'compositions' %}">Salles</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'detail_cmp_salle' composition.salle.id|crypter_id %}">Trimestres</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'detail_cmp_trimestre' composition.salle.id|crypter_id composition.trimestre|crypter_id %}">Matières-Elèves</a></li>
+            {% if param == "s" %}
+            <li class="breadcrumb-item"><a href="{% url 'detail_comp_student' composition.salle.id|crypter_id composition.trimestre|crypter_id composition.matiere.id|crypter_id %}">Détails</a></li>
+            {% elif param == "m" %}
+            <li class="breadcrumb-item"><a href="{% url 'detail_comp_matiere' composition.salle.id|crypter_id composition.trimestre|crypter_id composition.matiere.id|crypter_id %}">Détails</a></li>
+            {% else %}
+            <li class="breadcrumb-item"><a href="{% url 'detail_cmpteacher' composition.salle.id|crypter_id composition.matiere.id|crypter_id composition.trimestre|crypter_id %}">Détails</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active">Edition</li>
+          {% else %}
+            <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'cmp_teacher' %}">Compositions</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'detail_cmpteacher' composition.salle.id|crypter_id composition.matiere.id|crypter_id composition.trimestre|crypter_id %}">Détails</a></li>
+            <li class="breadcrumb-item active">Edition</li>
+          {% endif %}
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'une composition</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdateComposition" class="row g-3">
+                {% csrf_token %}
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="col-12 margin-bottom">
+                        <input type="text" name="id" id="id" value="{{ composition.id }}" hidden="True" required="True">
+                        <label for="salle_id" class="form-label">Salle : </label>
+                        <select name="salle" id="salle_id" class="form-select" aria-label="Default select example">
+                            <option value="{{ composition.salle.id }}">{{ composition.salle }}</option>
+                            {% for salle in salles %}
+                            <option value="{{ salle.id }}">{{ salle }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="studentview">
+                      <div class="col-12 margin-bottom">
+                          <label for="Student" class="form-label">Elève : </label>
+                          <select name="student" id="Student" class="form-select" aria-label="Default select example" required>
+                              <option value="{{ composition.student.id }}">{{ composition.student }}</option>
+                              {% for student in students %}
+                                <option value="{{ student.id }}">{{ student }}</option>
+                              {% endfor %}
+                          </select>
+                      </div>
+                    </div>
+
+                    <div id="trimestreview">
+                      <div class="col-12 margin-bottom">
+                        <label for="Trimestre" class="form-label">Trimestre : </label>
+                        <select name="trimestre" id="Trimestre" class="form-select" aria-label="Default select example">
+                            <option value="{{ composition.trimestre }}">{{ composition.trimestre }}</option>
+                            {% for trimestre in trimestres %}
+                            <option value="{{ trimestre }}">{{ trimestre }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                    
+                  </div>
+                  <div class="col-lg-6"> 
+                    <div id="matiereview">
+                      <div class="col-12 margin-bottom">
+                          <label for="Matiere" class="form-label">Matière : </label>
+                          <select name="matiere" id="Matiere" class="form-select" aria-label="Default select example" required>
+                              <option value="{{ composition.matiere.id }}">{{ composition.matiere }}</option>
+                              {% for matiere in matieres %}
+                              <option value="{{ matiere.id }}">{{ matiere }}</option>
+                              {% endfor %}
+                          </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12 margin-bottom">
+                        <label for="evaluation" class="form-label">Evaluation : </label>
+                        <select name="evaluation" id="evaluation" class="form-select" aria-label="Default select example">
+                            <option value="{{ composition.evaluation }}">{{ composition.evaluation }}</option>
+                            {% for evaluation in evaluations %}
+                            <option value="{{ evaluation }}">{{ evaluation }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if request.session.evaluation == "Contrôle" %}
+                    <div id="controleview">
+                      <div class="col-12 margin-bottom">
+                        <label for="NumeroControle" class="form-label">Numéro du controle : </label>
+                        <select name="numerocontrole" id="NumeroControle" class="form-select" aria-label="Default select example" required>
+                            <option value="{{ composition.numerocontrole }}">{{ composition.numerocontrole }}</option>
+                            {% for controle in controles %}
+                            <option value="{{ controle }}">{{ controle }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                    {% endif %}
+                    <div class="col-12">
+                        <label for="Note" class="form-label">Note : </label>
+                        <input type="text" name="note" value="{{ composition.note }}" class="form-control" id="Note" required>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-center">
+                  {% if param == "s" %}
+                    <a href="{% url 'detail_comp_student' composition.salle.id|crypter_id composition.trimestre|crypter_id composition.student.id|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  {% elif param == "m" %}
+                    <a href="{% url 'detail_comp_matiere' composition.salle.id|crypter_id composition.trimestre|crypter_id composition.matiere.id|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  {% else %}
+                  <a href="{% url 'detail_cmpteacher' composition.salle.id|crypter_id composition.matiere.id|crypter_id composition.trimestre|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  {% endif %}
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

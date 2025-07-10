@@ -1,0 +1,87 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Edition d'un evenement {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Calendrier</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'evenement/evenements' %}" >Evenements</a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Enregistrer un evenement</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdateEvenement" class="row g-3">
+                {% csrf_token %}
+                <input type="text" name="id" value="{{ evenement.id }}" hidden="True" required="True">
+                <div class="col-12">
+                  <label for="trimestre" class="form-label">Trimestre : </label>
+                  <select name="trimestre" id="trimestre" class="form-select" aria-label="Default select example" required>
+                      <option value="{{ evenement.trimestre.id }}">{{ evenement.trimestre }}</option>
+                      {% for trimestre in trimestres %}
+                      <option value="{{ trimestre.id }}">{{ trimestre }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="name" class="form-label">Nom : </label>
+                  <input type="text" name="name" value="{{ evenement.name }}" class="form-control" id="name" required>
+                </div>
+                <div class="col-12">
+                    <label for="description" class="form-label">Description : </label>
+                    <input type="text" name="description" value="{{ evenement.description }}" class="form-control" id="description" required>
+                </div>
+                <div class="col-12">
+                  <label for="start_date" class="form-label">Date du début : </label>
+                  <input type="date" name="start_date" value="{{ evenement.start_date|date:"Y-m-d" }}" class="form-control" id="start_date" required>
+                </div>
+                <div class="col-12">
+                  <label for="end_date" class="form-label">Date de fin : </label>
+                  <input type="date" name="end_date" value="{{ evenement.end_date|date:"Y-m-d" }}" class="form-control" id="end_date" required>
+                </div>
+                <div class="text-center">
+                  <a href="{% url 'evenement/evenements' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Droit d'accès de l'année académique {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Années académiques</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'annee_academiques' %}" >Années académiques</a></li>
+          <li class="breadcrumb-item active">Droit d'accès</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title"><b>Droit d'accès</b>s</h5>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <h3 class="card-title">{{ deliberation.salle }}</h3>
+                      <table class="table">
+                        <tr>
+                          <th>Libellée</th>
+                          <td>{{ anneeacademique.annee_debut }}{{ anneeacademique.separateur }}{{ anneeacademique.annee_fin }}</td>
+                        </tr>
+                        <tr>
+                          <th>DateDébut</th>
+                          <td>{{ anneeacademique.start_date|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>DateDébut</th>
+                            <td>{{ anneeacademique.end_date|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                          <th>Droit d'accès</th>
+                          {% if anneeacademique.status_access %}
+                          <td><span id="content-access"><span class="badge rounded-pill bg-success">Activé</span></span></td>
+                          {% else %}
+                          <td><span id="content-access"><span class="badge rounded-pill bg-danger">Désactivé</span></span></td>
+                          {% endif %}
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <h3 class="card-title"><b>Droit d'accès de l'année scolaire</b></h3>
+                      {% if anneeacademique.status_access %}
+                      <div id="content-info">
+                        <p class="text-center">Désactiver le droit d'accès de cette année académique entrainera la fermeture de toutes les activités liées à cette année.</p>
+                        <h5>
+                        <h5 class="text-center"><b>Voulez-vous vraiment désactiver le droit d'accès de cette année académique ?</b></h5>
+                      </div>
+                      <p class="text-center">
+                        <a href="#"  data-bs-toggle="modal" data-bs-target="#accessModal" title="Ajout" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Valider</a>
+                          <!-- Start addContact Modal -->
+                          <div class="modal fade" id="accessModal" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                              <div class="modal-content">
+                                <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                  <h5 class="modal-title"> Désactiver le droit d'accès de l'année académique</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                  <div class="card">
+                                    <div class="card-body">
+                                      <br>
+                                      <!-- On inclut l'image de chargement -->
+                                      {% include 'global/_loading.html' %}
+                                      <form action="" method="post" id="formDroitAccesAnneeacademique" class="php-email-form">
+                                        {% csrf_token %}
+                                        <div class="row gy-4">
+                                          <input type="text" name="id" value="{{ anneeacademique.id }}" hidden="True" required="True">
+                                          <div class="col-12">
+                                            <label for="password" class="form-label">Mot de passe : </label>
+                                            <input type="password" name="password" class="form-control" id="libelle" required>
+                                          </div>
+                                          <div class="col-md-12 text-center">
+                                              <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider</button>
+                                          </div>
+                                        </div>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div><!-- Fin addContact Modal-->
+                      </p>
+                      {% else %}
+                      <div id="content-info">
+                        <p class="text-center">Activer le droit d'accès de cette année académique entrainera l'ouverture de toutes les activités liées à cette année.</p>
+                        <h5>
+                        <h5 class="text-center"><b>Voulez-vous vraiment activer le droit d'accès de cette année académique ?</b></h5>
+                      </div>
+                      <p class="text-center">
+                        <a href="#"  data-bs-toggle="modal" data-bs-target="#accessModal" title="Ajout" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Valider</a>
+                          <!-- Start addContact Modal -->
+                          <div class="modal fade" id="accessModal" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                              <div class="modal-content">
+                                <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                  <h5 class="modal-title"> Activer le droit d'accès de l'année académique</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                  <div class="card">
+                                    <div class="card-body">
+                                      <br>
+                                      <!-- On inclut l'image de chargement -->
+                                      {% include 'global/_loading.html' %}
+                                      <form action="" method="post" id="formDroitAccesAnneeacademique" class="php-email-form">
+                                        {% csrf_token %}
+                                        <div class="row gy-4">
+                                          <input type="text" name="id" value="{{ anneeacademique.id }}" hidden="True" required="True">
+                                          <div class="col-12">
+                                            <label for="password" class="form-label">Mot de passe : </label>
+                                            <input type="password" name="password" class="form-control" id="libelle" required>
+                                          </div>
+                                          <div class="col-md-12 text-center">
+                                              <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                                          </div>
+                                        </div>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div><!-- Fin addContact Modal-->
+                      </p>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

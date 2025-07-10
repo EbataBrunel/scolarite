@@ -1,0 +1,14 @@
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <tr>
+                    <th>Montant ({{ setting.devise }})</th> <td> : <b><span class="text-success">{{ montant_paye|floatformat:2 }}</span></b></td>
+                </tr>
+                <tr>
+                    <th>Statut</th><td> : {{ status_paye }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

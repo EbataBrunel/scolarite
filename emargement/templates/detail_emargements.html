@@ -1,0 +1,126 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Emargements {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Emargements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'emargements' %}">Enseignants</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'salles_emargements' enseignant.id|crypter_id %}">Salles</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'matieres_emargements' enseignant.id|crypter_id salle.id|crypter_id %}">Matières</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'months_emargements' enseignant.id|crypter_id salle.id|crypter_id matiere.id|crypter_id %}">Mois</a></li>
+          <li class="breadcrumb-item active">Détails</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des émargements</h5>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="table-responsive {{ setting.theme }} {{ setting.text_color }}" style="padding:10px; border-radius:10px">
+                      <table class="table">
+                        <tr>
+                          <th>Enseignant </th> <td> : {{ enseignant.last_name|title }} {{ enseignant.first_name|title }}</td>
+                        </tr>
+                        <tr>
+                          <th>Salle  </th><td> : {{ salle }}</td>
+                        </tr>
+                        <tr>
+                          <th>Matières  </th><td> : {{ matiere }}</td>
+                        </tr>
+                        <tr>
+                          <th>Mois  </th><td> : {{ month }}</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <br>
+                {% if messages %}
+                  {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Horaires</th>
+                                <th>Jours</th>
+                                <th>Date</th>
+                                <th>Séance</th>
+                                <th>Titre</th>
+                                <th>Résponsable</th>
+                                {% if anneeacademique.status_cloture %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emargement in emargements %}
+                            <tr>
+                                <td class="white-space">{{ emargement.heure_debut }}-{{ emargement.heure_fin }}</td>
+                                <td>{{ emargement.jour }}</td>
+                                <td class="white-space">{{ emargement.date_emargement|date:"d/m/Y" }}</td>
+                                <td class="white-space">{{ emargement.seance }}</td>
+                                <td class="white-space">{{ emargement.titre }}</td>
+                                <td class="white-space">{{ emargement.user.last_name|title}} {{ emargement.user.first_name|title}}</td>
+                                {% if anneeacademique.status_cloture %}
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emargement.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                    <a href="{% url 'edit_emargement' emargement.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ emargement.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-sm">
+                                          <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title">Suppression</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <p class="text-center">Voulez-vous vraiment supprimer cet émargement ?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              <a href="{% url 'del_emargement' emargement.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

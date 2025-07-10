@@ -1,0 +1,9 @@
+<div class="col-12">
+    <label for="month" class="form-label">Mois : </label>
+    <select name="month" id="month" class="form-select" aria-label="Default select example">
+        <option value="">-- Selectionnez --</option>
+        {% for month in months %}
+        <option value="{{ month }}">{{ month }}</option>
+        {% endfor %}
+    </select>
+</div>

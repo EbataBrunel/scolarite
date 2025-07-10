@@ -1,0 +1,107 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Détails des contacts {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Contacts</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'contact_admin' %}">Contacts</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'contact_sp_admin' customer|crypter_id %}">Détails</a></li>
+          <li class="breadcrumb-item active">Discutions</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+
+                <h5 class="card-title">Discutions</h5> 
+                <div class="card">
+                  <div class="card-body">
+                    <br>
+                    {% if customer == "student" %} 
+                      {% if student.photo %}
+                        <h3 class="card-title"><img src="{{ student.photo.url }}" width="50" height="50" alt="Profil" class="rounded-circle img-responsive"> {{ student.firstname|title }} {{ student.lastname|title }}</h3>
+                      {% else %}
+                        <h3 class="card-title"><img class="rounded-circle img-responsive" src="{% static 'assets/img/user.png' %}" width="50" height="50" alt="Profil"> {{ student.firstname|title }} {{ student.lastname|title }}</h3>
+                      {% endif %}
+                    {% else %}  
+                      <h3 class="card-title"><img class="rounded-circle img-responsive" src="{% static 'assets/img/user.png' %}" width="50" height="50" alt="Profil"> {{ parent.firstname|title }} {{ parent.lastname|title }}</h3>
+                    {% endif %}    
+                    <div class="chat-container" id="defiler-vers-bas">
+                      <div class="content-contact">
+                        {% for contact in contacts %}
+                          {% if contact.sending_status %}
+                            <div class="message incoming">
+                              <div class="bubble incoming">
+                                <h6><b>{{ contact.subject }}</b></h6>
+                                {% if contact.reading_status == 0 %}
+                                    <i class="bi bi-circle text-secondary"></i>
+                                {% else %}
+                                    <i class="bi bi-circle-fill text-secondary"></i>
+                                {% endif %}
+                                <span>{{ contact.message }}</span>
+                              </div>
+                            </div>
+                            <div class="timestamp">{{ contact.datecontact|date:"d/m/Y h:m" }}</div>
+                          {% else %}
+                            <div class="message outgoing">
+                              <div class="bubble outgoing">
+                                <h6><b>{{ contact.subject }}</b></h6>
+                                <span>{{ contact.message }}</span>
+                              </div>
+                            </div>
+                            <div class="timestamp">{{ contact.datecontact|date:"d/m/Y h:m" }}</div>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                      <br>
+                      <!-- On inclut l'image de chargement -->
+                      {% include 'global/_loading.html' %}
+                      <!-- Vertical Form -->
+                      <form method="post" action="" id="formContactAdmin" class="row g-3">
+                        {% csrf_token %}
+                        {% if customer == "student" %} 
+                        <input type="text" name="type" value="student" hidden required>  
+                        <input type="text" name="student_id" value="{{ student.id }}" hidden="True" required="True">
+                        {% else %}  
+                        <input type="text" name="type" value="parent" hidden required>
+                        <input type="text" name="parent_id" value="{{ parent.id }}" hidden="True" required="True">
+                        {% endif %}  
+                        <div class="input-group">
+                          <span class="input-group-text">
+                            <select name="subject" id="subject" class="form-select" required>
+                              <option value="">Choisi un sujet</option>
+                              {% for subject in subjects %}
+                              <option value="{{ subject }}">{{ subject }}</option>
+                              {% endfor %}
+                            </select>
+                          </span>
+                          <input type="text" name="message" id="Message" class="form-control" required>
+                          <span class="input-group-text">
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i></button>
+                          </span>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

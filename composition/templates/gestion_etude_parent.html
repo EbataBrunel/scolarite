@@ -1,0 +1,83 @@
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Gestion des études {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <!-- ======= Sidebar ======= -->
+
+  <main id="main" class="main">
+    <div class="row">
+        <div class="col-md-10">
+            <div class="pagetitle">
+                <h1>Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item active">Gestion des études</li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+            <section class="section contact">
+              <div class="bg-primary text-light">
+                <h3 class="content-title text-center"><i class="bi bi-card-list"></i> Gestion des études</h3>
+              </div>
+                <hr>
+                <div class="card">
+                    <div class="card-body">
+                        
+                      <div class="row">
+                        {% for gestion in gestions %}
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3 class="card-title">{{ gestion.inscription.student.lastname|title }} {{ gestion.inscription.student.firstname|title }}</h3>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <tr>
+                                                        <th>Salle </th> <td> : {{ gestion.inscription.salle }}</td>
+                                                    </tr>
+                                                    {% if gestion.nombre_absences %}
+                                                    <tr>
+                                                        <th>NouvelleAbsence </th> <td> : <span class="badge rounded-pill bg-success">{{ gestion.nombre_absences }}</span></td>
+                                                    </tr>
+                                                    {% else %}
+                                                    <tr>
+                                                        <th>NouvelleAbsence </th> <td> : <span class="badge rounded-pill bg-secondary">{{ gestion.nombre_absences }}</span></td>
+                                                    </tr>
+                                                    {% endif %}
+
+                                                    {% if gestion.nombre_compositions %}
+                                                    <tr>
+                                                        <th>NouvelleComposition </th> <td> : <span class="badge rounded-pill bg-success">{{ gestion.nombre_compositions }}</span></td>
+                                                    </tr>
+                                                    {% else %}
+                                                    <tr>
+                                                        <th>NouvelleComposition </th> <td> : <span class="badge rounded-pill bg-secondary">{{ gestion.nombre_compositions }}</span></td>
+                                                    </tr>
+                                                    {% endif %}
+                                                </table>
+                                            </div>
+                                            <p>
+                                                <a href="{% url 'gestion_etude_parent_detail' gestion.inscription.student.id|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-arrow-right-circle"></i> Voir plus</a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                      </div>
+        
+                    </div>
+                </div>
+            </section>
+
+
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+  </main><!-- End #main -->
+  {% endblock %}

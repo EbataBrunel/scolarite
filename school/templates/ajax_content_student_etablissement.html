@@ -1,0 +1,37 @@
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">{{ salle }}</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <tr>
+                    <th>Noms</th>
+                    <th>Nombre elèves</th>
+                    <th>Action</th>
+                </tr>
+                {% for inscription in inscriptions %}
+                <tr>
+                    <td  class="white-space">{{ inscription.student.lastname|title }}</td>
+                    <td  class="white-space">{{ inscription.student.firstname|title }}</td>
+                    {% if inscription.status_block %}
+                    <td>
+                        <a href="#" class="btn btn-outline-secondary btn-sm modal-block-student" id="{{ inscription.id }}">
+                            <span id="icon-{{ inscription.id }}">
+                                <span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i></span>
+                            </span>
+                        </a>
+                    </td>
+                    {% else %}
+                    <td>
+                        <a href="#" class="btn btn-outline-secondary btn-sm modal-block-student" id="{{ inscription.id }}">
+                            <span id="icon-{{ inscription.id }}">
+                                <span class="badge rounded-pill bg-danger"><i class="bi bi-x-circle"></i></span>
+                            </span>
+                        </a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %} 
+            </table>
+        </div>
+    </div>
+</div>

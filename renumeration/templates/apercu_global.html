@@ -1,0 +1,209 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Aperçu global{% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Aperçu global</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Aperçu global</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+      <div class="row">
+        <div class="col-xl-12">
+          <div class="card">
+            <div class="card-body pt-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Recettes mensuelles (en {{ setting.devise }})</h5>
+                
+                                <!-- Bar Chart -->
+                                <div id="barChart"></div>
+                
+                                <script>
+                                document.addEventListener("DOMContentLoaded", () => {
+                                    new ApexCharts(document.querySelector("#barChart"), {
+                                    series: [{
+                                        data: [
+                                            {% for caisse in caisses %}
+                                                {{ caisse.recette_month }},
+                                            {% endfor %}
+                                        ]
+                                    }],
+                                    chart: {
+                                        type: 'bar',
+                                        height: 350
+                                    },
+                                    plotOptions: {
+                                        bar: {
+                                        borderRadius: 4,
+                                        horizontal: true,
+                                        }
+                                    },
+                                    dataLabels: {
+                                        enabled: false
+                                    },
+                                    xaxis: {
+                                        categories: [
+                                            {% for caisse in caisses %}
+                                                '{{ caisse.month }}',
+                                            {% endfor %}
+                                        ],
+                                    }
+                                    }).render();
+                                });
+                                </script>
+                                <!-- End Bar Chart -->
+                
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="col-md-12">
+                        <div class="card">
+                          <div class="card-body">
+                            <h5 class="card-title">Récette totale (en {{ setting.devise }})</h5>
+              
+                            <!-- Radial Bar Chart -->
+                            <div id="radialBarChart"></div>
+              
+                            <script>
+                              document.addEventListener("DOMContentLoaded", () => {
+                                new ApexCharts(document.querySelector("#radialBarChart"), {
+                                  series: [
+                                    {% for caisse in caisses %}
+                                        {{ caisse.recette_month }},
+                                    {% endfor %}
+                                  ],
+                                  chart: {
+                                    height: 350,
+                                    type: 'radialBar',
+                                    toolbar: {
+                                      show: true
+                                    }
+                                  },
+                                  plotOptions: {
+                                    radialBar: {
+                                      dataLabels: {
+                                        name: {
+                                          fontSize: '22px',
+                                        },
+                                        value: {
+                                          fontSize: '16px',
+                                        },
+                                        total: {
+                                          show: true,
+                                          label: 'Récette totale',
+                                          formatter: function(w) {
+                                            // By default this function returns the average of all series. The below is just an example to show the use of custom formatter function
+                                            return {{ recette_totale }}
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  labels: [
+                                    {% for caisse in caisses %}
+                                        '{{ caisse.month }}',
+                                    {% endfor %}
+                                  ],
+                                }).render();
+                              });
+                            </script>
+                            <!-- End Radial Bar Chart -->
+              
+                          </div>
+                        </div>
+                    </div>
+
+                    <br>
+                    <div class="col-md-12">
+                        <div class="card">
+                          <div class="card-body">
+                            <h5 class="card-title">Comparaison des récettes par année scolaire</h5>
+              
+                            <!-- Column Chart -->
+                            <div id="columnChart"></div>
+              
+                            <script>
+                              document.addEventListener("DOMContentLoaded", () => {
+                                new ApexCharts(document.querySelector("#columnChart"), {
+                                  series: [
+                                  {% for recette_globale in recettes_globales %}
+                                  {
+                                    name: '{{ recette_globale.anneeacademique }}',
+                                    data: [
+                                        {% for caisse in recette_globale.caisses %}
+                                            {{ caisse.recette_month }},
+                                        {% endfor %}
+                                    ]
+                                  }, 
+                                  {% endfor %}],
+                                  chart: {
+                                    type: 'bar',
+                                    height: 350
+                                  },
+                                  plotOptions: {
+                                    bar: {
+                                      horizontal: false,
+                                      columnWidth: '55%',
+                                      endingShape: 'rounded'
+                                    },
+                                  },
+                                  dataLabels: {
+                                    enabled: false
+                                  },
+                                  stroke: {
+                                    show: true,
+                                    width: 2,
+                                    colors: ['transparent']
+                                  },
+                                  xaxis: {
+                                    categories: [
+                                    {% for month in months_globales %}
+                                    '{{ month }}',
+                                    {% endfor %}],
+                                  },
+                                  yaxis: {
+                                    title: {
+                                      text: '{{ setting.devise }}'
+                                    }
+                                  },
+                                  fill: {
+                                    opacity: 1
+                                  },
+                                  tooltip: {
+                                    y: {
+                                      formatter: function(val) {
+                                        return val + "{{ setting.devise }}"
+                                      }
+                                    }
+                                  }
+                                }).render();
+                              });
+                            </script>
+                            <!-- End Column Chart -->
+              
+                          </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

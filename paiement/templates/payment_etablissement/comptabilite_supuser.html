@@ -1,0 +1,75 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Comptabilité {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Comptabilité</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Comptabilité</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Comptabilité</h5>
+                <br>
+                <div class="row">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body height_min_max_card">
+                                <h5 class="card-title text-center">Total ({{ setting.devise }})</h5>
+                                <h1 class="text-success text-center"><b>{{ totale }}</b></h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4"></div>
+                </div>
+                {% for p in payments %}
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">{{ p.month }}</h3>
+                        <div class="table table-responsive">
+                            <table class="table">
+                                <tr>
+                                    <th>Etablissement</th>
+                                    <th class="white-space">Nombre d'élèves</th>
+                                    <th class="white-space">Montant par élève ({{ setting.devise }})</th>
+                                    <th>Montant ({{ setting.devise }})</th>
+                                </tr>
+                                {% for payment in p.payments %}
+                                <tr>
+                                    <td class="white-space">{{ payment.etablissement }}</td>
+                                    <td>{{ payment.number_student }}</td>
+                                    <td>{{ payment.amount_student }}</td>
+                                    <td class="text-primary">{{ payment.amount }}</td>
+                                </tr>
+                                {% endfor %}
+                                <tr>
+                                    <th colspan="2" class="{{ setting.theme }} {{ setting.text_color }}"></th>
+                                    <th class="{{ setting.theme }} {{ setting.text_color }}">Total ({{ setting.devise }})</th>
+                                    <th class="text-primary {{ setting.theme }} {{ setting.text_color }}">{{ p.somme_totale|floatformat:2 }}</th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

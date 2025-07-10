@@ -1,0 +1,187 @@
+
+
+{% extends 'global/base_customer.html' %}
+{% block title %} {{ setting.appname }} | Mon emploi du temps {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <!-- ======= Sidebar ======= -->
+
+<main id="main" class="main">
+    <div class="row">
+        <div class="col-md-10">
+            <div class="pagetitle">
+                <h1>Tableau de bord</h1>
+                <nav>
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'settings/home' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item active">Dossier financier</li>
+                  </ol>
+                </nav>
+            </div><!-- End Page Title -->
+          
+            <section class="section contact">
+                <div class="bg-info">
+                    <h3 class="content-title text-center"><i class="bi bi-cash"></i> Dossier financier</h3>
+                </div>
+                <hr>
+                <div class="card">
+                    <div class="card-body">
+                      <h5 class="card-title">Paiement des élèves</h5>
+                       
+                      <div class="row">
+                        {% for p in payments %}
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3 class="card-title">{{ p.inscription.student.lastname|title }} {{ p.inscription.student.firstname|title }}</h3>
+                                    <table class="table">
+                                        <tr>
+                                            <th>Classe  </th><td> : {{ p.inscription.salle }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>NombrePaye</th><td> : <span class="badge rounded-pill bg-secondary">{{ p.nombre_payes }}</span></td>
+                                        </tr>
+                                        {% if p.montant_restant %}
+                                        <tr>
+                                          <th>Dette actuelle </th><td> : <span class="text-danger"><b>{{ p.montant_restant|floatformat:2 }} {{ setting.devise }}</b></span></td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                          <th>Dette  </th><td> : {{ p.montant_restant|floatformat:2 }} {{ setting.devise }}</td>
+                                        </tr>
+                                        {% endif %}
+                                    </table>
+                                    <p class="text-center">
+                                          <a href="#"  data-bs-toggle="modal" data-bs-target="#paiementModal{{ p.inscription.student.id }}">
+                                            <span class="text-danger small pt-1 fw-bold btn"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1"><b>Voir plus</b></span>
+                                          </a>
+                                        </p>
+                                          <!-- Start de delete Modal -->
+                                          <div class="modal fade" id="paiementModal{{ p.inscription.student.id }}" tabindex="-1">
+                                            <div class="modal-dialog modal-lg modal-dialog-centered modal-Modal modal-dialog-scrollable">
+                                              <div class="modal-content">
+                                                <div class="modal-header bg-info">
+                                                  <h5 class="modal-title">Liste de paiemnets</h5>
+                                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                  <br>
+                                                  <div class="card">
+                                                    <div class="card-body">
+                                                      <br>
+                                                      <p class="text-center">
+                                                        <a href="{% url 'echeancier' p.inscription.student.id|crypter_id %}" class="btn btn-outline-secondary btn-sm"><span class="text-danger"><i class="bi bi-file-earmark-pdf"></i></span> Télécharger en pdf</a>
+                                                      </p>
+                                                      <div class="table-responsive">
+                                                        <table class="table">
+                                                          <tr>
+                                                            <th>Echéance</th>
+                                                            <th>Dates</th>
+                                                            <th>Statut</th>
+                                                            <th>Montant</th>
+                                                            <th>ModePaiement</th>
+                                                          </tr>
+                                                          <tr>
+                                                            <td>Frais de dossier</td>
+                                                            <td>{{ p.inscription.dateins|date:"d/m/Y" }}</p>
+                                                            {% if p.inscription.salle.price_inscription %}
+                                                            <td><span class="badge rounded-pill bg-success"> Payé </span></td>
+                                                            {% else %}
+                                                            <td><span class="badge rounded-pill bg-success"> Impayé </span></td>
+                                                            {% endif %}
+                                                            <td>{{ p.inscription.amount|floatformat:2 }} {{ setting.devise }}</td>
+                                                            <td>{{ p.inscription.mode_paiement }}</td>
+                                                          </tr>
+                                                        {% for paye in p.payments %}
+                                                        <tr>
+                                                          <td>Echéance du mois de {{ paye.payment.month }}</td>
+                                                          <td>{{ paye.payment.datepaye|date:"d/m/Y" }}</p>
+                                                          {% if paye.payment.amount == paye.payment.salle.price %}
+                                                          <td><span class="badge rounded-pill bg-success"> Payé </span></td>
+                                                          {% else %}
+                                                          <td><span class="badge rounded-pill bg-warning"> Avance </span></td>
+                                                          {% endif %}
+                                                          <td>{{ paye.payment.amount|floatformat:2 }} {{ setting.devise }}</td>
+                                                          <td>{{ paye.payment.mode_paiement }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                        </table>
+                                                      </div>
+                                                    </div>
+
+                                                    <div class="row">
+                                                      <div class="col-md-4"></div>
+                                                      <div class="col-md-4">
+                                                          <div class="card">
+                                                              <div class="card-body height_min_max_card">
+                                                                <h5 class="card-title text-center">Dette</h5>
+                                                                <h3 class="text-danger text-center">{{ p.montant_restant }} {{ setting.devise }}</h3>
+                                                                <p class="text-center">
+                                                                  <a class="btn btn-default btn-sm status-paye-parent" id="{{ p.inscription.student.id }}">  
+                                                                    <span class="text-danger small pt-1 fw-bold btn"><i class="bi bi-arrow-right-circle"></i></span><span class="text-muted small pt-2 ps-1"><b>Voir plus</b></sapn>
+                                                                  </a>
+                                                                </p>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                      <div class="col-md-4"></div>
+                                                    </div>
+
+                                                  </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                </div>
+                                              </div>
+                                            </div>
+                                        </div><!-- Fin de delete Modal-->
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-4"></div>
+                                                      <div class="col-md-4">
+                                                          <div class="card">
+                                                              <div class="card-body height_min_max_card">
+                                                                <h5 class="card-title text-center">Dette totale</h5>
+                                                                <h3 class="text-danger text-center">{{ dette_totale|floatformat:2 }} {{ setting.devise }}</h3>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                        <div class="col-md-4"></div>
+                      </div>
+
+                      <!-- Start statut de paye Modal -->
+                      <div class="modal fade" id="modal_status_paye_parent" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                          <div class="modal-content">
+                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                              <h5 class="modal-title"><i class="bi bi-info-circle"></i> Statut de paye</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true" class="badge bg-dark">x</span>
+                              </button>
+                            </div>
+                            <div class="modal-body" id="content-status-paye-parent"></div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div><!-- End statut de paye Modal-->
+
+                    </div>
+                </div>
+            </section>
+
+
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+</main><!-- End #main -->
+{% endblock %}
+

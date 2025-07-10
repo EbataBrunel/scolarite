@@ -1,0 +1,149 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Associer un utilisateur à un groupe  {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Groupes</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Ajout</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="12">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Associer <b>{{ user.last_name|title }} {{ user.first_name|title }}</b> à un groupe</h5>
+              <br>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="{% url 'add_admin_to_group' %}"  class="row g-3">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-3"></div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <input type="text" name="id" value="{{ user.id }}" hidden="True" required>
+                                <div class="col-12">
+                                    <label for="name" class="form-label">Groupe : </label>
+                                    <select name="name" id="name" class="form-select" aria-label="Default select example" required>
+                                        <option value="">-- Selectionnez un groupe --</option>
+                                        {% for group in groups %}
+                                        <option value="{{ group.name }}">{{ group.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <br>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3"></div>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-10">
+                  <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                      {% if messages %}
+                        {% for message in messages %}
+                          <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                            <span class="text-center">{{ message }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                          </div>
+                        {% endfor %}
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-body">
+                      <br>
+                      <!-- Table with stripped rows -->
+                      <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Noms</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for group in list_groups %}
+                                <tr>
+                                    <td>{{ group.id }}</td>
+                                    <td>{{ group.name }}</td>
+                                    <td>
+                                        <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ group.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                        <!-- Start de delete Modal -->
+                                        <div class="modal fade" id="deleteModal{{ group.id }}" tabindex="-1">
+                                            <div class="modal-dialog modal-sm">
+                                              <div class="modal-content">
+                                                <div class="modal-header">
+                                                  <h5 class="modal-title">Suppression</h5>
+                                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                  <p class="text-center">Voulez-vous vraiment supprimer ce groupe ?</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                  <a href="{% url 'del_user_to_group' user.id|crypter_id group.name|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                                </div>
+                                              </div>
+                                            </div>
+                                        </div><!-- Fin de delete Modal-->
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                      </div>
+                      <!-- End Table with stripped rows -->
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-1"></div>
+              </div>
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

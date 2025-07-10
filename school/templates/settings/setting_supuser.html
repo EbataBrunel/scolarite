@@ -1,0 +1,183 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Paramètre {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Paramètre</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Paramètre</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Paramètre</h5>
+                
+              <div class="row">
+                <div class="col-md-6">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <strong>{{ message }}</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div> 
+                        {% endfor %}
+                    {% endif %}
+                </div>
+              </div>
+              <!-- Vertical Form -->
+              <form method="post" action="" enctype="multipart/form-data" class="row g-3">
+                {% csrf_token %}
+                <!-- Default Card -->
+                <input name="id" value="{{ setting.id }}" hidden>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="appname" class="form-label">Nom de l'école : </label>
+                                    <input type="text" name="appname" value="{{ setting.appname }}" class="form-control" id="appname" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="appeditor" class="form-label">Nom du développeur : </label>
+                                    <input type="text" name="appeditor" value="Brunel EBATA-ATIPO" class="form-control" id="appeditor" required readonly>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="version" class="form-label">Version : </label>
+                                    <input type="text" name="version" value="{{ setting.version }}" class="form-control" id="version" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End default card -->
+
+                <!-- Default Card -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="theme" class="form-label">Thème : </label>
+                                    <select name="theme" class="form-control" required>
+                                        <option value="{{ setting.theme }}">{{ setting.theme }}</option>
+                                        <option value="bg-primary">bg-primary</option>
+                                        <option value="bg-info">bg-info</option>
+                                        <option value="bg-success">bg-success</option>
+                                        <option value="bg-danger">bg-danger</option>
+                                        <option value="bg-dark">bg-dark</option>
+                                        <option value="bg-secondary">bg-secondary</option>
+                                        <option value="bg-default">bg-default</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="text_color" class="form-label">Couleur du texte : </label>
+                                    <select name="text_color" class="form-control" required>
+                                        <option value="{{ setting.text_color }}">{{ setting.text_color }}</option>
+                                        <option value="text-primary">text-primary</option>
+                                        <option value="text-info">text-info</option>
+                                        <option value="text-success">text-success</option>
+                                        <option value="text-danger">text-danger</option>
+                                        <option value="text-dark">text-dark</option>
+                                        <option value="text-light">text-light</option>
+                                        <option value="text-default">text-default</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="devise" class="form-label">Device : </label>
+                                    <input type="text" name="devise" value="{{ setting.devise }}" class="form-control" id="devise" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End default card -->
+
+                <!-- Default Card -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="address" class="form-label">Adresse : </label>
+                                    <input type="text" name="address" value="{{ setting.address }}" class="form-control" id="email" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="email" class="form-label">E-mail : </label>
+                                    <input type="email" name="email" value="{{ setting.email }}" class="form-control" id="email" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="phone" class="form-label">Téléphone : </label>
+                                    <input type="text" name="phone" value="{{ setting.phone }}" class="form-control" id="phone" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End default card -->
+
+                <!-- Default Card -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="logo" class="form-label">Logo : </label>
+                                    <input type="file" name="logo" class="form-control" id="logo">
+                                    {% if setting.logo %}
+                                        <span><img  width="100px" height="100px" src="{{ setting.logo.url }}" alt="..." /></span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="width" class="form-label">Largeur : </label>
+                                    <input type="number" name="width" value="{{ setting.width_logo }}" class="form-control" id="width" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-xs-12">
+                                <div class="col-12">
+                                    <label for="height" class="form-label"> Hauteur : </label>
+                                    <input type="number" name="height" value="{{ setting.height_logo }}" class="form-control" id="height" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End default card -->
+                <div class="text-center">
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

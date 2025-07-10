@@ -1,0 +1,103 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Comptabilité {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Comptabilité</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Comp Paiemnts</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Paiements</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="text-center {{ setting.theme }} {{ setting.text_color }}">Salles</th>
+                                <th class="text-center {{ setting.theme }} {{ setting.text_color }}">NbElèves</th>
+                                {% for month in months %}
+                                <th class="text-center {{ setting.theme }} {{ setting.text_color }}">{{ month }}({{ setting.devise }})</th>
+                                {% endfor %}
+                                <th class="text-center {{ setting.theme }} {{ setting.text_color }}">Total({{ setting.devise }})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in salles %}
+                            <tr>
+                                <td class="text-center">{{ s.salle }}</td>
+                                <td class="text-center"><span class="badge rounded-pill bg-secondary">{{ s.nb_student_inscris }}</span></td>
+                                {% for total_amount in s.total_amounts %}
+                                  {% if total_amount.nb_student_paye == 0 and total_amount.total_mensuel == 0 and total_amount.total_mensuel_restant == 0 and total_amount.nb_student_no_paye == 0 %}
+                                    <td></td>
+                                  {% else %}
+                                    <td class="text-center">
+                                      {{ total_amount.nb_student_paye }}/<span class="text-success"><b>{{ total_amount.total_mensuel|floatformat:2 }}</b></span><br>
+                                      {{ total_amount.nb_student_no_paye }}/<span class="text-danger"><b>{{ total_amount.total_mensuel_restant|floatformat:2 }}</b></span>
+                                    </td>
+                                  {% endif %}
+                                {% endfor %}
+                                <td class="text-center text-success">
+                                  <b>{{ s.somme_frais|floatformat:2 }}<br>
+                                    <span class="text-danger">{{ s.total_restant|floatformat:2 }}</span>
+                                  </b>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <td class="text-center {{ setting.theme }} {{ setting.text_color }}">Total({{ setting.devise }})</td>
+                                <td class="text-center {{ setting.theme }} {{ setting.text_color }}"><span class="badge rounded-pill bg-secondary">{{ total_inscris }}</span></td>
+                                {% for t in sommes_totales %}
+                                  {% if t.total == 0 and t.total_restant == 0 %}
+                                  <td class="text-center {{ setting.theme }} {{ setting.text_color }}"></td>
+                                  {% else %}
+                                  <td class="text-center {{ setting.theme }} {{ setting.text_color }}">
+                                    <b>{{ t.total|floatformat:2 }} <br>
+                                    <span class="text-warning">{{ t.total_restant|floatformat:2 }}</span></b>
+                                  </td>
+                                  {% endif %}
+                                {% endfor %}
+                                <th class="text-center {{ setting.theme }} {{ setting.text_color }}">
+                                  {{ total|floatformat:2 }}<br>
+                                  <span class="text-warning">{{ reste_total|floatformat:2 }}</span>
+                                </th>
+                            <tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+                <br>
+                <h3>Note : </h3>
+                <hr>
+                <div class="row">
+                  <div class="col-md-2">
+                    <p>x/y <br>w/z</p>
+                  </div>
+                  <div class="col-md-10">
+                    <b>x :</b> Nombre d'élèves qui ont payé<br>
+                    <b>y :</b> Somme total payée par les étudiants<br>
+                    <b>w :</b> Nombre d'élèves qui n'ont pas payé<br>
+                    <b>z :</b> Somme total non payée par les étudiants
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

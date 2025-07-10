@@ -1,0 +1,13 @@
+{% load crypto_filters %}
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title text-center"><b>{{ user.last_name|title }} {{ user.first_name|title }}</b></h3>
+        <hr>
+        <ul>
+        {% for group in groupes %}
+            <li>{{ group.name }}</li>
+        {% endfor %}
+        </ul>
+        <p class="text-center"><a href="{% url 'group/group_etablissement_user' user.id|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Attribuer un groupe</a></p>
+    </div>
+</div>

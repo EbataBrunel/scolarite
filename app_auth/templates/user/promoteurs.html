@@ -1,0 +1,127 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Promoteurs {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Promoteurs</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Promoteurs</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des promoteurs</h5>
+                {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>NomUt</th>
+                                <th>Etablissements</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in promoteurs %}
+                            <tr>
+                                <td>{{ p.promoteur.id }}</td>
+                                <td>{{ p.promoteur.last_name }}</td>
+                                <td>{{ p.promoteur.first_name }}</td>
+                                <td>{{ p.promoteur.email }}</td>
+                                <td>{{ p.promoteur.username }}</td>
+                                <td>
+                                  <a href="#"  data-bs-toggle="modal" data-bs-target="#groupModal{{ p.promoteur.id }}">
+                                    <span class="badge rounded-pill bg-secondary">{{ p.nombre_etablissements }} <i class="bi bi-eye"></i></span>
+                                  </a>
+                                  <!-- Start de delete Modal -->
+                                  <div class="modal fade" id="groupModal{{ p.promoteur.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                                      <div class="modal-content">
+                                        <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                          <h5 class="modal-title">Liste des établissements</h5>
+                                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <br>
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h3 class="card-title text-center"><b>{{ p.promoteur.last_name|title }} {{ p.promoteur.first_name|title }}</b></h3>
+                                                    <hr>
+                                                    <ul>
+                                                    {% for etablissement in p.etablissements %}
+                                                        <li>{{ etablissement.name }}</li>
+                                                    {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                          </div>
+                                          <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ p.promoteur.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                    <a href="{% url 'user/detail_promoteur' p.promoteur.id|crypter_id %}" title="Detail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ p.promoteur.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-sm">
+                                          <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title">Suppression</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <p class="text-center">Voulez-vous vraiment supprimer ce promoteur ?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              <a href="{% url 'user/delete_promoteur' p.promoteur.id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

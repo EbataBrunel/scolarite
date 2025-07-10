@@ -1,0 +1,94 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Edition d'un établissement {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Etablissements</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'etabs' %}" >Etablissements</a></li>
+          <li class="breadcrumb-item active">Edition</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Edition d'un établissement</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formUpdateEtablissement" class="row g-3">
+                {% csrf_token %}
+                <input type="text" name="id" value="{{ etablissement.id }}" hidden>
+                <div class="col-12">
+                  <label for="promoteur" class="form-label">Promoteur : </label>
+                  <select name="promoteur" id="promoteur" class="form-select" aria-label="Default select example" required>
+                      <option value="{{ etablissement.promoteur.id }}">{{ etablissement.promoteur.last_name|title }} {{ etablissement.promoteur.first_name|title }}</option>
+                      {% for promoteur in promoteurs %}
+                      <option value="{{ promoteur.id }}">{{ promoteur.last_name|title }} {{ promoteur.first_name }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="name" class="form-label">Nom : </label>
+                  <input type="text" name="name" class="form-control" id="name" value="{{ etablissement.name }}" required>
+                </div>
+                <div class="col-12">
+                  <label for="abreviation" class="form-label">Abréviation : </label>
+                  <input type="text" name="abreviation" class="form-control" id="abreviation" value="{{ etablissement.abreviation }}" required>
+                </div>
+                <div class="col-12">
+                    <label for="phone" class="form-label">Téléphone : </label>
+                    <input type="text" name="phone" class="form-control" id="phone" value="{{ etablissement.phone }}" required>
+                </div>
+                <div class="col-12">
+                  <label for="email" class="form-label">Email : </label>
+                  <input type="email" name="email" class="form-control" id="email" value="{{ etablissement.email }}" required>
+                </div>
+                <div class="col-12">
+                  <label for="ville" class="form-label">Ville : </label>
+                  <input type="text" name="ville" class="form-control" id="ville" value="{{ etablissement.ville }}" required>
+                </div>
+                <div class="col-12">
+                    <label for="address" class="form-label">Adresse : </label>
+                    <input type="text" name="address" class="form-control" id="adddress" value="{{ etablissement.address }}" required>
+                  </div>
+                <div class="text-center">
+                  <a href="{% url 'etabs' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

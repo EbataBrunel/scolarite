@@ -1,0 +1,147 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Compositions {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Liste des compositions</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'cmp_teacher' %}">Salles</a></li>
+          <li class="breadcrumb-item active">Compositions</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Compositions</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                          <div class="{{ setting.theme }} {{ setting.text_color }}"  style="padding:10px; border-radius:10px">
+                            <table class="table">
+                              <tr>
+                                <th>Salle</th><td> : {{ salle }}</td>
+                              </tr>
+                              <tr>
+                                <th>Trimestre</th><td> : {{ trimestre }}</td> 
+                              </tr>
+                              <tr>
+                                <th>Matière</th><td> : {{ matiere }}</td> 
+                              </tr>
+                            </table>
+                          </div>
+                        </div>
+                    <!-- debut content student -->
+                    <div id="content_student_composer">
+                        <!-- On inclut l'image de chargement -->
+                        {% include 'global/_loading.html' %}
+                        <br>
+                        <div class="text-center">
+                            {% for examen in examens %}
+                              {% if examen.evaluation == "Contrôle n°1" %}
+                              <span>
+                                  <a href="#" id="{{ examen.eval }}" data-trim="{{ trimestre }}" data-salle="{{ salle.id }}" data-matiere="{{ matiere.id }}"  class="btn  btn-sm btn-outline-primary activated_{{ examen.eval }} desp examen"><i class="bi bi-plus-circle"></i> {{ examen.eval }}</a>&nbsp;
+                              </span>
+                              {% else %}
+                              <span>
+                                <a href="#" id="{{ examen.eval }}" data-trim="{{ trimestre }}" data-salle="{{ salle.id }}" data-matiere="{{ matiere.id }}"  class="btn  btn-sm btn-outline-secondary activated_{{ examen.eval }} desp examen"><i class="bi bi-plus-circle"></i> {{ examen.eval }}</a>&nbsp;
+                              </span>
+                              {% endif%}
+                            {% endfor %}
+                        </div>
+                        <br>
+                        {% if anneeacademique.status_cloture %}
+                        <div align="right">
+                          {% if setting.theme == "bg-default" %}
+                          <a href="{% url 'add_composition' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                          {% else %}
+                          <a href="{% url 'add_composition' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                          {% endif %}
+                        </div>
+                        {% endif %}
+                        <!-- Table with stripped rows -->
+                        <div class="content_examen">
+                          <br>
+                            <div class="table-responsive">
+                                <table class="table datatable">
+                                  <thead>
+                                      <tr>
+                                          <th>Id</th>
+                                          <th>Noms</th>
+                                          <th>Prénoms</th>
+                                          <th>Notes</th>
+                                          <th>Utilisateur</th>
+                                          {% if anneeacademique.status_cloture %}
+                                          <th>Actions</th>
+                                          {% endif %}
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                    {% for examen in examens %}
+                                      {% if examen.evaluation == "Contrôle n°1" %}
+                                        {% for composition in examen.compositions %}
+                                        <tr>
+                                            <td>{{ composition.id }}</td>
+                                            <td class="white-space">{{ composition.student.lastname }}</td>
+                                            <td class="white-space">{{ composition.student.firstname }}</td>
+                                            <td><b class="text-primary">{{ composition.note }}</b></td>
+                                            <td class="white-space">{{ composition.user.last_name|title }} {{ composition.user.first_name|title }}</td>
+                                            {% if anneeacademique.status_cloture %}
+                                            <td>
+                                                <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteMatModal{{ composition.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                                <a href="{% url 'edit_composition' composition.id|crypter_id param %}" title="Détails" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
+                                                <!-- Start de delete Modal -->
+                                                <div class="modal fade" id="deleteMatModal{{composition.id }}" tabindex="-1">
+                                                    <div class="modal-dialog modal-sm">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                        <h5 class="modal-title">Suppression</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                        <p class="text-center">Voulez-vous vraiment supprimer cette composition ?</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                        <a href="{% url 'del_composition' composition.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                                        </div>
+                                                    </div>
+                                                    </div>
+                                                </div><!-- Fin de delete Modal-->
+                                            </td>
+                                            {% endif %}
+                                        </tr>
+                                        {% endfor %}
+                                      {% endif %}
+                                    {% endfor %}
+                                  </tbody>
+                              </table>
+                            </div>
+                            {% for examen in examens %}
+                              {% if examen.evaluation == "Contrôle n°1" %}
+                                <p class="text-center">
+                                  <a href="{% url 'releve_note_controle' salle.id|crypter_id matiere.id|crypter_id examen.evaluation|crypter_id trimestre|crypter_id %}" class="btn btn-dark btn-sm">Télécharger le fichier</a>
+                                </p>
+                              {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div><!-- fin content student -->
+                    <!-- End Table with stripped rows -->
+                    
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

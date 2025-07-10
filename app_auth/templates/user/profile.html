@@ -1,0 +1,356 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Profil {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Profil</h1>
+      <nav>
+        <ol class="breadcrumb">
+          {% if request.session.group_name == "Promoteur" or group.namrequest.session.group_name == "Directeur Général" or request.session.group_name == "Directeur des Etudes" or request.session.group_name == "Gestionnaire" %}
+              <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          {% else %}
+              <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          {% endif %}
+          <li class="breadcrumb-item active">Profil</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+      <div class="row">
+        <div class="col-xl-4">
+
+          <div class="card">
+            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+
+              {% if messages %}
+                {% for message in messages %}
+                <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                    <strong>{{ message }}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div> 
+                {% endfor %}
+              {% endif %}
+
+              <a href="#"  data-bs-toggle="modal" data-bs-target="#profilModal">
+                {% if user.profile and user.profile.photo %}
+                <img src="{{ user.profile.photo.url }}" alt="Profile" class="rounded-circle">
+                {% else %}
+                <img src="{% static 'assets/img/user.png' %}" alt="Profile" class="rounded-circle">
+                {% endif %}
+                <h2>{{ user.profile.lastname|title }} {{ user.profile.firstname|title }}</h2>
+                <h3>{{ user.profile.profession }}</h3>
+              </a>
+              <!-- Start de delete Modal -->
+              <div class="modal fade" id="profilModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content {{ setting.theme }} {{ setting.text_color }}">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Photo de profil</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        {% if profile.photo %}
+                          <img class="img-responsive rounded-circle" src="{{ profile.photo.url }}">
+                        {% else %}
+                          <img class="img-responsive rounded-circle" src="{% static 'assets/img/user.png' %}">
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <form method="POST" action="{% url 'edit_profile_photo' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-3">
+                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-1">
+                                    <input type="file" name="photo" class="form-control"/>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-primary btn-sm pull-right">Valider</button>
+                            </div>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div><!-- Fin de delete Modal-->
+              <div class="social-links mt-2">
+                <a href="#" class="twitter"><i class="bi bi-twitter"></i></a>
+                <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+                <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="col-xl-8">
+
+          <div class="card">
+            <div class="card-body pt-3">
+              <!-- Bordered Tabs -->
+              <ul class="nav nav-tabs nav-tabs-bordered">
+
+                <li class="nav-item">
+                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Aperçu</button>
+                </li>
+
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Editer le Profil</button>
+                </li>
+                
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-settings">Parametre</button>
+                </li>
+
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-change-password">Changer mot de passe</button>
+                </li>
+
+              </ul>
+              <div class="tab-content pt-2">
+
+                <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                  <h5 class="card-title">Détail du profil</h5>
+
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label ">Nom</div>
+                    <div class="col-lg-9 col-md-8">{{ request.user.last_name }}</div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label ">Prénom</div>
+                    <div class="col-lg-9 col-md-8">{{ request.user.first_name }}</div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Date de naissance</div>
+                    <div class="col-lg-9 col-md-8">{{ user.profile.datenais|date:"d/m/Y" }}</div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Sexe</div>
+                    <div class="col-lg-9 col-md-8">{{ user.profile.gender }}</div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Profession</div>
+                    <div class="col-lg-9 col-md-8">{{ user.profile.profession }}</div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Pays</div>
+                    <div class="col-lg-9 col-md-8">{{ user.profile.country }}</div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Adresse</div>
+                    <div class="col-lg-9 col-md-8">{{ user.profile.address }}</div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Téléphone</div>
+                    <div class="col-lg-9 col-md-8">{{ user.profile.phone }}</div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Email</div>
+                    <div class="col-lg-9 col-md-8">{{ user.email }}</div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Groupes</div>
+                    <div class="col-lg-9 col-md-8">
+                      <ul>
+                        {% for group in groups %}
+                        <li>{{ group.name }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+
+                  <!-- Profile Edit Form -->
+                  <form method="post" action="" >
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                      <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Image du profile</label>
+                      <div class="col-md-8 col-lg-9">
+                        {% if user.profile and user.profile.photo %}
+                        <img src="{{ user.profile.photo.url }}" alt="Profil">
+                        <div class="pt-2">
+                          <a href="#" class="btn btn-danger btn-sm" title="Remove my profile image"><i class="bi bi-trash"></i></a>
+                        </div>
+                        {% else %}
+                        <img src="{% static 'assets/img/user.png' %}" alt="Profile">
+                        <div class="pt-2">
+                          <a href="#" class="btn btn-danger btn-sm" title="Remove my profile image"><i class="bi bi-trash"></i></a>
+                        </div>
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <label for="Fast_name" class="col-md-4 col-lg-3 col-form-label">Nom *</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="last_name" type="text" class="form-control" id="Last_name" value="{{ request.user.last_name }}" required>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <label for="First_name" class="col-md-4 col-lg-3 col-form-label">Prénom </label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="first_name" type="text" class="form-control" id="First_name" value="{{ request.user.first_name }}">
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <label for="Datenais" class="col-md-4 col-lg-3 col-form-label">Date de naissance</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="datenais" type="date" class="form-control" id="Datenais" value="{{ user.profile.datenais|date:"Y-m-d" }}" required>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="Gender" class="col-md-4 col-lg-3 col-form-label">Sexe * </label>
+                        <div class="col-md-8 col-lg-9">
+                          <select name = "gender" id="Gender" class="form-select" aria-label="Default select example" required>
+                            {% if user.profile.gender == "Masculin" %}
+                            <option value="Masculin">Masculin</option>
+                            <option value="Feminin">Feminin</option>
+                            {% else %}
+                            <option value="Feminin">Feminin</option>
+                            <option value="Masculin">Masculin</option>
+                            {% endif %}
+                          </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="Country" class="col-md-4 col-lg-3 col-form-label">Pays * </label>
+                        <div class="col-md-8 col-lg-9">
+                          <select name = "country" id="Country" class="form-select" aria-label="Default select example" required>
+                            <option value="user.profile.country">{{ user.profile.country }}</option>
+                            {% for country in countries %}
+                            <option value="{{ country }}">{{ country }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <label for="Address" class="col-md-4 col-lg-3 col-form-label">Address</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="address" type="text" class="form-control" id="Address" value="{{ user.profile.address }}" required>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <label for="Phone" class="col-md-4 col-lg-3 col-form-label">Phone</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="phone" type="text" class="form-control" id="Phone" value="{{ user.profile.phone }}" required>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <label for="Email" class="col-md-4 col-lg-3 col-form-label">Email</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="email" type="email" class="form-control" id="Email" value="{{ user.email }}" required>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <label for="Profession" class="col-md-4 col-lg-3 col-form-label">Profession</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="profession" type="text" class="form-control" id="Profession" value="{{ user.profile.profession }}" required>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <label for="Diplome" class="col-md-4 col-lg-3 col-form-label">Diplome</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="diplome" type="text" class="form-control" id="Diplome" value="{{ user.profile.diplome }}" required>
+                      </div>
+                    </div>
+
+                    <div class="text-center">
+                      <button type="submit" class="btn btn-primary">Metre à jour </button>
+                    </div>
+                  </form><!-- End Profile Edit Form -->
+
+                </div>
+
+                <div class="tab-pane fade pt-3" id="profile-settings">
+
+                  <!-- Settings Form -->
+                  <form>
+
+                    <div class="row mb-3">
+                      <label for="fullName" class="col-md-4 col-lg-3 col-form-label">Email Notifications</label>
+                      <div class="col-md-8 col-lg-9">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="changesMade" checked>
+                          <label class="form-check-label" for="changesMade">
+                            Changes made to your account
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="newProducts" checked>
+                          <label class="form-check-label" for="newProducts">
+                            Information on new products and services
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="proOffers">
+                          <label class="form-check-label" for="proOffers">
+                            Marketing and promo offers
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="securityNotify" checked disabled>
+                          <label class="form-check-label" for="securityNotify">
+                            Security alerts
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="text-center">
+                      <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                  </form><!-- End settings Form -->
+
+                </div>
+
+                <div class="tab-pane fade pt-3" id="profile-change-password">
+                  <!-- Change Password Form -->
+                  <p class="text-center">
+                    <a href="{% url 'password_change' %}" class="btn btn-primary btn-sm">Changer le mot de passe</a>
+                  </p>
+
+                </div>
+
+              </div><!-- End Bordered Tabs -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,12 @@
+<div class="col-12">
+    <label for="number_student" class="form-label">Nombre d'élèves : </label>
+    <input type="number" name="number_student" id="number_student" value="{{ nombre_students }}" class="form-control" readonly required>
+</div>
+<div class="col-12">
+    <label for="amount_student" class="form-label">Montant par élève ({{ setting.devise }}) : </label>
+    <input type="text" name="amount_student" value="{{ montant_student }}" class="form-control" id="amount_student" readonly required>
+</div>
+<div class="col-12">
+    <label for="amount" class="form-label">Montant ({{ setting.devise }}) : </label>
+    <input type="text" name="amount" value="{{ montant }}" class="form-control" id="amount" readonly required>
+</div>

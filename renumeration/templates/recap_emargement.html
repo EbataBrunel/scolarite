@@ -1,0 +1,164 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Recap de l'émargement {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Rénumeration</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'personnel_renum' %}">Enseignants</a></li>
+          <li class="breadcrumb-item active">Récapitulatif</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Emargement de <b>{{ enseignant.last_name|title }} {{ enseignant.first_name|title }}</b></h5>
+                <h4 class="text-center">Mois : <b>{{ month }}</b></h4>
+                <hr>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                      {% for e in emargements %}
+                        <thead>
+                            <tr>
+                                <th colspan="5" class="text-center {{ setting.theme }} {{ setting.text_color }}"><h3>{{ e.salle }}</h3></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          {% for m in e.matieres %}
+                            <tr>
+                                <th colspan="5" class="text-center">{{ m.matiere }}</th>
+                            </tr>
+                            <tr>
+                              <th>Horaire</th>
+                              <th>Jour</th>
+                              <th>Date</th>
+                              <th>Séance</th>
+                              <th>Heure</th>
+                          </tr>
+                            {% for e in m.emargements %}
+                            <tr>
+                                <td>{{ e.emargement.heure_debut }} - {{ e.emargement.heure_fin }}</td>
+                                <td>{{ e.emargement.jour }}</td>
+                                <td>{{ e.emargement.date_emargement|date:"d/m/Y" }}</td>
+                                <td>{{ e.emargement.seance }}</td>
+                                <td>{{ e.hour }}</th>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                              <td>Cout heure ({{ setting.devise }})</td>
+                              <th>{{ m.cout_heure }}{{ setting.devise }}</th>
+                              <th colspan="2" class="text-center">Heure total </th>
+                              <th><b>{{ m.total_time }}</b></th>
+                            </tr>
+                            <tr>
+                              <td colspan="4" class="text-center">Montant total ({{ setting.devise }})</td>
+                              <td class="text-danger">{{ m.montant_total_matiere|floatformat:2 }}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                        <tfooter>
+                          <tr>
+                            <th colspan="3" class="text-center">Total global</th>
+                            <th>Montant : {{ e.montant_total_salle }}{{ setting.devise }}</th>
+                            <th class="bg-secondary">{{ e.total_matiere_time }}</th>
+                          </tr>
+                        </tfooter>
+                      {% endfor %}
+                    </table>
+                    <br>
+                    {% if status_paye %}
+                    <table class="table table-bordered">
+                      <tr>
+                        <th>Indemnité ({{ setting.devise }})</th>
+                        <th>{{ renumeration.indemnite|floatformat:2 }}</th>
+                        <th class="text-center"><b>SALAIRE NET ({{ setting.devise }}) : </b></th>
+                        <th class="text-center"> <span class="text-danger">{{ net_payer|floatformat:2 }}</span></th>
+                        <th class="text-center {{ setting.theme }} {{ setting.text_color }}">{{ time_total }}</th>
+                      </tr>
+                    </table>
+                    {% else %}
+                    <table class="table table-bordered">
+                      <tr>
+                        <th colspan="3" class="text-center">Total ({{ setting.devise }}): </th>
+                        <th class="text-center">Montant à payer sans indemnité : <span class="text-danger">{{ montant_payer|floatformat:2 }}</span></th>
+                        <th class="text-center {{ setting.theme }} {{ setting.text_color }}">{{ time_total }}</th>
+                      </tr>
+                    </table>
+                    {% endif %}
+                </div>
+                <!-- End Table with stripped rows -->
+                <div class="text-center">
+                  {% if status_paye %}
+                    <a href="#"  data-bs-toggle="modal" data-bs-target="#renumModal" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i> Paiement déjà effectué </a>
+                    <!-- Start de delete Modal -->
+                    <div class="modal fade" id="renumModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                          <div class="modal-content">
+                            <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                              <h5 class="modal-title text-center">Rénumération de {{ enseignant.last_name|title }} {{ enseignant.first_name|title }}</span></h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h3 class="card-title">{{ month }}</h3>
+                                  <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                      <tr>
+                                        <th class="white-space">Montant ({{ setting.devise }})</th>
+                                        <th>Indemnité ({{ setting.devise }})</th>
+                                        <th class="white-space">Date de paye</th>
+                                        <th class="white-space">Mode paiement</th>
+                                        <th>Gestionnaire</th>
+                                      </tr>
+                                      <tr>
+                                        <td>{{ renumeration.amount }}</td>
+                                        <td>{{ renumeration.indemnite }}</td>
+                                        <td class="white-space">{{ renumeration.date|date:"d/m/Y" }}</td>
+                                        <td>{{renumeration.mode_payment }}</td>
+                                        <td class="white-space">{{ renumeration.user.last_name|title }} - {{ renumeration.user.first_name|title }}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="4" class="text-center">Salaire net ({{ setting.devise }})</td>
+                                        <td class="text-success"><b>{{ net_payer|floatformat:2 }}</b></td>
+                                      </tr>
+                                    </table>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button></div>
+                          </div>
+                        </div>
+                    </div><!-- Fin de delete Modal-->
+                  {% else %}
+                    {% if anneeacademique.status_cloture %}
+                      {% if setting.theme == "bg-default" %}
+                      <a href="{% url 'add_renumeration' enseignant.id|crypter_id month|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-cash"></i> Effectuer une rénumeration de <b>{{ montant_payer }} {{ setting.devise }}</b></a>
+                      {% else %}
+                      <a href="{% url 'add_renumeration' enseignant.id|crypter_id month|crypter_id %}" class="btn btn-default {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-cash"></i> Effectuer une rénumeration de <b>{{ montant_payer }} {{ setting.devise }}</b></a>
+                      {% endif %}
+                    {% endif %}
+                  {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

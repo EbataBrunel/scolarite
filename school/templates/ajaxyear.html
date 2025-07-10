@@ -1,0 +1,162 @@
+{% load crypto_filters %}
+<div class="row">
+  <div class="col-md-2"></div>
+  <div class="col-md-8">
+    {% if request.session.group_name != "Enseignant" and request.session.group_name != "Surveillant Général" %}
+    <div class="row justify-content-center">
+      {% for c in cycles %}
+        {% if c.nombre_classes %}
+        <div class="col-lg-4" style="margin-bottom: 10px">
+          <!-- Default Card -->
+          <div class="card">
+            <div class="card-body height_min_max_card {{ setting.theme }}">
+              <a href="{% url 'settings/db_classe' c.cycle.id|crypter_id %}" class="decoration {{ setting.text_color}}">
+                <h5 class="card-title text-center">{{ c.cycle }}</h5>
+                <p class="text-center"><span class="font-size"><i class="bi bi-house"></i></span></p>
+              </a>
+            </div>
+          </div><!-- End Default Card -->
+        </div>
+        {% else %}
+        <div class="col-lg-4" style="margin-bottom: 10px">
+          <!-- Default Card -->
+          <div class="card">
+            <div class="card-body height_min_max_card {{ setting.theme }}">
+              <a href="#"  data-bs-toggle="modal" data-bs-target="#infoModal{{ c.cycle.id }}" class="decoration {{ setting.text_color}}">
+                <h5 class="card-title text-center">{{ c.cycle }}</h5>
+                <p class="text-center"><span class="font-size"><i class="bi bi-house"></i></span></p>
+              </a>
+              <!-- Start Modal -->
+              <div class="modal fade" id="infoModal{{ c.cycle.id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">{{ c.cycle }}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p class="text-center">Aucune classe n'a été enregistrée</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                    </div>
+                  </div>
+                </div>
+              </div><!-- Fin Modal-->
+            </div>
+          </div><!-- End Default Card -->
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+    <br>
+    <div class="row justify-content-center">
+      {% if request.session.group_name == "Super user" and request.session.etablissement_id and request.session.annee_id  %}
+      <div class="col-lg-4" style="margin-bottom: 10px">
+        <!-- Default Card -->
+        <div class="card">
+          <div class="card-body height_min_max_card {{ setting.theme }}">
+            <a href="{% url 'index' %}" class="decoration bg-secondary">
+              <h5 class="card-title text-center">Accueil</h5>
+              <p class="text-center font-size"><i class="bi bi-arrow-left"></i></p>
+            </a>
+          </div>
+        </div><!-- End Default Card -->
+      </div>
+      {% endif %}
+      {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" %}
+      <div class="col-lg-4" style="margin-bottom: 10px">
+        <!-- Default Card -->
+        <div class="card">
+          <div class="card-body height_min_max_card {{ setting.theme }}">
+            <a href="{% url 'settings/db' %}" class="decoration {{ setting.text_color }}">
+              <h5 class="card-title text-center">Tableau de bord</h5>
+              <p class="text-center font-size"><i class="bi bi-grid"></i></p>
+            </a>
+          </div>
+        </div><!-- End Default Card -->
+      </div>
+      {% endif %}
+      {% if request.session.group_name == "Surveillant Général" or request.session.group_name == "Enseignant" %}
+      <div class="col-lg-4" style="margin-bottom: 10px">
+        <!-- Default Card -->
+        <div class="card">
+          <div class="card-body height_min_max_card {{ setting.theme }}">
+            <a href="{% url 'settings/db' %}" class="decoration {{ setting.text_color }}">
+              <h5 class="card-title text-center">Tableau de bord</h5>
+              <p class="text-center font-size"><i class="bi bi-grid"></i></p>
+            </a>
+          </div>
+        </div><!-- End Default Card -->
+      </div>
+      {% endif %}
+      <div class="col-lg-4" style="margin-bottom: 10px">
+        <!-- Default Card -->
+        <div class="card">
+          <div class="card-body height_min_max_card bg-warning">
+            <a href="#"  data-bs-toggle="modal" data-bs-target="#deconnecterModal" title="Supprimer" style="text-decoration:none">
+            <h5 class="card-title text-center text-danger"> Se déconnecter</h5>
+            <p class="text-center font-size"><i class="bi bi-box-arrow-right"></i></p>
+            </a>
+            <!-- Start Modal -->
+            <div class="modal fade" id="deconnecterModal" tabindex="-1">
+              <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Déconnection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p class="text-center">Voulez-vous vraiment quitter l'application ?</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                    <a href="{% url 'logout' %}" class="btn btn-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Se deconnecter</a>
+                  </div>
+                </div>
+              </div>
+            </div><!-- Fin Modal-->
+          </div>
+        </div><!-- End Default Card -->
+      </div>
+    </div>
+
+    <br>
+    <div class="row">
+      <div class="col-md-4"></div>
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="text-center">
+              <form method="post" class="row g-3">
+                  {% csrf_token %}
+                  
+                  <div class="col-12">
+                    <select name="group_name" id="group_name" class="form-select" aria-label="Default select example">
+                        <option id="{{ group_name }}">{{ group_name }}</option>
+                        {% for group in groups %}
+                        <option value="{{ group.name }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="col-12">
+                      <select name="anneeacademique" id="anneeacademique" class="form-select" aria-label="Default select example">
+                          <option id="{{ anneeacademique.id }}">{{ anneeacademique.annee_debut }} {{ anneeacademique.separateur }} {{ anneeacademique.annee_fin }}</option>
+                          {% for anneeacademique in anneeacademiques %}
+                          <option value="{{ anneeacademique.id }}">{{ anneeacademique.annee_debut }} {{ anneeacademique.separateur }} {{ anneeacademique.annee_fin }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4"></div>
+    </div>
+
+  </div>
+  <div class="col-md-2"></div>
+</div>

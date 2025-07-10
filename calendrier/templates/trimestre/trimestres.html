@@ -1,0 +1,147 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Trimestres {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Calendrier</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Trimestres</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des trimestres</h5>
+                {% if anneeacademique.status_cloture %}
+                <div align="right">
+                    {% if setting.theme == "bg-default" %}
+                    <a href="{% url 'trimestre/add_trimestre' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer un trimestre</a>
+                    {% else %}
+                    <a href="{% url 'trimestre/add_trimestre' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un trimestre</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% if messages %}
+                  {% for message in messages %}
+                  <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Nom</th>
+                                <th>DateDébut</th>
+                                <th>DateFin</th>
+                                <th>Détail</th>
+                                {% if anneeacademique.status_cloture %}
+                                <th>Action</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in trimestres %}
+                            <tr>
+                                <td>{{ t.trimestre.id }}</td>
+                                <td class="white-space">{{ t.trimestre.name }}</td>
+                                <td class="white-space">{{ t.trimestre.start_date|date:"d/m/Y" }}</td>
+                                <td class="white-space">{{ t.trimestre.end_date|date:"d/m/Y" }}</td>
+                                <td>
+                                    <a class="btn btn-info btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ t.trimestre.id }}" title="Détail"><i class="bi bi-eye"></i></a>
+                                    <!-- debut detail modal -->
+                                    <div class="modal fade" id="detailModal{{ t.trimestre.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-info">
+                                                    <h5 class="modal-title" id="exampleModalLabel"><span> Liste des évènements du <b>{{ t.trimestre.name }}</b></span></h5>
+                                                </div>
+                                                <div class="modal-body">
+                                                  {% for evenement in t.evenements %}
+                                                    <div class="card">
+                                                      <div class="card-body">
+                                                        <h5 class="card-title text-center">{{ evenement.name }}</h5>
+                                                        <div class="card"> 
+                                                          <div class="card-body">
+                                                            <table class="table">
+                                                              <tr>
+                                                                <th>Description</th>
+                                                                <td> : {{ evenement.description }}</td>
+                                                              </tr>
+                                                              <tr>
+                                                                <th>Date </th> 
+                                                                <td> : du {{ evenement.start_date|date:"d/m/Y" }} au {{ evenement.end_date|date:"d/m/Y" }}</td>
+                                                              <tr>
+                                                            </table>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  {% endfor %}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- end modal detail -->
+                                </td>
+                                {% if anneeacademique.status_cloture %}
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ t.trimestre.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                    <a href="{% url 'trimestre/edit_trimestre' t.trimestre.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
+                                    <!-- Start de delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ t.trimestre.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-sm">
+                                          <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title">Suppression</h5>
+                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                              <p class="text-center">Voulez-vous vraiment supprimer ce trimestre ?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              <a href="{% url 'del_trimestre' t.trimestre.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div><!-- Fin de delete Modal-->
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}
