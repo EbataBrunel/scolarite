@@ -1,0 +1,130 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Résumé des émargements des enseignants du cycle secondaire {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Rémunérations</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'remun_enseignant/remunerations_enseignants' %}">Rémunérations</a></li>
+          <li class="breadcrumb-item active">Résumé</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Résumé des émargements des enseignants du cycle secondaire</h5>
+                
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th>Nombre enseignants</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in emargements %}
+                            <tr>
+                                <td>{{ e.month }}</td>
+                                <td><span class="badge rounded-pill bg-secondary">{{ e.nombre_enseignants_impayes }}</span></td>
+                                <td>
+                                  <a class="btn btn-info btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ e.month }}" title="Détail"><i class="bi bi-eye"></i></a>
+                                  <!-- debut detail modal -->
+                                  <div class="modal fade" id="detailModal{{ e.month }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                          <div class="modal-content">
+                                              <div class="modal-header bg-info">
+                                                  <h5 class="modal-title" id="exampleModalLabel"><b class="text-center"> Liste des enseignants non payés </b></h5>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <br>
+                                                    <h5><b>{{ e.month }}</b></h5>
+                                                    <hr>
+                                                    {% if e.enseignants %}
+                                                    <div class="table-responsive">
+                                                      <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Noms</th>
+                                                                <th>Prénoms</th>
+                                                                <th>Téléphone</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                          {% for enseignant in e.enseignants %}
+                                                          <tr>
+                                                              <td>{{ enseignant.last_name|title }}</td>
+                                                              <td>{{ enseignant.first_name|title }}</td>
+                                                              <td>{{ enseignant.profile.phone }}</td>
+                                                              <td>
+                                                                <button class="btn btn-info btn-sm detail-teacher-emargement" id="{{ enseignant.id }}" data-month="{{ e.month }}" data-type="Secondaire"><i class="bi bi-eye"></i></button>
+                                                              </td>
+                                                          </tr>
+                                                          {% endfor %}
+                                                        </tbody>
+                                                      </table>
+                                                    </div>
+                                                    {% else %}
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                        <br>
+                                                        <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Aucun enseignant à rémunérer a été enregistré.</h4>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <!-- end modal detail -->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+
+                <!-- Start groupe Modal -->
+                <div class="modal fade" id="content_detail" tabindex="-1">
+                  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                    <div class="modal-content">
+                      <div class="modal-header bg-info">
+                        <h5 class="modal-title">Détail des émargements</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true" class="badge bg-dark">x</span>
+                        </button>
+                      </div>
+                      <div class="modal-body" id="content-detail-emargement-teacher"></div>
+                    </div>
+                  </div>
+                </div><!-- End group Modal-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

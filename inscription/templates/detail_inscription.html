@@ -23,15 +23,17 @@
 
           <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Liste des inscriptions de {{ salle.classe }} {{ salle.serie }}{{ salle.number }}</h5>
+                <h5 class="card-title">Liste des inscriptions de {{ salle }}</h5>
                 {% if anneeacademique.status_cloture %}
-                <div align="right">
-                    {% if setting.theme == "bg-default" %}
-                    <a href="{% url 'add_inscription' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une inscription</a>
-                    {% else %}
-                    <a href="{% url 'add_inscription' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une inscription</a>
-                    {% endif %}
-                </div>
+                  {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" or request.session.group_name == "Gestionnaire" %}
+                  <div align="right">
+                      {% if setting.theme == "bg-default" %}
+                      <a href="{% url 'add_inscription' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une inscription</a>
+                      {% else %}
+                      <a href="{% url 'add_inscription' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une inscription</a>
+                      {% endif %}
+                  </div>
+                  {% endif %}
                 {% endif %}
                 {% if messages %}
                   {% for message in messages %}
@@ -58,9 +60,12 @@
                                 <th>ModePaiement</th>
                                 <th>Attesttion</th>
                                 <th>Blocage</th>
+                                <th>Photo</th>
                                 <th class="white-space">Droit accès</th>
                                 {% if anneeacademique.status_cloture %}
-                                <th>Actions</th>
+                                  {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" or request.session.group_name == "Gestionnaire" %}
+                                  <th>Actions</th>
+                                  {% endif %}
                                 {% endif %}
                             </tr>
                         </thead>
@@ -74,140 +79,188 @@
                                 <td>{{ inscription.mode_paiement }}</td>
                                 <td><a href="{% url 'attestation_inscription' inscription.student.id|crypter_id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i></a></td>
                                 <td>
-                                  {% if inscription.status_block %}
-                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#blockModal{{ inscription.id }}" title="Bloquage" class="btn btn-outline-dark btn-sm">
-                                      <span id="icon-account-{{ inscription.id }}">
-                                        <span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i></span>
-                                      </span>
-                                    </a>
-                                    <!-- Start de delete Modal -->
-                                    <div class="modal fade" id="blockModal{{ inscription.id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                          <div class="modal-content">
-                                            <div class="modal-header">
-                                              <h5 class="modal-title">Blocage</h5>
-                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                              <div class="text-center" id="content-account-block-{{ inscriprion.id }}">
-                                                <p>Voulez-vous vraiment désactiver le droit d'accès de cet élève ?</p>
-                                                <p><b class="text-danger">Attention :</b> la désactivation de ce compte entraînera la fermeture de toutes les activités liées à celui-ci. Veuillez donc vous assurer de vouloir le désactiver, car pour le réactiver, il faudra contacter le super utilisateur, ce qui peut prendre un certain temps. 
+                                  {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" or request.session.group_name == "Gestionnaire" %}
+                                    {% if inscription.status_block %}
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#blockModal{{ inscription.id }}" title="Bloquage" class="btn btn-outline-dark btn-sm">
+                                        <span id="icon-account-{{ inscription.id }}">
+                                          <span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i></span>
+                                        </span>
+                                      </a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="blockModal{{ inscription.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                              <div class="modal-header">
+                                                <h5 class="modal-title">Blocage</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="text-center" id="content-account-block-{{ inscriprion.id }}">
+                                                  <p>Voulez-vous vraiment désactiver le droit d'accès de cet élève ?</p>
+                                                  <p><b class="text-danger">Attention :</b> la désactivation de ce compte entraînera la fermeture de toutes les activités liées à celui-ci. Veuillez donc vous assurer de vouloir le désactiver, car pour le réactiver, il faudra contacter le super utilisateur, ce qui peut prendre un certain temps. 
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                <a href="#" class="btn btn-primary btn-sm block-account-student" id="{{ inscription.id }}"><i class="bi bi-check"></i> Valider</a>
                                               </div>
                                             </div>
-                                            <div class="modal-footer">
-                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                              <a href="#" class="btn btn-primary btn-sm block-account-student" id="{{ inscription.id }}"><i class="bi bi-check"></i> Valider</a>
+                                          </div>
+                                      </div><!-- Fin de delete Modal-->
+                                    {% else %}
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#blockModal{{ inscription.id }}" title="Droit" class="btn btn-outline-dark btn-sm">
+                                        <span class="badge rounded-pill bg-danger"><i class="bi bi-x-circle"></i></span>
+                                      </a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="blockModal{{ inscription.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                              <div class="modal-header">
+                                                <h5 class="modal-title">Blocage du compte</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="text-center">
+                                                  <p>Vous n'avez pas les droits nécessaires pour activer le blocage de ce compte. Veuillez contacter un super utilisateur pour effectuer cette opération.</p>
+                                                  <p><b>Bloquer par : </b>{{ inscription.responsable.last_name|title }} {{ inscription.responsable.first_name|title }}</p>
+                                                  <p><b>Date : </b> {{ inscription.date_block|date:"d/m/Y h:m" }}</p>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              </div>
                                             </div>
                                           </div>
-                                        </div>
-                                    </div><!-- Fin de delete Modal-->
+                                      </div><!-- Fin de delete Modal-->
+                                    {% endif %}
                                   {% else %}
-                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#blockModal{{ inscription.id }}" title="Droit" class="btn btn-outline-dark btn-sm">
+                                    {% if inscription.status_block %}
+                                      <span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i></span>
+                                    {% else %}
                                       <span class="badge rounded-pill bg-danger"><i class="bi bi-x-circle"></i></span>
+                                    {% endif %}
+                                  {% endif %}
+                                </td>
+                                <td>
+                                  {% if inscription.photo %}
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#photoModal{{ inscription.id }}">
+                                      <img src="{{ inscription.photo.url }}" alt="Photo" width="40" height="40" class="rounded-circle img-responsive">
                                     </a>
                                     <!-- Start de delete Modal -->
-                                    <div class="modal fade" id="blockModal{{ inscription.id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal fade" id="photoModal{{ inscription.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-sm modal-dialog-centered">
                                           <div class="modal-content">
                                             <div class="modal-header">
-                                              <h5 class="modal-title">Blocage du compte</h5>
+                                              <h5 class="modal-title">Photo de <b>{{ inscription.student.lastname|title }} {{ inscription.student.firstname|title }}</b></h5>
                                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
                                               <div class="text-center">
-                                                <p>Vous n'avez pas les droits nécessaires pour activer le blocage de ce compte. Veuillez contacter un super utilisateur pour effectuer cette opération.</p>
-                                                <p><b>Bloquer par : </b>{{ inscription.responsable.last_name|title }} {{ inscription.responsable.first_name|title }}</p>
-                                                <p><b>Date : </b> {{ inscription.date_block|date:"d/m/Y h:m" }}</p>
+                                                <p>
+                                                  <img src="{{ inscription.photo.url }}" alt="Photo" width="260" height="250" class="img-responsive"/>
+                                                </p>
                                               </div>
                                             </div>
-                                            <div class="modal-footer">
-                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                            </div>
-                                          </div>
-                                        </div>
-                                    </div><!-- Fin de delete Modal-->
-                                  {% endif %}
-                                </td>
-                                <td>
-                                  {% if inscription.status_access %}
-                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#accessModal{{ inscription.id }}" title="Droit" class="btn btn-outline-dark btn-sm">
-                                      <span id="icon-{{ inscription.id }}">
-                                        <span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i></span>
-                                      </span>
-                                    </a>
-                                    <!-- Start de delete Modal -->
-                                    <div class="modal fade" id="accessModal{{ inscription.id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-sm">
-                                          <div class="modal-content">
-                                            <div class="modal-header">
-                                              <h5 class="modal-title">Droit d'accès</h5>
-                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                              <div class="text-center" id="content-access-{{ inscriprion.id }}">
-                                                <p>Voulez-vous vraiment désactiver le droit d'accès de cet élève ?</p>
-                                              </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                              <a href="#" class="btn btn-primary btn-sm access-student" id="{{ inscription.id }}"><i class="bi bi-check"></i> Valider</a>
+                                            <div class="modal-footer text-center">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i></button>
                                             </div>
                                           </div>
                                         </div>
                                     </div><!-- Fin de delete Modal-->
                                   {% else %}
-                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#accessModal{{ inscription.id }}" title="Droit" class="btn btn-outline-dark btn-sm">
-                                      <span id="icon-{{ inscription.id }}">
-                                        <span class="badge rounded-pill bg-danger"><i class="bi bi-x-circle"></i></span>
-                                      </span>
-                                    </a>
-                                    <!-- Start de delete Modal -->
-                                    <div class="modal fade" id="accessModal{{ inscription.id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-sm">
-                                          <div class="modal-content">
-                                            <div class="modal-header">
-                                              <h5 class="modal-title">Droit d'accès</h5>
-                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                              <div class="text-center" id="content-access-{{ inscriprion.id }}">
-                                                <p>Voulez-vous vraiment activer le droit d'accès de cet élève ?</p>
+                                  <img src="{% static 'assets/img/user.png' %}" alt="Photo" width="40" height="40"  class="rounded-circle img-responsive">
+                                  {% endif %}
+                                </td>
+                                <td>
+                                  {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" or request.session.group_name == "Gestionnaire" %}
+                                    {% if inscription.status_access %}
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#accessModal{{ inscription.id }}" title="Droit" class="btn btn-outline-dark btn-sm">
+                                        <span id="icon-{{ inscription.id }}">
+                                          <span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i></span>
+                                        </span>
+                                      </a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="accessModal{{ inscription.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-sm">
+                                            <div class="modal-content">
+                                              <div class="modal-header">
+                                                <h5 class="modal-title">Droit d'accès</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="text-center" id="content-access-{{ inscriprion.id }}">
+                                                  <p>Voulez-vous vraiment désactiver le droit d'accès de cet élève ?</p>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                <a href="#" class="btn btn-primary btn-sm access-student" id="{{ inscription.id }}"><i class="bi bi-check"></i> Valider</a>
                                               </div>
                                             </div>
-                                            <div class="modal-footer">
-                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                              <a href="#" class="btn btn-primary btn-sm access-student" id="{{ inscription.id }}"><i class="bi bi-check"></i>Valider</a>
+                                          </div>
+                                      </div><!-- Fin de delete Modal-->
+                                    {% else %}
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#accessModal{{ inscription.id }}" title="Droit" class="btn btn-outline-dark btn-sm">
+                                        <span id="icon-{{ inscription.id }}">
+                                          <span class="badge rounded-pill bg-danger"><i class="bi bi-x-circle"></i></span>
+                                        </span>
+                                      </a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="accessModal{{ inscription.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-sm">
+                                            <div class="modal-content">
+                                              <div class="modal-header">
+                                                <h5 class="modal-title">Droit d'accès</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="text-center" id="content-access-{{ inscriprion.id }}">
+                                                  <p>Voulez-vous vraiment activer le droit d'accès de cet élève ?</p>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                <a href="#" class="btn btn-primary btn-sm access-student" id="{{ inscription.id }}"><i class="bi bi-check"></i>Valider</a>
+                                              </div>
                                             </div>
                                           </div>
-                                        </div>
-                                    </div><!-- Fin de delete Modal-->
+                                      </div><!-- Fin de delete Modal-->
+                                    {% endif %}
+                                  {% else %}
+                                      {% if inscription.status_access %}
+                                        <span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i></span>
+                                      {% else %}
+                                        <span class="badge rounded-pill bg-danger"><i class="bi bi-x-circle"></i></span>
+                                      {% endif %}
                                   {% endif %}
                                 </td>
                                 
                                 {% if anneeacademique.status_cloture %}
-                                <td>
-                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ inscription.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
-                                    <a href="{% url 'edit_inscription' inscription.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
-                                    <!-- Start de delete Modal -->
-                                    <div class="modal fade" id="deleteModal{{ inscription.id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-sm">
-                                          <div class="modal-content">
-                                            <div class="modal-header">
-                                              <h5 class="modal-title">Suppression</h5>
-                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                              <div class="text-center" id="content-access-{{ inscriprion.id }}">
-                                                <p>Voulez-vous vraiment supprimer cette inscriprion ?</p>
-                                            </div>
-                                            <div class="modal-footer">
-                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                              <a href="{% url 'del_inscription' inscription.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                  {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" or request.session.group_name == "Gestionnaire" %}
+                                  <td>
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ inscription.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                      <a href="{% url 'edit_inscription' inscription.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="deleteModal{{ inscription.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-sm">
+                                            <div class="modal-content">
+                                              <div class="modal-header">
+                                                <h5 class="modal-title">Suppression</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="text-center" id="content-access-{{ inscriprion.id }}">
+                                                  <p>Voulez-vous vraiment supprimer cette inscriprion ?</p>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                <a href="{% url 'del_inscription' inscription.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                              </div>
                                             </div>
                                           </div>
-                                        </div>
-                                    </div><!-- Fin de delete Modal-->
-                                </td>
+                                      </div><!-- Fin de delete Modal-->
+                                  </td>
+                                  {% endif %}
                                 {% endif %}
                             </tr>
                             {% endfor %}

@@ -30,9 +30,9 @@
                             <tr>
                                 <th>Noms</th>
                                 <th>Prénoms</th>
-                                <th>NbEnfants</th>
+                                <th class="white-space">Nombre enfants</th>
                                 <th>Dette({{ setting.devise }})</th>
-                                <th>Action</th>
+                                <th>Notification</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -67,7 +67,7 @@
                                                         </tr>
                                                         {% endfor %}
                                                         <tr>
-                                                            <th colspan="2">Total</th>
+                                                            <th colspan="2">Total ({{ setting.devise }})</th>
                                                             <th><span class="text-danger">{{ p.dette|floatformat:2 }}</span></th>
                                                         </tr>
                                                     </table>

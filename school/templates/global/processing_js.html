@@ -2,6 +2,43 @@
     $(document).ready(function(){
         hideContentRenumeration();
 
+        status_contrat = {{ status_contrat|yesno:"true,false" }};
+        var classe_id = "{{ classe_id|escapejs }}";
+
+        if (status_contrat === true){
+            $.get(`alert_signature_contrat`,
+                {},
+                function(data){
+                    $('#alert-signature').modal('show');
+                    $('#content-alert-signature').html(data); 
+                }
+            );
+        }
+
+        if (status_contrat === true){
+            $.get(`${classe_id}/alert_signature_contrat_de`,
+                {},
+                function(data){
+                    $('#alert-signature').modal('show');
+                    $('#content-alert-signature').html(data); 
+                }
+            );
+        }
+
+        $('#cycle').on('change', function(){
+            var id_cycle = $(this).val();
+            if(id_cycle){
+                    $.get("ajax_name_classe/"+id_cycle,
+                        {id_cycle:id_cycle},
+                        function(data){
+                            $('#nameclasseview').html(data); 
+                        }
+                    );
+            }else{
+              $('#nameclasseview').html("");   
+            }
+        });
+
         $('#cycle').on('change', function(){
             var id_cycle = $(this).val();
             if(id_cycle){
@@ -24,7 +61,6 @@
                         {id_salle:id_salle},
                         function(data){
                             $('#matiereview').html(data); 
-
                         }
                     );
 
@@ -39,7 +75,7 @@
                     $.get("ajax_enseignant/"+id_salle,
                         {id_salle:id_salle},
                         function(data){
-                            //$('#Matiere').html(data); 
+                            document.getElementById('enseignantview').style.display = 'block';
                             $('#enseignantview').html(data); 
                             $('#matiereview').html(""); 
 
@@ -47,8 +83,10 @@
                     );
 
             }else{
-              $('#enseignantview').html("");   
-              $('#matiereview').html(""); 
+                document.getElementById('enseignantview').style.display = 'none';
+                document.getElementById('matiereview').style.display = 'none';
+                $('#enseignantview').html("");   
+                $('#matiereview').html(""); 
             }
         });
         /* Récuperer les matières de l'enseignant dans la salle selectionnée */
@@ -59,12 +97,14 @@
                     $.get("ajax_matiere_enseignant/"+id_salle+"/"+id_matiere,
                         {},
                         function(data){
+                            document.getElementById('matiereview').style.display = 'block';
                             $('#matiereview').html(data); 
                         }
                     );
 
             }else{
-              $('#matiereview').html("");   
+                document.getElementById('matiereview').style.display = 'block';
+                $('#matiereview').html("");   
             }
         });
 
@@ -449,25 +489,10 @@
             }
         });
 
-        // Renuménumération
         $('#month').on('change', function(){
             var month = $(this).val();
             if(month){
-                    $.get("ajax_pers_renum/"+month,
-                        {},
-                        function(data){
-                            $('#content_renumeration').html(data); 
-                        }
-                    );
-            }else{
-                $('#content_renumeration').html(""); 
-            }
-        });
-
-        $('#month').on('change', function(){
-            var month = $(this).val();
-            if(month){
-                    $.get("ajax_teacher_renum/"+month,
+                    $.get("ajax_comptabilite_remuneration/"+month,
                         {},
                         function(data){
                             $('#content_renum').show();
@@ -619,6 +644,22 @@
             }else{
                 $('#amountview').html(""); 
                 $('#amountview').html("");
+
+            }
+        });
+
+        /* Recuperer la date du début et de fin de l'année académique de l'établissement  */
+        $('#etablissement').on('change', function(){
+            var etablissement_id = $(this).val();
+            if(etablissement_id){
+                    $.get("ajax_dates_etablissement/"+etablissement_id,
+                        {},
+                        function(data){
+                            $('#datesview').html(data); 
+                        }
+                    );
+            }else{
+                $('#datesview').html(""); 
 
             }
         });
@@ -811,16 +852,115 @@
             }
         });
 
+        $(document).on('click','.decision-absence-enseignant',function(){
+            var id = $(this).data("id");
+            var status = $(this).data("status");
+            var enseignant_id = $(this).data("enseignant");
+            if(id){
+                $.get(`/absence/detail_absences/${enseignant_id}/decision_absence_enseignant/${id}/${status}`,
+                    {},
+                    function(data){
+                        content = ""
+                        if(data.status == 1){
+                            content = "<span class='badge rounded-pill bg-success'> Recevable </span>";
+                            content_decision = "<a href='#' data-id="+id+" data-status='2' class='btn btn-danger btn-sm decision-absence-enseignant'>Non redevable</a>";
+                            $('.content-status-decision'+id).html(content_decision);
+                        }
+                        else if(data.status == 2){
+                            content = "<span class='badge rounded-pill bg-danger'>Non recevable </span>";
+                            content_decision = "<a href='#' data-id="+id+" data-status='1' class='btn btn-success btn-sm decision-absence-enseignant'>Redevable</a>";
+                            $('.content-status-decision'+id).html(content_decision);
+                        }
+                        else{
+                            content = "<span class='badge rounded-pill bg-warning'> En attente </span>";
+                            content_decision = "<a href='#' data-id="+id+" data-status='1' class='btn btn-success btn-sm decision-absence-enseignant'>Redevable</a>&nbsp;<a href='#' data-id="+id+" data-status='2' class='btn btn-danger btn-sm decision-absence-enseignant'>Non redevable</a>";
+                            $('.content-status-decision'+id).html(content_decision);
+                        }
+                        $('#status-decision'+id).html(content);
+                    }
+                );
+
+            }
+        });
+
+        $(document).on('click','.decision-absence-admin',function(){
+            var id = $(this).data("id");
+            var status = $(this).data("status");
+            var admin_id = $(this).data("admin");
+            if(id){
+                $.get(`decision_absence_admin/${id}/${status}`,
+                    {},
+                    function(data){
+                        content = "";
+                        content_nb_motifs = "";
+                        if(data.status == 1){
+                            content = "<span class='badge rounded-pill bg-success'> Recevable </span>";
+                            content_nb_motifs = "<span>"+data.nombre_absences_admin+"</span>";
+                            content_decision = "<a href='#' data-id="+id+" data-status='2' class='btn btn-danger btn-sm decision-absence-admin'>Non redevable</a>";
+                            $('.content-status-decision'+id).html(content_decision);
+                        }
+                        else if(data.status == 2){
+                            content = "<span class='badge rounded-pill bg-danger'>Non recevable </span>";
+                            content_nb_motifs = "<span>"+data.nombre_absences_admin+"</span>";
+                            content_decision = "<a href='#' data-id="+id+" data-status='1' class='btn btn-success btn-sm decision-absence-admin'>Redevable</a>";
+                            $('.content-status-decision'+id).html(content_decision);
+                        }
+                        else{
+                            content = "<span class='badge rounded-pill bg-warning'> En attente </span>";
+                            content_nb_motifs = "<span>"+data.nombre_absences_admin+"</span>";
+                            content_decision = "<a href='#' data-id="+id+" data-status='1' class='btn btn-success btn-sm decision-absence-admin'>Redevable</a>&nbsp;<a href='#' data-id="+id+" data-status='2' class='btn btn-danger btn-sm decision-absence-admin'>Non redevable</a>";
+                            $('.content-status-decision'+id).html(content_decision);
+                        }
+                        $('#status-decision'+id).html(content);
+                        $('#content-nb-motifs'+data.adminId).html(content_nb_motifs)
+                    }
+                );
+
+            }
+        });
+
+        $(document).on('click','.decision-absence-student',function(){
+            var id = $(this).data("id");
+            var status = $(this).data("status");
+            if(id){
+                $.get(`decision_absence_student/${id}/${status}`,
+                    {},
+                    function(data){
+                        content = "";
+                        if(data.status == 1){
+                            content = "<span class='badge rounded-pill bg-success'> Recevable </span>";
+                            content_decision = "<a href='#' data-id="+id+" data-status='2' class='btn btn-danger btn-sm decision-absence-student'>Non redevable</a>";
+                            $('.content-status-decision'+id).html(content_decision);
+                        }
+                        else if(data.status == 2){
+                            content = "<span class='badge rounded-pill bg-danger'>Non recevable </span>";
+                            content_decision = "<a href='#' data-id="+id+" data-status='1' class='btn btn-success btn-sm decision-absence-student'>Redevable</a>";
+                            $('.content-status-decision'+id).html(content_decision);
+                        }
+                        else{
+                            content = "<span class='badge rounded-pill bg-warning'> En attente </span>";
+                            content_decision = "<a href='#' data-id="+id+" data-status='1' class='btn btn-success btn-sm decision-absence-student'>Redevable</a>&nbsp;<a href='#' data-id="+id+" data-status='2' class='btn btn-danger btn-sm decision-absence-admin'>Non redevable</a>";
+                            $('.content-status-decision'+id).html(content_decision);
+                        }
+                        $('#status-decision'+id).html(content);
+                    }
+                );
+
+            }
+        });
+
         /* ========================== Signature des contrats */
        $(document).on('click','.signer-contrat',function(){
             var contrat_id = $(this).attr("id");
             if(contrat_id){
-                    $.get(`signer_contrat/${contrat_id}`,
-                        {},
-                        function(data){
-                            $('#content-signature-contrat'+contrat_id).html(data);
-                        }
-                    );
+                $.get(`signer_contrat/${contrat_id}`,
+                    {},
+                    function(data){
+                        content = "<span class='badge rounded-pill bg-success'>Déjà signé</span>";
+                        $('#content-signature-contrat'+contrat_id).html(data);
+                        $('#content-status-signature'+contrat_id).html(content);
+                    }
+                );
             }
         });
 
@@ -830,7 +970,9 @@
                     $.get(`signer_contrat_promoteur/${contrat_id}`,
                         {},
                         function(data){
+                            content = "<span class='badge rounded-pill bg-success'>Contrat signé</span>";
                             $('#content-signature-contrat'+contrat_id).html(data);
+                            $('.content-status-contrat'+contrat_id).html(content);
                         }
                     );
             }
@@ -932,7 +1074,14 @@
                             $('#content_confirmation_payment').modal('hide');
                             if (data.status){
                                 content = "<span class='badge rounded-pill bg-success'>Payé</span>";
+                                content_number_new_payments = 0
+                                if(data.number_new_payments > 0){
+                                    content_number_new_payments = "<span class='badge rounded-pill bg-success'>"+data.number_new_payments+"</span>";
+                                }else{
+                                    content_number_new_payments = "<span class='badge rounded-pill bg-secondary'>"+data.number_new_payments+"</span>";
+                                }
                                 $('#content-confirmation'+id).html(content);
+                                $('#content-new-payment'+data.etablissement_id).html(content_number_new_payments);
                             }
                         }
                     );
@@ -981,11 +1130,66 @@
                     function(data){
                         $('#content-block-student').modal('hide');
                         if(data.status){
+                            content_etablissement_actif = "<span class='badge rounded-pill bg-success'>"+data.nombre.nombre_students_actif_etablissement+"</span>";
+                            content_etablissement_block = "<span class='badge rounded-pill bg-danger'>"+data.nombre.nombre_students_block_etablissement+"</span>";
+                            content_salle_actif = "<span class='badge rounded-pill bg-success'>"+data.nombre.nombre_students_actif_salle+"</span>";
+                            content_salle_block = "<span class='badge rounded-pill bg-danger'>"+data.nombre.nombre_students_block_salle+"</span>";
                             content = "<span class='badge rounded-pill bg-success'><i class='bi bi-check-circle'></i></span>";
+                            $('#content-number-student-actif-etablissement'+data.id.etablissement_id).html(content_etablissement_actif);
+                            $('#content-number-student-block-etablissement'+data.id.etablissement_id).html(content_etablissement_block);
+                            $('#content-number-student-actif-salle'+data.id.salle_id).html(content_salle_actif);
+                            $('#content-number-student-block-salle'+data.id.salle_id).html(content_salle_block);
                             $('#icon-'+id).html(content);
                         }else{
+                            content_etablissement_actif = "<span class='badge rounded-pill bg-success'>"+data.nombre.nombre_students_actif_etablissement+"</span>";
+                            content_etablissement_block = "<span class='badge rounded-pill bg-danger'>"+data.nombre.nombre_students_block_etablissement+"</span>";
+                            content_salle_actif = "<span class='badge rounded-pill bg-success'>"+data.nombre.nombre_students_actif_salle+"</span>";
+                            content_salle_block = "<span class='badge rounded-pill bg-danger'>"+data.nombre.nombre_students_block_salle+"</span>";
                             content = "<span class='badge rounded-pill bg-danger'><i class='bi bi-x-circle'></i></span>";
+                            $('#content-number-student-actif-etablissement'+data.id.etablissement_id).html(content_etablissement_actif);
+                            $('#content-number-student-block-etablissement'+data.id.etablissement_id).html(content_etablissement_block);
+                            $('#content-number-student-actif-salle'+data.id.salle_id).html(content_salle_actif);
+                            $('#content-number-student-block-salle'+data.id.salle_id).html(content_salle_block);
                             $('#icon-'+id).html(content);
+                        }
+                    }
+                );
+            }
+        });
+
+        /* Détail des émargements d'un enseignant */
+        $('.detail-teacher-emargement').on('click', function(){
+            var id = $(this).attr("id");
+            var month = $(this).data("month");
+            var type_contrat = $(this).data("type");
+            if(id){
+                $.get(`ajax_detail_teacher_emargement/${id}/${month}/${type_contrat}`,
+                    {},
+                    function(data){
+                        $('#content_detail').modal('show');
+                        $('#content-detail-emargement-teacher').html(data);
+                    }
+                );
+            }
+        });
+
+        /* ========================== Afficher le modal de décision d'une absence */
+        $('.modal-decision-absence').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                $.get("modal_decision_absence/"+id,
+                    {id:id},
+                    function(data){
+                        $('#content_decision').modal('show');
+                        if(data.status_decision == 0){
+                            content_decision = "<h3 class='card-title'><b>Motif : </b>"+data.motif+"</h3><p class='content-status-decision"+data.id+"'><a href='#' data-id='"+data.id+"' data-status='1' class='btn btn-success btn-sm decision-absence-admin'>Redevable</a>&nbsp;<a href='#' data-id='"+data.id+"' data-status='2' class='btn btn-danger btn-sm decision-absence-admin'>Non redevable</a></p>";
+                            $('#content-decision-absence').html(content_decision);
+                        }else if(data.status_decision == 1){
+                            content_decision = "<h3 class='card-title'><b>Motif : </b>"+data.motif+"</h3><p class='content-status-decision"+data.id+"'><a href='#' data-id='"+data.id+"' data-status='2' class='btn btn-danger btn-sm decision-absence-admin'>Non redevable</a></p>";
+                            $('#content-decision-absence').html(content_decision);
+                        }else{
+                            content_decision = "<h3 class='card-title'><b>Motif : </b>"+data.motif+"</h3><p class='content-status-decision"+data.id+"'><a href='#' data-id='"+data.id+"' data-status='1' class='btn btn-success btn-sm decision-absence-admin'>Redevable</a></p>";
+                            $('#content-decision-absence').html(content_decision);
                         }
                     }
                 );

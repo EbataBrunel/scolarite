@@ -30,7 +30,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="col-12">
-                        <label for="month" class="form-label">Mois : </label>
+                        <label for="month" class="form-label">Mois : *</label>
                         <select name="month" id="month" class="form-select" aria-label="Default select example" required>
                             <option value="">-- Selectionnez --</option>
                             {% for month in months %}
@@ -39,7 +39,7 @@
                         </select>
                         </div>
                         <div class="col-12">
-                          <label for="type_depense" class="form-label">Type de dépense : </label>
+                          <label for="type_depense" class="form-label">Type de dépense : *</label>
                           <select name="type_depense" id="type_depense" class="form-select" aria-label="Default select example" required>
                               <option value="">-- Selectionnez --</option>
                               {% for type_depense in type_depenses %}
@@ -49,7 +49,7 @@
                         </div>
                         <div class="other"></div>
                         <div class="col-12">
-                          <label for="signe" class="form-label">Signe : </label>
+                          <label for="signe" class="form-label">Signe : *</label>
                           <select name="signe" id="signe" class="form-select" aria-label="Default select example" required>
                               <option value="">-- Selectionnez --</option>
                               <option value="Entrée">Entrée</option>
@@ -57,11 +57,11 @@
                           </select>
                         </div>
                         <div class="col-12">
-                            <label for="amount" class="form-label">Montant ({{ setting.devise }}): </label>
+                            <label for="amount" class="form-label">Montant ({{ setting.devise }}): *</label>
                             <input type="number" name="amount" class="form-control" id="amount" required>
                         </div>
                         <div class="col-12">
-                            <label for="description" class="form-label">Description : </label>
+                            <label for="description" class="form-label">Description : *</label>
                             <textarea class="form-control" name="description" id="description" style="height: 50px;"></textarea>
                         </div>
                     </div>

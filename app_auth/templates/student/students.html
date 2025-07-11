@@ -23,6 +23,7 @@
           <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Liste des élèves</h5>
+                {% if anneeacademique.status_cloture %}
                 <div align="right">
                     {% if setting.theme == "bg-default" %}
                     <a href="{% url 'student/add_student' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer un(e) élève</a>
@@ -30,6 +31,7 @@
                     <a href="{% url 'student/add_student' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un(e) élève</a>
                     {% endif %}
                 </div>
+                {% endif %}
                 <!-- Table with stripped rows -->
                 <div class="table-responsive">
                     <table class="table datatable">
@@ -38,7 +40,7 @@
                                 <th>Id</th>
                                 <th>Nom</th>
                                 <th>Prénom</th>
-                                <th>DateNaissance</th>
+                                <th class="white-space">Date naissance</th>
                                 <th>Sexe</th>
                                 <th>Actions</th>
                             </tr>
@@ -47,9 +49,9 @@
                             {% for student in students %}
                             <tr>
                                 <td>{{ student.id }}</td>
-                                <td>{{ student.lastname|upper }}</td>
-                                <td>{{ student.firstname|title }}</td>
-                                <td>{{ student.datenais|date:"d/m/Y" }}</td>
+                                <td class="white-space">{{ student.lastname|upper }}</td>
+                                <td class="white-space">{{ student.firstname|title }}</td>
+                                <td class="white-space">{{ student.datenais|date:"d/m/Y" }}</td>
                                 <th>{{student.gender }}</td>
                                 <td>
                                     <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ student.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>

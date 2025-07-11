@@ -9,10 +9,15 @@ from datetime import datetime
 from django.contrib import messages
 # Importation des modules locaux
 from .models import*
+from renumeration.models import Contrat
 from school.views import get_setting
 from scolarite.utils.crypto import dechiffrer_param
+from app_auth.decorator import allowed_users
 
-@login_required(login_url='connection/connexion')
+permission_promoteur_DG = ["Promoteur", "Directeur Général"]
+
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def trimestres(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -27,7 +32,7 @@ def trimestres(request):
             dic["evenements"] = trimestre.evenementscolaires.all()            
             trimestres.append(dic)
         
-        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)    
+        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)   
         context = {
             "trimestres": trimestres,
             "anneeacademique": anneeacademique,
@@ -35,7 +40,8 @@ def trimestres(request):
         }
         return render(request, "trimestre/trimestres.html", context=context)
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def add_trimestre(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -92,16 +98,21 @@ def add_trimestre(request):
             else:
                 return JsonResponse({
                     "status": "error",
-                    "message": "La date du début et de fin du trimestre doivent situer dans la date du début et de fin de l'année scolaire ."})
+                    "message": "La date du début et la date de fin du trimestre doivent situer dans la date du début et la date de fin de l'année scolaire ."})
             
-    names = ["Trimestre 1", "Trimestre 2", "Trimestre 3"]           
+    names = ["Trimestre 1", "Trimestre 2", "Trimestre 3"]  
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()         
     context = {
         "setting": setting,
-        "names": names
+        "names": names,
+        "contrat": contrat
     }
     return render(request, "trimestre/add_trimestre.html", context)
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_trimestre(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -111,19 +122,21 @@ def edit_trimestre(request,id):
     user_id = int(dechiffrer_param(str(id)))
     trimestre = Trimestre.objects.get(id=user_id)
     names = ["Trimestre 1", "Trimestre 2", "Trimestre 3"] 
-    tabnames = []
-    for name in names:
-        if name != trimestre.name:
-            tabnames.append(name)
-        
+    tabnames = [name for name in names if name != trimestre.name]
+    
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()   
     context = {
         "trimestre": trimestre,
         "names": tabnames,
+        "contrat": contrat,
         "setting": setting
     }
     return render(request, "trimestre/edit_trimestre.html", context)
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_tr(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     if request.method == "POST":
@@ -179,9 +192,10 @@ def edit_tr(request):
             else:
                 return JsonResponse({
                     "status": "error",
-                    "message": "La date du début et de fin du trimestre doivent situer entre la date du début et de fin de l'année scolaire ."})
+                    "message": "La date du début et la date de fin du trimestre doivent situer entre la date du début et la date de fin de l'année scolaire ."})
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def del_trimestre(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -207,7 +221,8 @@ def del_trimestre(request,id):
         return redirect("trimestre/trimestres")
     
 #================================== Gestion des evenements ==================================   
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def evenements(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -227,7 +242,7 @@ def evenements(request):
             dic["evenements"] = trimestre.evenementscolaires.all()         
             evenements.append(dic)
     
-    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)   
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)  
     context = {
         "evenements": evenements,
         "anneeacademique": anneeacademique,
@@ -235,7 +250,8 @@ def evenements(request):
     }
     return render(request, "evenement/evenements.html", context=context)
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def add_evenement(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -292,19 +308,24 @@ def add_evenement(request):
             else:
                 return JsonResponse({
                     "status": "error",
-                    "message": "La date du début et de fin de l'évènement doivent situer entre la date du début et de fin du trimestre ."})
+                    "message": "La date de début et la date de fin de l'événement doivent se situer entre les dates de début et de fin du trimestre."})
                 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
         
-    trimestres = Trimestre.objects.filter(anneeacademique_id=anneeacademique_id)        
+    trimestres = Trimestre.objects.filter(anneeacademique_id=anneeacademique_id)
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()        
     context = {
         "setting": setting,
-        "trimestres": trimestres
+        "trimestres": trimestres,
+        "contrat": contrat
     }
     return render(request, "evenement/add_evenement.html", context)
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_evenement(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -315,19 +336,21 @@ def edit_evenement(request,id):
     evenement = EvenementScolaire.objects.get(id=user_id)
     
     trimestres = Trimestre.objects.filter(anneeacademique_id=anneeacademique_id)
-    tabTrimestre = []
-    for trimestre in trimestres:
-        if trimestre != evenement.trimestre:
-            tabTrimestre.append(trimestre)
-            
+    tabTrimestre = [trimestre for trimestre in trimestres if trimestre != evenement.trimestre ]
+    
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()       
     context = {
         "evenement": evenement,
         "trimestres": tabTrimestre,
+        "contrat": contrat,
         "setting": setting
     }
     return render(request, "evenement/edit_evenement.html", context)
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_ev(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     if request.method == "POST":
@@ -388,9 +411,10 @@ def edit_ev(request):
             else:
                 return JsonResponse({
                     "status": "error",
-                    "message": "La date du début et de fin de l'évènement doivent situer entre la date du début et de fin du trimestre ."})
+                    "message": "La date de début et la date de fin de l'événement doivent se situer entre les dates de début et de fin du trimestre"})
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def del_evenement(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)

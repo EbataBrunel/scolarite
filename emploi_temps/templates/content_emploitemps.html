@@ -25,10 +25,16 @@
                 <td class="{{ emploi.lundi.matiere.theme }} {{ emploi.lundi.matiere.text_color }} min-height-cellule-table">
                     {% if emploi.lundi.id %}
                         <p class="text-center">
+                            {% if emploi.lundi.matiere %}
                             <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.lundi.id }}" title="Supprimer" class="{{ emploi.lundi.matiere.text_color }}">
                             {{ emploi.lundi.matiere }}<br>
                             {{ emploi.lundi.enseignant.last_name|title }}
                             </a>
+                            {% else %}
+                            <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.lundi.id }}" title="Supprimer" class="{{ emploi.lundi.matiere.text_color }}">
+                            {{ emploi.lundi.enseignant.last_name|title }}
+                            </a>
+                            {% endif %}
                         </p>
                         <!-- Start de delete Modal -->
                         <div class="modal fade" id="deleteModal{{ emploi.lundi.id }}" tabindex="-1">
@@ -47,9 +53,11 @@
                                                 <tr>
                                                     <th> Horaire <span class="float-right">:</span> </th><td class="white-space"> {{ emploi.horaire }}</td>
                                                 </tr>
+                                                {% if emploi.salle.cycle == "Collège" or emploi.salle.cycle == "Lycée" %}
                                                 <tr>
                                                     <th> Matière <span class="float-right">:</span> </th><td class="white-space"> {{ emploi.lundi.matiere }}</td>
                                                 </tr>
+                                                {% endif %}
                                                 <tr>
                                                     <th> Enseignant <span class="float-right">:</span> </th><td class="white-space"> {{ emploi.lundi.enseignant.last_name|title }} {{ emploi.lundi.enseignant.first_name|title }}</td>
                                                 </tr>
@@ -77,10 +85,16 @@
                 <td class="{{ emploi.mardi.matiere.theme }} {{ emploi.mardi.matiere.text_color }}">
                     {% if emploi.mardi.id %}
                         <p class="text-center">
+                            {% if emploi.mardi.matiere %}
                             <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.mardi.id }}" title="Supprimer" class="{{ emploi.mardi.matiere.text_color }}">
                             {{ emploi.mardi.matiere }}<br>
                             {{ emploi.mardi.enseignant.last_name|title }}
                             </a>
+                            {% else %}
+                            <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ emploi.mardi.id }}" title="Supprimer" class="{{ emploi.mardi.matiere.text_color }}">
+                            {{ emploi.mardi.enseignant.last_name|title }}
+                            </a>
+                            {% endif %}
                         </p>
                         <!-- Start de delete Modal -->
                         <div class="modal fade" id="deleteModal{{ emploi.mardi.id }}" tabindex="-1">
@@ -99,9 +113,11 @@
                                                 <tr>
                                                     <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
                                                 </tr>
+                                                {% if emploi.salle.cycle == "Collège" or emploi.salle.cycle == "Lycée" %}
                                                 <tr>
                                                     <th> Matière</th><td class="white-space">: {{ emploi.mardi.matiere }}</td>
                                                 </tr>
+                                                {% endif %}
                                                 <tr>
                                                     <th> Enseignant</th><td class="white-space">: {{ emploi.mardi.enseignant.last_name|title }} {{ emploi.mardi.enseignant.first_name|title }}</td>
                                                 </tr>
@@ -151,9 +167,11 @@
                                                 <tr>
                                                     <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
                                                 </tr>
+                                                {% if emploi.salle.cycle == "Collège" or emploi.salle.cycle == "Lycée" %}
                                                 <tr>
                                                     <th> Matière</th><td class="white-space">: {{ emploi.mercredi.matiere }}</td>
                                                 </tr>
+                                                {% endif %}
                                                 <tr>
                                                     <th> Enseignant</th><td class="white-space">: {{ emploi.mercredi.enseignant.last_name|title }} {{ emploi.mercredi.enseignant.first_name|title }}</td>
                                                 </tr>
@@ -203,9 +221,11 @@
                                                 <tr>
                                                     <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
                                                 </tr>
+                                                {% if emploi.salle.cycle == "Collège" or emploi.salle.cycle == "Lycée" %}
                                                 <tr>
                                                     <th> Matière</th><td class="white-space">: {{ emploi.jeudi.matiere }}</td>
                                                 </tr>
+                                                {% endif %}
                                                 <tr>
                                                     <th> Enseignant</th><td class="white-space">: {{ emploi.jeudi.enseignant.last_name|title }} {{ emploi.jeudi.enseignant.first_name|title }}</td>
                                                 </tr>
@@ -255,9 +275,11 @@
                                                 <tr>
                                                     <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
                                                 </tr>
+                                                {% if emploi.salle.cycle == "Collège" or emploi.salle.cycle == "Lycée" %}
                                                 <tr>
                                                     <th> Matière</th><td class="white-space">: {{ emploi.vendredi.matiere }}</td>
                                                 </tr>
+                                                {% endif %}
                                                 <tr>
                                                     <th> Enseignant</th><td class="white-space">: {{ emploi.vendredi.enseignant.last_name|title }} {{ emploi.vendredi.enseignant.first_name|title }}</td>
                                                 </tr>
@@ -308,9 +330,11 @@
                                                 <tr>
                                                     <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
                                                 </tr>
+                                                {% if emploi.salle.cycle == "Collège" or emploi.salle.cycle == "Lycée" %}
                                                 <tr>
                                                     <th> Matière</th><td class="white-space">: {{ emploi.samedi.matiere }}</td>
                                                 </tr>
+                                                {% endif %}
                                                 <tr>
                                                     <th> Enseignant</th><td class="white-space">: {{ emploi.samedi.enseignant.last_name|title }} {{ emploi.samedi.enseignant.first_name|title }}</td>
                                                 </tr>
@@ -362,9 +386,11 @@
                                                 <tr>
                                                     <th> Horaire</th><td class="white-space">: {{ emploi.horaire }}</td>
                                                 </tr>
+                                                {% if emploi.salle.cycle == "Collège" or emploi.salle.cycle == "Lycée" %}
                                                 <tr>
                                                     <th> Matière</th><td class="white-space">: {{ emploi.dimanche.matiere }}</td>
                                                 </tr>
+                                                {% endif %}
                                                 <tr>
                                                     <th> Enseignant</th><td class="white-space">: {{ emploi.dimanche.enseignant.last_name|title }} {{ emploi.dimanche.enseignant.first_name|title }}</td>
                                                 </tr>

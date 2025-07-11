@@ -30,7 +30,6 @@
                     <a href="{% url 'add_etablissement' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un établissement</a>
                     {% endif %}
                 </div>
-                <br>
                 {% if messages %}
                   {% for message in messages %}
                   <div class="row">
@@ -51,7 +50,7 @@
                             <tr>
                                 <th>Id</th>
                                 <th>Promoteur</th>
-                                <th>NombreEtablissements</th>
+                                <th class="white-space">Nombre établissements</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -59,13 +58,13 @@
                             {% for e in etablissements %}
                             <tr>
                                 <td>{{ e.promoteur.id }}</td>
-                                <td>{{ e.promoteur.last_name|title }} {{ e.promoteur.first_name|title }}</td>
+                                <td class="white-space">{{ e.promoteur.last_name|title }} {{ e.promoteur.first_name|title }}</td>
                                 <td><span class="badge rounded-pill bg-secondary">{{ e.nombre_etablissements }}</span></td>
                                 <td>
                                   <a class="btn btn-info btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ e.promoteur.id }}" title="Détail"><i class="bi bi-eye"></i></a>
                                   <!-- debut detail modal -->
                                   <div class="modal fade" id="detailModal{{ e.promoteur.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                      <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable" role="document">
                                           <div class="modal-content">
                                               <div class="modal-header bg-info">
                                                   <h5 class="modal-title" id="exampleModalLabel"><b class="text-center"> Liste des établissements </b></h5>
@@ -115,11 +114,11 @@
                                                                 </tr>
                                                                 {% if etablissement.status_access %}
                                                                 <tr>
-                                                                  <th>Droit d'accès</th><td><span class="badge rounded-pill bg-success">Activé</span></td>
+                                                                  <th class="white-space">Droit d'accès</th><td><span class="badge rounded-pill bg-success">Activé</span></td>
                                                                 </tr>
                                                                 {% else %}
                                                                 <tr>
-                                                                  <th>Droit d'accès</th><td><span class="badge rounded-pill bg-danger">Désactivé</span></td>
+                                                                  <th class="white-space">Droit d'accès</th><td><span class="badge rounded-pill bg-danger">Désactivé</span></td>
                                                                 </tr>
                                                                 {% endif %}
                                                               </table>

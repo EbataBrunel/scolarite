@@ -23,6 +23,7 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Edition d'une matiere</h5>
+              {% if contrat.status_signature %}
               <!-- On inclut l'image de chargement -->
               {% include 'global/_loading.html' %}
               <!-- Vertical Form -->
@@ -69,7 +70,14 @@
                   <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Modifier </button>
                 </div>
               </form><!-- Vertical Form -->
-
+              {% else %}
+              <div class="card">
+                <div class="card-body">
+                  <br>
+                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord signé le contrat, s'il n'a pas encore été fait, avant d'enregistrer un cycle. <a href="{% url 'contrat_etablissement/mes_contrats_promoteur' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Je signe le contrat</a></h4>
+                </div>
+              </div>
+              {% endif %}
               <!-- Start message Modal -->
               <div class="modal fade" id="message" tabindex="-1">
                 <div class="modal-dialog modal-sm">

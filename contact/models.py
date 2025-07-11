@@ -9,7 +9,8 @@ class Contact(models.Model):
     TS = [
         ('Réclamation de notes', 'Réclamation de notes'),
         ('Harcèlement', 'Harcèlement'),
-        ('Paiement des frais', 'Paiement des frais')      
+        ('Frais de scolarité', 'Frais de scolarité'),
+        ('Autre', 'Autre')      
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, default=None)
     anneeacademique = models.ForeignKey(AnneeCademique, on_delete=models.CASCADE, null=True)

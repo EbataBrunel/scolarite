@@ -50,7 +50,8 @@
                             <tr>
                                 <th>Id</th>
                                 <th>Etablissement</th>
-                                <th>NombrePaiements</th>
+                                <th class="white-space">Nombre Paiements</th>
+                                <th class="white-space">Nouveaux Paiements
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -60,6 +61,11 @@
                                 <td>{{ e.etablissement.id }}</td>
                                 <td>{{ e.etablissement }}</td>
                                 <td><span class="badge rounded-pill bg-secondary">{{ e.nombre_payments }}</span></td>
+                                {% if e.nombre_nouvaux_payments > 0 %}
+                                <td><span id="content-new-payment{{ e.etablissement.id }}"><span class="badge rounded-pill bg-success">{{ e.nombre_nouvaux_payments }}</span></span></td>
+                                {% else %}
+                                <td><span id="content-new-payment{{ e.etablissement.id }}"><span class="badge rounded-pill bg-secondary">{{ e.nombre_nouvaux_payments }}</span></span></td>
+                                {% endif %}
                                 <td>
                                   <a class="btn btn-info btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ e.etablissement.id }}" title="Détail"><i class="bi bi-eye"></i></a>
                                   <!-- debut detail modal -->

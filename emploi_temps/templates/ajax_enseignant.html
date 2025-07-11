@@ -1,6 +1,6 @@
 {% if enseignants %}
 <div class="col-12 margin-bottom">
-    <label for="enseignant" class="form-label">Enseignant : </label>
+    <label for="enseignant" class="form-label">Enseignant : *</label>
     <select name="enseignant" id="enseignant" class="form-select" aria-label="Default select example" required>
         <option value="">-- Selectionnez --</option>
         {% for enseignant in enseignants %}
@@ -10,7 +10,7 @@
 </div>
 {% else %}
 <div class="col-12 margin-bottom">
-    <label for="enseignant" class="form-label">Enseignant : </label>
+    <label for="enseignant" class="form-label">Enseignant : *</label>
     <select name="enseignant" id="enseignant" class="form-select" aria-label="Default select example" required>
         <option value="">Aucune donnée n'a été enregistrée</option>
     </select>

@@ -90,8 +90,8 @@
                                         </div>
                                         <div class="col-md-4">
                                             <p style="float:right">
-                                                {% if moyenne.student.photo %}
-                                                  <img src="{{ moyenne.student.photo.url }}" class="img-responsive img-detail" />
+                                                {% if moyenne.photo %}
+                                                  <img src="{{ moyenne.photo.url }}" class="img-responsive img-detail" />
                                                 {% else %}
                                                 <img class="img-responsive img-detail" src="{% static 'assets/img/user.png' %}">
                                                 {% endif %}
@@ -202,7 +202,7 @@
             </tbody>
         </table>
     </div>
-    <p class="text-center"><a href="{% url 'proces_verbal_examen' salle.id|crypter_id trimestre|crypter_id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i>  Téléchager le fichier </a></p>
+    <p class="text-center"><a href="{% url 'proces_verbal_examen' salle.id|crypter_id trimestre|crypter_id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i>  Téléchager le procès verbal </a></p>
     <!-- End Table with stripped rows -->
     {% else %}
      <h3 class="text-center"><span class="text-warning"><i class="bi bi-circle-fill"></i></span> Les résultats ne sont pas encore disponibles.</h3>

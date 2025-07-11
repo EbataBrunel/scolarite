@@ -65,14 +65,16 @@
 
                 <div class="tab-pane fade show active profile-overview" id="profile-overview">
                     <h5 class="card-title">Liste des notes du contrôle</h5>
-                    {% if anneeacademique.status_cloture == False %}
-                    <div align="right">
-                        {% if setting.theme == "bg-default" %}
-                        <a href="{% url 'add_composition' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
-                        {% else %}
-                        <a href="{% url 'add_composition' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
-                        {% endif %}
-                    </div>
+                    {% if anneeacademique.status_cloture %}
+                      {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" %}
+                      <div align="right">
+                          {% if setting.theme == "bg-default" %}
+                          <a href="{% url 'add_composition' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                          {% else %}
+                          <a href="{% url 'add_composition' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                          {% endif %}
+                      </div>
+                      {% endif %}
                     {% endif %}
                     <!-- Table with stripped rows -->
                     <div class="table-responsive">
@@ -84,7 +86,11 @@
                                     <th class="white-space">Num-contrôle</th>
                                     <th>Notes</th>
                                     <th>Utilisateur</th>
-                                    <th>Actions</th>
+                                    {% if anneeacademique.status_cloture %}
+                                      {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" %}
+                                      <th>Actions</th>
+                                      {% endif %}
+                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -96,29 +102,31 @@
                                     <td>{{ composition.numerocontrole }}</td>
                                     <td><b class="text-primary">{{ composition.note }}</b></td>
                                     <td class="white-space">{{ composition.user.last_name|title }} {{ composition.user.first_name|title }}</td>
-                                    {% if anneeacademique.status_cloture == False %}
-                                    <td>
-                                        <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteMatModal{{ composition.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
-                                        <a href="{% url 'edit_composition' composition.id|crypter_id param %}" title="Détails" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
-                                        <!-- Start de delete Modal -->
-                                        <div class="modal fade" id="deleteMatModal{{composition.id }}" tabindex="-1">
-                                            <div class="modal-dialog modal-sm">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                <h5 class="modal-title">Suppression</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                <p class="text-center">Voulez-vous vraiment supprimer cette composition ?</p>
-                                                </div>
-                                                <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                                <a href="{% url 'del_composition' composition.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
-                                                </div>
-                                            </div>
-                                            </div>
-                                        </div><!-- Fin de delete Modal-->
-                                    </td>
+                                    {% if anneeacademique.status_cloture %}
+                                      {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" %}
+                                      <td>
+                                          <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteMatModal{{ composition.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                          <a href="{% url 'edit_composition' composition.id|crypter_id param %}" title="Détails" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
+                                          <!-- Start de delete Modal -->
+                                          <div class="modal fade" id="deleteMatModal{{composition.id }}" tabindex="-1">
+                                              <div class="modal-dialog modal-sm">
+                                              <div class="modal-content">
+                                                  <div class="modal-header">
+                                                  <h5 class="modal-title">Suppression</h5>
+                                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                  </div>
+                                                  <div class="modal-body">
+                                                  <p class="text-center">Voulez-vous vraiment supprimer cette composition ?</p>
+                                                  </div>
+                                                  <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                  <a href="{% url 'del_composition' composition.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                                  </div>
+                                              </div>
+                                              </div>
+                                          </div><!-- Fin de delete Modal-->
+                                      </td>
+                                      {% endif %}
                                     {% endif %}
                                 </tr>
                                 {% endif %}
@@ -135,13 +143,17 @@
 
                 <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
                     <h5 class="card-title">Liste des notes de l'examen</h5>
-                    <div align="right">
-                        {% if setting.theme == "bg-default" %}
-                        <a href="{% url 'add_composition' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
-                        {% else %}
-                        <a href="{% url 'add_composition' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
-                        {% endif %}
-                    </div>
+                    {% if anneeacademique.status_cloture %}
+                      {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" %}
+                      <div align="right">
+                          {% if setting.theme == "bg-default" %}
+                          <a href="{% url 'add_composition' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                          {% else %}
+                          <a href="{% url 'add_composition' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                          {% endif %}
+                      </div>
+                      {% endif %}
+                    {% endif %}
                     <!-- Table with stripped rows -->
                     <div class="table-responsive">
                         <table class="table datatable">
@@ -151,7 +163,11 @@
                                     <th>Matières</th>
                                     <th>Notes</th>
                                     <th>Utilisateur</th>
-                                    <th>Actions</th>
+                                    {% if anneeacademique.status_cloture %}
+                                      {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" %}
+                                      <th>Actions</th>
+                                      {% endif %}
+                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -162,28 +178,32 @@
                                     <td>{{ composition.matiere }}</td>
                                     <td><b class="text-primary">{{ composition.note }}</b></td>
                                     <td>{{ composition.user.last_name|title }} {{ composition.user.first_name|title }}</td>
-                                    <td>
-                                        <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteMatModal{{ composition.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>&nbsp;
-                                        <a href="{% url 'edit_composition' composition.id|crypter_id param %}" title="Détails" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
-                                        <!-- Start de delete Modal -->
-                                        <div class="modal fade" id="deleteMatModal{{composition.id }}" tabindex="-1">
-                                            <div class="modal-dialog modal-sm">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                <h5 class="modal-title">Suppression</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                <p class="text-center">Voulez-vous vraiment supprimer cette composition ?</p>
-                                                </div>
-                                                <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                                <a href="{% url 'del_composition' composition.id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
-                                                </div>
-                                            </div>
-                                            </div>
-                                        </div><!-- Fin de delete Modal-->
-                                    </td>
+                                    {% if anneeacademique.status_cloture %}
+                                      {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" %}
+                                      <td>
+                                          <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteMatModal{{ composition.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>&nbsp;
+                                          <a href="{% url 'edit_composition' composition.id|crypter_id param %}" title="Détails" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                                          <!-- Start de delete Modal -->
+                                          <div class="modal fade" id="deleteMatModal{{composition.id }}" tabindex="-1">
+                                              <div class="modal-dialog modal-sm">
+                                              <div class="modal-content">
+                                                  <div class="modal-header">
+                                                  <h5 class="modal-title">Suppression</h5>
+                                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                  </div>
+                                                  <div class="modal-body">
+                                                  <p class="text-center">Voulez-vous vraiment supprimer cette composition ?</p>
+                                                  </div>
+                                                  <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                  <a href="{% url 'del_composition' composition.id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                                  </div>
+                                              </div>
+                                              </div>
+                                          </div><!-- Fin de delete Modal-->
+                                      </td>
+                                      {% endif %}
+                                    {% endif %}
                                 </tr>
                                 {% endif %}
                                 {% endfor %}

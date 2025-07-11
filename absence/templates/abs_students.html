@@ -28,8 +28,8 @@
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title">{{ emargement.salle }}</h5>
-                                
-                                <div class="card">
+                                {% if emargement.salle.cycle.libelle == "Collège" or emargement.salle.cycle.libelle == "Lycée" %}
+                                  <div class="card">
                                     <div class="card-body">
                                         <h5 class="card-title text-center">Matières</h5>
                                         {% for m in emargement.matieres %}
@@ -46,6 +46,25 @@
                                         {% endfor %}
                                     </div>
                                   </div>
+                                {% else %}
+                                  <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-center">Mois</h5>
+                                        {% for m in emargement.months %}
+                                          <div class="card">
+                                            <div class="card-body">
+                                              {% if m.nb_absences > 1 %}
+                                              <p class="card-title">{{ m.month }} |<span> {{ m.nb_absences }} absences</span></p>
+                                              {% else %}
+                                              <p class="card-title">{{ m.month }} | <span>{{ m.nb_absences }} absence</span></p>
+                                              {% endif %}
+                                              <a href="{% url 'abs_studentmatiere' emargement.salle.id|crypter_id m.month|crypter_id %}" class="btn btn-secondary btn-sm">Voir plus</a>
+                                            </div>
+                                          </div>
+                                        {% endfor %}
+                                    </div>
+                                  </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

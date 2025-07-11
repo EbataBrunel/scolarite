@@ -216,13 +216,13 @@
             }
         });
 
-        // ============ Gestion Group Etablissement ==================
-        $('#formGroupEtablissement').submit(function(){
+        // ============ Gestion des Rôles ==================
+        $('#formRole').submit(function(){
             document.getElementById('spinner-loading').style.display = 'block';
             $.ajax({
-                url:"{% url 'group/add_group_etablissement' %}",
+                url:"{% url 'role/add_role' %}",
                 method : "POST",
-                data:new FormData($('#formGroupEtablissement')[0]),
+                data:new FormData($('#formRole')[0]),
                 contentType : false,
                 processData : false,
                 success : function(data){
@@ -231,7 +231,7 @@
                     if (data.status == "success"){
                         contenu = "<div class='text-success text-center'><b>"+data.message+"<br/><i class='bi bi-check-circle-fill' style='font-size:50px'></i></b></div>"
                         $('#content-message').html(contenu);
-                        $('#formGroupEtablissement')[0].reset();
+                        $('#formRole')[0].reset();
                     }
                     if (data.status == "error"){
                         contenu="<div class='text-danger text-center'> <b>"+data.message+"<br/><i class='bi bi-exclamation-triangle-fill' style='font-size:50px'></i></b></div>"
@@ -242,12 +242,12 @@
             return false;
         });   
 
-        $('#formUpdateGroupEtablissement').submit(function(){
+        $('#formUpdateRole').submit(function(){
             document.getElementById('spinner-loading').style.display = 'block';
             $.ajax({
-                url:"{% url 'edit_ge' %}",
+                url:"{% url 'edit_ro' %}",
                 method : "POST",
-                data:new FormData($('#formUpdateGroupEtablissement')[0]),
+                data:new FormData($('#formUpdateRole')[0]),
                 contentType : false,
                 processData : false,
                 success : function(data){
@@ -266,6 +266,18 @@
             return false;
         });
 
+        $('.delete-role').on('click', function(){
+            var id = $(this).attr("id");
+            if(id){
+                    $.get("ajax_delete_role/"+id,
+                        {id:id},
+                        function(data){
+                            $('#content_delete').modal('show');
+                            $('#content-delete-item').html(data);
+                        }
+                    );
+            }
+        });
 
         // ============ Gestion d'années académiques ==================
         $('#formAnneeAcademqiue').submit(function(){
@@ -2105,6 +2117,37 @@
             return false;
         });
 
+        $(document).on("submit", "form[id^='formCommentCours-student-']", function (e) {
+            e.preventDefault(); // Empêche le rechargement de la page
+
+            // Identifiez le formulaire spécifique et ses éléments
+            let form = $(this); 
+            let coursId = form.find("input[name='cours_id']").val();
+            let spinner = $(`#spinner-loading-${coursId}`);
+            let contentComment = $(`#content_comment-${coursId}`);
+            let contentInput = $(`#content-${coursId}`);
+
+            // Affiche le spinner
+            spinner.show();
+            $.ajax({
+                url: "{% url 'add_commentcours_student' %}",
+                method: "POST",
+                data: new FormData(form[0]),
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    spinner.hide(); // Cache le spinner
+                    contentComment.html(data); // Met à jour les commentaires
+                    contentInput.val(""); // Vide le champ
+                },
+                error: function () {
+                    spinner.hide(); // Cache le spinner en cas d'erreur
+                    alert("Erreur lors de l'ajout du commentaire.");
+                }
+            });
+            return false;
+        });
+
         // ============ Gestion des rénumerations ==================
         $('#formRenumeration').submit(function(){
             document.getElementById('spinner-loading').style.display = 'block';
@@ -2203,6 +2246,70 @@
             return false;
         });
 
+        // ============ Evaluation de l'enseignant ==================
+        $(document).on("submit", "form[id^='formMotifAbsence-']", function (e) {
+            e.preventDefault(); // Empêche le rechargement de la page
+
+            // Identifiez le formulaire spécifique et ses éléments
+            let form = $(this); 
+            let absenceId = form.find("input[name='id']").val();
+            let contentMotif = $(`#content-motif${absenceId}`);
+            $.ajax({
+                url: "{% url 'save_motif_absence' %}",
+                method: "POST",
+                data: new FormData(form[0]),
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.status === "success") {
+                        $('#motifModal' + absenceId).modal('hide');
+                        let content = `<span>${data.motif}</span>`;
+                        contentMotif.html(content);
+                    } else {
+                        $('#motifModal' + absenceId).modal('hide');
+                        alert("Erreur : " + (data.error || "Réponse invalide"));
+                    }
+                },
+                error: function (xhr) {
+                    $('#motifModal' + absenceId).modal('hide');
+                    alert("Erreur lors de la justification de l'absence : " + xhr.responseText);
+                }
+            });
+            return false;
+        });
+
+
+        // ============ Evaluation de l'enseignant ==================
+        $(document).on("submit", "form[id^='formMotifAbsenceStudent-']", function (e) {
+            e.preventDefault(); // Empêche le rechargement de la page
+
+            // Identifiez le formulaire spécifique et ses éléments
+            let form = $(this); 
+            let absenceId = form.find("input[name='id']").val();
+            let contentMotif = $(`#content-motif${absenceId}`);
+            $.ajax({
+                url: "{% url 'save_motif_absence_student' %}",
+                method: "POST",
+                data: new FormData(form[0]),
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.status === "success") {
+                        $('#motifModal' + absenceId).modal('hide');
+                        let content = `<span>${data.motif}</span>`;
+                        contentMotif.html(content);
+                    } else {
+                        $('#motifModal' + absenceId).modal('hide');
+                        alert("Erreur : " + (data.error || "Réponse invalide"));
+                    }
+                },
+                error: function (xhr) {
+                    $('#motifModal' + absenceId).modal('hide');
+                    alert("Erreur lors de la justification de l'absence : " + xhr.responseText);
+                }
+            });
+            return false;
+        });
 
         // ============ Gestion des calendriers ==================
 

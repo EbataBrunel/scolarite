@@ -22,7 +22,7 @@
 
           <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Liste des salles de {{ classe.libelle }}</h5>
+                <h5 class="card-title">Liste des salles de <b>{{ classe.libelle }}</b></h5>
                 {% if anneeacademique.status_cloture %}
                 <div align="right">
                     {% if setting.theme == "bg-default" %}
@@ -38,8 +38,9 @@
                         <thead>
                             <tr>
                                 <th>Id</th>
-                                <th>Salle</th>
-                                <th>Max-étudiants</th>
+                                <th>Série</th>
+                                <th>Numéro</th>
+                                <th class="white-space">Max étudiants</th>
                                 <th class="white-space">Frais mensuel ({{ setting.devise }})</th>
                                 <th class="white-space">Frais inscription ({{ setting.devise }})</th>
                                 {% if anneeacademique.status_cloture %}
@@ -51,7 +52,8 @@
                             {% for salle in salles %}
                             <tr>
                                 <td>{{ salle.id }}</td>
-                                <td>{{ salle }}</td>
+                                <td>{{ salle.serie }}</td>
+                                <th>{{ salle.number }}</td>
                                 <td>{{ salle.max_student }}</td>
                                 <td>{{ salle.price }}</td>
                                 <td>{{ salle.price_inscription }}</td>

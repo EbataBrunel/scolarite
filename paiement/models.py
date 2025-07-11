@@ -113,6 +113,8 @@ class ContratEtablissement(models.Model):
     etablissement = models.ForeignKey(Etablissement, on_delete=models.CASCADE, null=False, related_name="contrat_etablissements")
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     description = models.TextField()
+    start_date = models.DateField(null=False)
+    end_date = models.DateField(null=False)
     date_contrat = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
         User, 

@@ -85,7 +85,7 @@ def anneeacademiques_promoteur(request):
 @allowed_users(allowed_roles=permission_super_user)
 @transaction.atomic
 def add_anneeacademique(request):
-    setting = get_setting_sup_user()
+    setting_supuser = get_setting_sup_user()
     
     if request.method == "POST":
         etablissement_id = request.POST["etablissement"]
@@ -158,7 +158,7 @@ def add_anneeacademique(request):
                                 sett = Setting(
                                     appname = setting.appname,
                                     appeditor = setting.appeditor,
-                                    version = setting.version,
+                                    version = setting_supuser.version,
                                     theme = setting.theme,
                                     text_color = setting.text_color,
                                     devise = setting.devise,
@@ -187,14 +187,14 @@ def add_anneeacademique(request):
                             else:
                                 sett = Setting(
                                     appname = etablissement.name,
-                                    appeditor = "Brunel EBATA-ATIPO Brunel",
-                                    version = "01",
+                                    appeditor = "EBATA-ATIPO Brunel",
+                                    version = setting_supuser.version,
                                     theme = "bg-secondary",
                                     text_color = "text-light",
-                                    devise = "",
-                                    address = "",
-                                    email = "",
-                                    phone = "",
+                                    devise = setting_supuser.devise,
+                                    address = etablissement.address,
+                                    email = etablissement.email,
+                                    phone = etablissement.phone,
                                     logo = "",
                                     width_logo = 70,
                                     height_logo = 70,
@@ -217,14 +217,14 @@ def add_anneeacademique(request):
                         else:
                             sett = Setting(
                                     appname = etablissement.name,
-                                    appeditor = "Brunel EBATA-ATIPO Brunel",
-                                    version = "01",
+                                    appeditor = "EBATA-ATIPO Brunel",
+                                    version = setting_supuser.version,
                                     theme = "bg-secondary",
                                     text_color = "text-light",
-                                    devise = "",
-                                    address = "",
-                                    email = "",
-                                    phone = "",
+                                    devise = setting_supuser.devise,
+                                    address = etablissement.address,
+                                    email = etablissement.email,
+                                    phone = etablissement.phone,
                                     logo = "",
                                     width_logo = 70,
                                     height_logo = 70,
@@ -282,7 +282,7 @@ def add_anneeacademique(request):
     
     etablissements = Etablissement.objects.all()      
     context = {
-        "setting": setting,
+        "setting": setting_supuser,
         "etablissements": etablissements
     }
     return render(request, "add_anneeacademique.html", context)
@@ -458,8 +458,8 @@ def delete_anneeacademique(request,id):
     nombre["nombre_payments"] = Payment.objects.filter(anneeacademique_id=anneeacademique.id).count()
     nombre["nombre_inscriptions"] = Inscription.objects.filter(anneeacademique_id=anneeacademique.id).count()
     nombre["nombre_contrats"] = Contrat.objects.filter(anneeacademique_id=anneeacademique.id).count()
-    nombre["nombre_renumerations_enseignants"] = Renumeration.objects.filter(type_renumerartion__in="Administrateur scolaire", anneeacademique_id=anneeacademique.id).count()
-    nombre["nombre_renumerations_admin"] = Renumeration.objects.filter(type_renumerartion="Administrateur scolaire", anneeacademique_id=anneeacademique.id).count()
+    nombre["nombre_renumerations_enseignants"] = Renumeration.objects.filter(type_renumeration__in="Administrateur scolaire", anneeacademique_id=anneeacademique.id).count()
+    nombre["nombre_renumerations_admin"] = Renumeration.objects.filter(type_renumeration="Administrateur scolaire", anneeacademique_id=anneeacademique.id).count()
     nombre["nombre_absences_enseignants"] = Absence.objects.filter(anneeacademique_id=anneeacademique.id).count()
     nombre["nombre_absences_personnels"] = AbsenceAdmin.objects.filter(anneeacademique_id=anneeacademique.id).count()
     nombre["nombre_emargements"] = Emargement.objects.filter(anneeacademique_id=anneeacademique.id).count()
@@ -504,7 +504,7 @@ def del_anneeacademique(request,id):
         
     return redirect("annee_academiques")
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def cloture_anneeacademique(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -521,7 +521,7 @@ def cloture_anneeacademique(request, id):
     }
     return render(request, "cloture_anneeacademique.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def clot_anneeacademique(request):
     if request.method == "POST":

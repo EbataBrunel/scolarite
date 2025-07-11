@@ -1,0 +1,154 @@
+{% load crypto_filters %}
+
+{% if type_contrat == "Secondaire" %}
+  <div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Emargement de <b>{{ enseignant.last_name|title }} {{ enseignant.first_name|title }}</b><br><br>Mois : <b>{{ month }}</b></h5>
+        <h4 class="text-center"></h4>
+        <hr>
+        <!-- Table with stripped rows -->
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                {% for e in emargements %}
+                        <thead>
+                            <tr>
+                                <th colspan="5" class="{{ setting.theme }} {{ setting.text_color }}"><h4>{{ e.salle }}</h4></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          {% for m in e.matieres %}
+                            <tr>
+                                <th colspan="5">{{ m.matiere }}</th>
+                            </tr>
+                            <tr>
+                              <th>Horaire</th>
+                              <th>Jour</th>
+                              <th>Date</th>
+                              <th>Séance</th>
+                              <th>Heure</th>
+                          </tr>
+                            {% for e in m.emargements %}
+                            <tr>
+                                <td>{{ e.emargement.heure_debut }} - {{ e.emargement.heure_fin }}</td>
+                                <td>{{ e.emargement.jour }}</td>
+                                <td>{{ e.emargement.date_emargement|date:"d/m/Y" }}</td>
+                                <td>{{ e.emargement.seance }}</td>
+                                <td>{{ e.hour }}</th>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                              <td class="white-space">Cout heure ({{ setting.devise }})</td>
+                              <th>{{ m.cout_heure|floatformat:2 }}</th>
+                              <th colspan="2" class="text-center">Heure totale </th>
+                              <th><b>{{ m.total_time }}</b></th>
+                            </tr>
+                            <tr>
+                              <td colspan="4" class="text-center">Montant total de {{ m.matiere }} ({{ setting.devise }})</td>
+                              <td class="text-danger">{{ m.montant_total_matiere|floatformat:2 }}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                        <tfooter>
+                          <tr>
+                            <th class="text-center white-space">Total de {{ e.salle }}</th>
+                            <td class="white-space">Montant ({{ setting.devise }})</td>
+                            <th>{{ e.montant_total_salle|floatformat:2 }}</th>
+                            <td>Heure </td>
+                            <th class="bg-secondary">{{ e.total_matiere_time }}</th>
+                          </tr>
+                        </tfooter>
+                    {% endfor %}
+            </table>
+            <hr>       
+            <table class="table table-bordered">
+                <tr>
+                    <th class="text-center">Total </th>
+                    <td class="text-center white-space">Montant ({{ setting.devise }})</td>
+                    <th><span class="text-danger">{{ montant_payer|floatformat:2 }} </span></th>
+                    <td>Heure </td>
+                    <th class="text-center {{ setting.theme }} {{ setting.text_color }}">{{ time_total }}</th>
+                </tr>
+            </table>
+        </div>
+        <!-- End Table with stripped rows --> 
+        <p class="text-center"> 
+        {% if anneeacademique.status_cloture and contrat.status_signature %}
+            <a href="{% url 'remun_enseignant/add_remun_teacher' enseignant.id|crypter_id month|crypter_id type_contrat|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-cash"></i> Procéder à la rémunération de <b>{{ montant_payer|floatformat:2 }} {{ setting.devise }}</b></a>
+        {% endif %}
+        </p>
+    </div>
+  </div>
+{% else %}
+  <div class="card">
+    <div class="card-body">
+      <br>
+      <!-- Table with stripped rows -->
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          {% for em in emargements %}
+          <thead>
+            <tr>
+              <th colspan="8">{{ em.salle }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Horaire</th>
+              <th>Jour</th>
+              <th>Date</th>
+              <th class="white-space">Heure à faire</th>
+              <th class="white-space">Heure faite</th>
+              <th class="white-space">Retard total</th>
+              <th>Résponsable</th>
+            </tr>
+            {% for e in em.emargements %}
+            <tr>
+              <td class="white-space">{{ e.emargement.heure_debut }}-{{ e.emargement.heure_fin }}</td>
+              <td>{{ e.emargement.jour }}</td>
+              <td class="white-space">{{ e.emargement.date_emargement|date:"d/m/Y" }}</td>
+              <td class="white-space">{{ e.heure_faire }}</td>
+              <td>{{ e.heure_faite }}</td>
+              <td>{{ e.total_heure }}</td>
+              <td class="white-space">{{ e.emargement.user.last_name|title}} {{ e.emargement.user.first_name|title}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfooter>
+            <tr>
+              <td class="text-center white-space" colspan="6"><b>Retard total</b></td>
+              <td>{{ em.total_time }}</td>
+            </tr>
+            <tr>
+              <td class="text-center white-space"><b>Coût par jour ({{ setting.devise }})</b></td>
+              <td>{{ em.cout_jour|floatformat:2 }}</td>
+              <td class="text-center white-space"><b>Coût par heure ({{ setting.devise }})</b></td>
+              <td>{{ em.cout_heure|floatformat:2 }}</td>
+              <td class="text-center white-space"><b>Nombre absences</b></td>
+              <td>{{ em.nombre_absences }}</td>
+              <td class="white-space">Salaire ({{ setting.devise }}) : <b>{{ em.montant_payer|floatformat:2 }}</b></td>
+            </tr>
+          </tfooter>
+          {% endfor %}
+        </table>
+
+        <hr>       
+        <table class="table table-bordered">
+          <tr>
+            <th class="text-center" colspan="3">Total </th>
+            <td class="text-center">Montant ({{ setting.devise }})</td>
+            <th><span class="text-danger">{{ montant_payer|floatformat:2 }} </span></th>
+            <td class="white-space">Total retard </td>
+            <th class="text-center {{ setting.theme }} {{ setting.text_color }}">{{ time_total }}</th>
+          </tr>
+        </table>
+      </div>
+      <!-- End Table with stripped rows -->
+      <!-- End Table with stripped rows --> 
+        <p class="text-center"> 
+        {% if anneeacademique.status_cloture and contrat.status_signature %}
+            <a href="{% url 'remun_enseignant/add_remun_teacher' enseignant.id|crypter_id month|crypter_id type_contrat|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi bi-cash"></i> Procéder à la rémunération de <b>{{ montant_payer|floatformat:2 }} {{ setting.devise }}</b></a>
+        {% endif %}
+      </p>
+    </div>
+  </div>
+{% endif %}

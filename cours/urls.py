@@ -13,7 +13,9 @@ urlpatterns=[
     
     path("cours_ligne", cours_ligne, name="cours_ligne"),
     path("detail_coursligne/<str:salle_id>/<str:matiere_id>", detail_coursligne, name="detail_coursligne"),
+    path("detail_coursligne_student/<str:salle_id>/<str:matiere_id>", detail_coursligne_student, name="detail_coursligne_student"),
     
     path("add-comment", add_commentcours, name="add_commentcours"),
+    path("add-comment-student", add_commentcours_student, name="add_commentcours_student"),
     path("detail_coursligne/<int:salle_id>/delete_comment/<int:id>", delete_comment.as_view(), name="delete_comment")
 ]

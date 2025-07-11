@@ -27,8 +27,8 @@ class Renumeration(models.Model):
     
     TR = [
         ('Administrateur scolaire', 'Administrateur scolaire'),
-        ('Enseignant du fondamental', 'Enseignant du fondamental'),
-        ('Enseignant du secondaire', 'Enseignant du secondaire')
+        ('Enseignant du cycle fondamental', 'Enseignant du cycle fondamental'),
+        ('Enseignant du cycle secondaire', 'Enseignant du cycle secondaire')
     ] 
     
     anneeacademique = models.ForeignKey(AnneeCademique, on_delete=models.CASCADE, null=False)
@@ -56,16 +56,11 @@ class Contrat(models.Model):
     anneeacademique = models.ForeignKey(AnneeCademique, on_delete=models.CASCADE, null=False)
     TC = [
         ('Administrateur scolaire', 'Administrateur scolaire'),
-        ('Enseignant du fondamental', 'Enseignant du fondamental'),
-        ('Enseignant du secondaire', 'Enseignant du secondaire')
+        ('Enseignant du cycle fondamental', 'Enseignant du cycle fondamental'),
+        ('Enseignant du cycle secondaire', 'Enseignant du cycle secondaire')
     ]  
     type_contrat = models.CharField(max_length=40, choices=TC, null=True)
-    user = models.ForeignKey(
-        User, 
-        on_delete=models.CASCADE, 
-        null=False, 
-        related_name='contrats')
-    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, related_name='contrats')    
     poste = models.CharField(max_length=100, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     description = models.TextField()

@@ -32,7 +32,7 @@ permission_promoteur_DG = ['Promoteur', 'Directeur Général']
 permission_enseignant = ['Enseignant']
 permission_promoteur_enseignant = ['Promoteur', 'Enseignant']
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def compositions(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -66,7 +66,7 @@ def compositions(request):
     return render(request, "compositions.html", context)
   
 
-@login_required(login_url='connection/login') 
+@login_required(login_url='connection/account') 
 @allowed_users(allowed_roles=permission_directeur_etudes)  
 def detail_cmp_salle(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -92,7 +92,7 @@ def detail_cmp_salle(request, id):
     return render(request, "detail_cmp_salle.html", context)
 
 
-@login_required(login_url='connection/login')  
+@login_required(login_url='connection/account')  
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def detail_cmp_trimestre(request, salle_id, trimestre):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -160,7 +160,7 @@ def detail_cmp_trimestre(request, salle_id, trimestre):
     return render(request, "detail_cmp_trimestre.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 def detail_comp_student(request, salle_id, trimestre, student_id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -186,7 +186,7 @@ def detail_comp_student(request, salle_id, trimestre, student_id):
     }
     return render(request, "detail_comp_student.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def detail_comp_matiere(request, salle_id, trimestre, matiere_id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -219,7 +219,7 @@ def detail_comp_matiere(request, salle_id, trimestre, matiere_id):
     return render(request, "detail_comp_matiere.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def add_composition(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -272,7 +272,9 @@ def add_composition(request):
         # Récuperer la délibération pour verifier si ses activités ont été cloturées ou pas
         anneescolaire = AnneeCademique.objects.filter(status_cloture=False, id=anneeacademique_id)
         # Récuperer la délibération
-        deliberation = Deliberation.objects.filter(salle_id=salle_id, trimestre=trimestre, status_cloture=False, anneeacademique_id=anneeacademique_id)        
+        deliberation = Deliberation.objects.filter(salle_id=salle_id, trimestre=trimestre, status_cloture=False, anneeacademique_id=anneeacademique_id)
+        # Récuperer l'inscription de l'étudiant
+        inscription = Inscription.objects.filter(student_id=student_id, anneeacademique_id=anneeacademique_id).first()        
         # Nettoyer la valeur (supprimer les espaces et remplacer la virgule par un point)
         note = re.sub(r'\xa0', '', note)  # Supprime les espaces insécables
         note = note.replace(" ", "").replace(",", ".")
@@ -283,10 +285,14 @@ def add_composition(request):
             return JsonResponse({
                 "status": "error",
                 "message": "La note doit être un nombre valide."})
+        if inscription.status_block == False:
+            return JsonResponse({
+                "status": "error",
+                "message": "Le compte de cet élève a été définitivement bloqué. Vous ne pouvez donc effectuer aucune opération le concernant."})     
         if anneescolaire.exists(): # Verifier si on a déjà cloturé les opérations de cette année
-                return JsonResponse({
-                    "status": "error",
-                    "message": "Les opérations de cette année académique ont déjà été clôturées."})  
+            return JsonResponse({
+                "status": "error",
+                "message": "Les opérations de cette année académique ont déjà été clôturées."})  
         if deliberation.exists(): # Verifier si on a déjà cloturé les opérations de ce trimestre
             return JsonResponse({
                 "status": "error",
@@ -425,7 +431,13 @@ class get_matiere_enseigner_salle(View):
             enseignements = Enseigner.objects.filter(trimestre=trimestre, salle_id=salle_id, anneeacademique_id=anneeacademique_id)
             matieres = []
             for enseignement in enseignements:
-                matieres.append(enseignement.matiere)
+                
+                if request.session.get('group_name') == "Enseignant":
+                    if enseignement.enseignant == request.user:
+                        matieres.append(enseignement.matiere)
+                else:
+                    matieres.append(enseignement.matiere)
+                    print(request.session.get('group_name'))
 
             context = {
                 "matieres": matieres,
@@ -437,11 +449,14 @@ class get_matiere_enseigner_salle(View):
             salle = Salle.objects.get(id=salle_id)
             # Récuperer le cycle
             cycle = Cycle.objects.get(id=salle.cycle.id)
-        
             enseignements = Enseigner.objects.filter(trimestre=trimestre, salle_id=salle_id, anneeacademique_id=anneeacademique_id)
             matieres = []
             for enseignement in enseignements:
-                matieres.append(enseignement.matiere)
+                if request.session.get('group_name') == "Enseignant":
+                    if enseignement.enseignant == request.user:
+                        matieres.append(enseignement.matiere)
+                else:
+                    matieres.append(enseignement.matiere)
 
             context = {
                 "matieres": matieres,
@@ -451,7 +466,7 @@ class get_matiere_enseigner_salle(View):
             return render(request, "ajax_matiere_enseigner.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_enseignant)
 def edit_composition(request, id, param):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -488,16 +503,10 @@ def edit_composition(request, id, param):
             tabSalle.append(salle)
     
         
-    tabTrimestre = []
-    for trimestre in trimestres:
-        if trimestre != composition.trimestre:
-            tabTrimestre.append(trimestre)
+    tabTrimestre = [trimestre for trimestre in trimestres if trimestre != composition.trimestre]
             
     evaluations = ["Contrôle", "Examen"]
-    tabEvalution = []
-    for evaluation in evaluations:
-        if evaluation != composition.evaluation:
-            tabEvalution.append(evaluation)
+    tabEvalution = [evaluation for evaluation in evaluations if evaluation != composition.evaluation]
             
     # Création de la session evaluation pour cacher ou afficher le formulaire
     request.session['evaluation'] = composition.evaluation
@@ -524,10 +533,8 @@ def edit_composition(request, id, param):
             tabMatieres.append(matiere)  
             
     numerocontroles = ["Contrôle n°1", "Contrôle n°2", "Contrôle n°3", "Contrôle n°4", "Contrôle n°5"] 
-    tabNumerocontrole = []
-    for numerocontrole in numerocontroles: 
-            if composition.numerocontrole !=numerocontrole:
-                tabNumerocontrole.append(numerocontrole)
+    tabNumerocontrole = [numerocontrole for numerocontrole in numerocontroles if composition.numerocontrole !=numerocontrole]
+    
     context = {
         "setting": setting,
         "composition": composition,
@@ -576,9 +583,7 @@ class get_trim_student_inscris_salle(View):
         anneeacademique_id = request.session.get('anneeacademique_id')
         
         inscriptions = Inscription.objects.filter(salle_id=id, anneeacademique_id = anneeacademique_id)
-        students=[]
-        for inscription in inscriptions:
-                students.append(inscription.student)
+        students = [inscription.student for inscription in inscriptions]
 
         context = {
             "students": students
@@ -601,9 +606,7 @@ class get_trimestre_matiere_enseigner_salle(View):
                 
             anneeacademique_id = request.session.get('anneeacademique_id')
             enseignements = Enseigner.objects.filter(trimestre=trim, salle_id=salle_id, anneeacademique_id=anneeacademique_id)
-            matieres = []
-            for enseignement in enseignements:
-                matieres.append(enseignement.matiere)
+            matieres = [enseignement.matiere for enseignement in enseignements]
 
             context = {
                 "matieres": matieres,
@@ -624,9 +627,7 @@ class get_trimestre_matiere_enseigner_salle(View):
                 
             anneeacademique_id = request.session.get('anneeacademique_id')
             enseignements = Enseigner.objects.filter(trimestre=trim, salle_id=salle_id, anneeacademique_id=anneeacademique_id)
-            matieres = []
-            for enseignement in enseignements:
-                matieres.append(enseignement.matiere)
+            matieres = [enseignement.matiere for enseignement in enseignements]
 
             context = {
                 "matieres": matieres,
@@ -635,7 +636,7 @@ class get_trimestre_matiere_enseigner_salle(View):
             }
             return render(request, "ajax_trimestre_matiere_enseigner.html", context)
         
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def edit_cp(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -704,9 +705,9 @@ def edit_cp(request):
             for c in compositions: 
                 
                 dic = {} 
-                dic["salle_id"] = c.salle.id 
-                dic["matiere_id"] = c.matiere.id
-                dic["student_id"] = c.student.id
+                dic["salle_id"] = int(c.salle.id) 
+                dic["matiere_id"] = int(c.matiere.id)
+                dic["student_id"] = int(c.student.id)
                 dic["trimestre"] = c.trimestre
                     
                 tabComposition.append(dic)
@@ -723,14 +724,19 @@ def edit_cp(request):
             note = re.sub(r'\xa0', '', note)  # Supprime les espaces insécables
             note = note.replace(" ", "").replace(",", ".")
             # Récuperer la délibération
-            deliberation = Deliberation.objects.filter(salle_id=salle_id, trimestre=trimestre, status_cloture=False, anneeacademique_id=anneeacademique_id)        
+            deliberation = Deliberation.objects.filter(salle_id=salle_id, trimestre=trimestre, status_cloture=False, anneeacademique_id=anneeacademique_id)  
+            # Récuperer l'inscription de l'étudiant
+            inscription = Inscription.objects.filter(student_id=student_id, anneeacademique_id=anneeacademique_id).first()    
             try:
                 note = Decimal(note) # Convertir en Decimal
             except:
                 return JsonResponse({
                     "status": "error",
                     "message": "La note doit être un nombre valide."})
-                
+            if inscription.status_block == False:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Le compte de cet élève a été définitivement bloqué. Vous ne pouvez donc effectuer aucune opération le concernant."})        
             if anneescolaire.exists(): # Verifier si on a déjà cloturé les opérations de cette année
                 return JsonResponse({
                     "status": "error",
@@ -759,7 +765,7 @@ def edit_cp(request):
                         "message": "Composition modifiée avec succès."})
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def del_composition(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -807,7 +813,7 @@ def get_ajax_evaluation_controle(request, id, evaluation):
         
     
 # =============================== Délibération ==================================
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def comp_deliberation(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -867,10 +873,9 @@ def matiere_enseigner(anneeacademique_id, salle_id, trimestre):
 
 # Récuperer les élèves inscris
 def students_inscris(salle_id, anneeacademique_id):
-    students = []
+    
     inscriptions = Inscription.objects.filter(salle_id=salle_id, anneeacademique_id=anneeacademique_id)
-    for inscription in inscriptions:
-        students.append(inscription.student)
+    students = [inscription.student for inscription in inscriptions]
         
     return students
 
@@ -1297,7 +1302,7 @@ class tri_student_composer(View):
         }
         return render(request, "tri_student_composer.html", context=context)   
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 @transaction.atomic    
 def moyenne_validation(request):
@@ -1392,7 +1397,7 @@ def moyenne_validation(request):
             return render(request, "content_deliberation.html", context=context)
         
 # ========================== Résultat ===============================
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def comp_resultat(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1421,6 +1426,7 @@ class content_resultat(View):
             dic = {}
             moyenne_generale = avg_student(anneeacademique_id, salle_id, trimestre, student.id)
             dic["student"] = student
+            dic["photo"] = Inscription.objects.filter(student_id=student.id, anneeacademique_id=anneeacademique_id).first().photo
             dic["moyenne"] = moyenne_generale
             dic["mention"] = mention_student(moyenne_generale)
             dic["details"] = detail_note_student(anneeacademique_id, salle_id, trimestre, student.id)[0]
@@ -1484,7 +1490,7 @@ class trimestre_resultat(View):
         }
         return render(request, "trimestre_resultat.html", context=context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)    
 def publication_result(request):
     
@@ -1685,34 +1691,35 @@ def gestion_etude_parent(request):
     
     gestions = []       
     for inscription in tabinscription:
-        dic = {}
-        dic["inscription"] = inscription
-        # Absence des étudiants
-        absences = Absencestudent.objects.filter(student_id=inscription.student.id, status_parent=0)
-        for absence in absences:
-            if absence.emargement.anneeacademique.id == anneeacademique_id:
-                absence.status_parent = 1
-                absence.save()
-        
-        new_absences = Absencestudent.objects.filter(student_id=inscription.student.id, status_parent=1)        
-        nombre_absences = 0
-        for absence in new_absences:
-            if absence.emargement.anneeacademique.id == anneeacademique_id:
-                nombre_absences += 1
-        
-        dic["nombre_absences"] = nombre_absences
-        # Récuperer les composition de l'étudiant        
-        compositions = Composer.objects.filter(anneeacademique_id=anneeacademique_id, student_id=inscription.student.id, status_parent=0)
-        nombre_compositions = 0
-        for composition in compositions:
-            composition.status_parent = 1  
-            composition.save() 
+        if inscription.status_access and inscription.status_block:
+            dic = {}
+            dic["inscription"] = inscription
+            # Absence des étudiants
+            absences = Absencestudent.objects.filter(student_id=inscription.student.id, status_parent=0)
+            for absence in absences:
+                if absence.emargement.anneeacademique.id == anneeacademique_id:
+                    absence.status_parent = 1
+                    absence.save()
             
-        nombre_compositions = Composer.objects.filter(anneeacademique_id=anneeacademique_id, student_id=inscription.student.id, status_parent=1).count()
+            new_absences = Absencestudent.objects.filter(student_id=inscription.student.id, status_parent=1)        
+            nombre_absences = 0
+            for absence in new_absences:
+                if absence.emargement.anneeacademique.id == anneeacademique_id:
+                    nombre_absences += 1
             
-        dic["nombre_compositions"] = nombre_compositions
-        
-        gestions.append(dic)
+            dic["nombre_absences"] = nombre_absences
+            # Récuperer les composition de l'étudiant        
+            compositions = Composer.objects.filter(anneeacademique_id=anneeacademique_id, student_id=inscription.student.id, status_parent=0)
+            nombre_compositions = 0
+            for composition in compositions:
+                composition.status_parent = 1  
+                composition.save() 
+                
+            nombre_compositions = Composer.objects.filter(anneeacademique_id=anneeacademique_id, student_id=inscription.student.id, status_parent=1).count()
+                
+            dic["nombre_compositions"] = nombre_compositions
+            
+            gestions.append(dic)
             
     context = {
         "setting": setting,
@@ -1805,10 +1812,7 @@ def gestion_etude_parent_detail(request, student_id):
             
     # Absence des étudiants
     new_absences = Absencestudent.objects.filter(student_id=st_id)
-    tababsences = []
-    for absence in new_absences:
-        if absence.emargement.anneeacademique.id == anneeacademique_id:      
-            tababsences.append(absence)
+    tababsences = [absence for absence in new_absences if absence.emargement.anneeacademique.id == anneeacademique_id]
             
     # Récuperer les matières que l'étudiant a composé
     tabMatiere = []
@@ -1837,7 +1841,7 @@ def gestion_etude_parent_detail(request, student_id):
     }
     return render(request, "gestion_etude_parent_detail.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_enseignant)
 def cmp_teacher(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1908,7 +1912,7 @@ def cmp_teacher(request):
     
     return render(request, "cmp_teacher.html", context=context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_enseignant)
 def detail_cmpteacher(request, salle_id, matiere_id, trimestre):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2091,7 +2095,7 @@ def pourcentage_comp_salle(anneeacademique_id, salle_id):
             
         return tabTrimestres   
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)       
 def stat_composition(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2151,7 +2155,8 @@ def content_stat_comp_trimestre(request, salle_id):
     }
     return render(request, "content_stat_comp_trimestre.html", context)
 
-
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_directeur_etudes)
 def bulletin_etudiant(request, student_id, trimestre):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -2171,11 +2176,11 @@ def bulletin_etudiant(request, student_id, trimestre):
         base64_string = base64.b64encode(image_path.read()).decode('utf-8')
     
     # Chemin vers notre image
-    image_path_student = inscription.student.photo
+    image_path_student = inscription.photo
     
     # Lire l'image en mode binaire et encoder en Base64
     base64_string_student = None
-    if inscription.student.photo:
+    if inscription.photo:
         base64_string_student = base64.b64encode(image_path_student.read()).decode('utf-8')
     # Date actuelle
     date_actuelle = date.today()
@@ -2221,7 +2226,7 @@ def bulletin_etudiant(request, student_id, trimestre):
     deliberation = Deliberation.objects.filter(anneeacademique_id=anneeacademique_id, salle_id=inscription.salle.id, trimestre=trim).first() 
     # Nombre d'absences
     nb_absences = 0
-    absences = Absencestudent.objects.filter(student_id=st_id)
+    absences = Absencestudent.objects.filter(student_id=st_id, status_decision=2)
     for absence in absences:
         if absence.emargement.anneeacademique.id == anneeacademique_id:
             nb_absences += 1
@@ -2257,15 +2262,125 @@ def bulletin_etudiant(request, student_id, trimestre):
     reponse = HttpResponse(pdf, content_type='application/pdf')
     reponse['Content-Disposition'] = f"attachment; filename=Bulletin_{ student.lastname }_{ student.firstname }.pdf"
     return reponse
+
+@unauthenticated_customer
+def bulletin_etudiant_customer(request, student_id, trimestre):
+    anneeacademique_id = request.session.get('anneeacademique_id')
+    setting = get_setting(anneeacademique_id)
+    
+    st_id = int(dechiffrer_param(str(student_id)))
+    trim = dechiffrer_param(trimestre)
+    
+    inscription = Inscription.objects.filter(student_id=st_id, anneeacademique_id=anneeacademique_id).first()
+    anneeacademique  = AnneeCademique.objects.get(id=anneeacademique_id)
+    
+    # Chemin vers notre image
+    image_path = setting.logo
+    
+    # Lire l'image en mode binaire et encoder en Base64
+    base64_string = None
+    if setting.logo:
+        base64_string = base64.b64encode(image_path.read()).decode('utf-8')
+    
+    # Chemin vers notre image
+    image_path_student = inscription.photo
+    
+    # Lire l'image en mode binaire et encoder en Base64
+    base64_string_student = None
+    if inscription.photo:
+        base64_string_student = base64.b64encode(image_path_student.read()).decode('utf-8')
+    # Date actuelle
+    date_actuelle = date.today()
+    
+    # Resultats
+    moyenne_generale = avg_student(anneeacademique_id, inscription.salle.id, trim, inscription.student.id)
+    mention = mention_student(moyenne_generale)
+    details = detail_note_student(anneeacademique_id, inscription.salle.id, trim, inscription.student.id)[0]
+    somme_note = detail_note_student(anneeacademique_id, inscription.salle.id, trim, inscription.student.id)[1]
+    # Somme des coefficients
+    somme_coefficient = calculer_somme_coefficient(anneeacademique_id, inscription.salle.id, trim)
+    # Nombre des étudiants qui ont composé
+    nb_students_inscris = nombre_student_inscris(anneeacademique_id, inscription.salle.id)   
+    # Nombre d'étudiants qui ont composé
+    nb_student_compose = nombre_student_composer(anneeacademique_id, inscription.salle.id, trim)   
+    # Récuperer les élèves inscris dans cette salle
+    students = students_inscris(inscription.salle.id, anneeacademique_id)
+    # Calculer la moyenne des élèves pour determiner le min, le max et le rang de chaque étudiant
+    moyennes = []
+    moyenne_students = []
+    for student in students:  
+            my = avg_student(anneeacademique_id, inscription.salle.id, trim, student.id)          
+            moyennes.append(my)   
+            dic_rang = {}
+            dic_rang["student_id"] = student.id
+            dic_rang["moyenne"] = my
+            moyenne_students.append(dic_rang)
         
+    # Moyenne minimal et maximal
+    moyenne_min = min(moyennes)
+    moyenne_max = max(moyennes) 
+        
+    # Trier par moyenne en ordre croissant
+    moyenne_students_trier = sorted(moyenne_students, key=lambda x: x["moyenne"], reverse=True)
+    # Ajouter le rang à chaque élément
+    rang = 0
+    for i, st in enumerate(moyenne_students_trier, start=1):
+        if st["student_id"] == st_id:
+            rang = i 
+            break
+    
+    # Récuperer la délibération
+    deliberation = Deliberation.objects.filter(anneeacademique_id=anneeacademique_id, salle_id=inscription.salle.id, trimestre=trim).first() 
+    # Nombre d'absences
+    nb_absences = 0
+    absences = Absencestudent.objects.filter(student_id=st_id, status_decision=2)
+    for absence in absences:
+        if absence.emargement.anneeacademique.id == anneeacademique_id:
+            nb_absences += 1
+          
+    context = {
+        "inscription": inscription,
+        "details": details,     
+        "somme_coefficient": somme_coefficient,
+        "somme_note": somme_note,
+        "base64_image": base64_string, 
+        "moyenne_generale": moyenne_generale,
+        "moyenne_min": moyenne_min,
+        "moyenne_max": moyenne_max,
+        "mention": mention,
+        "rang": rang,
+        "nb_absences": nb_absences,
+        "nb_student_compose": nb_student_compose,
+        "deliberation": deliberation,
+        "trimestre": trim,
+        "nb_students_inscris": nb_students_inscris,
+        "base64_image_student": base64_string_student,
+        "setting": setting,
+        "anneeacademique": anneeacademique,
+        "date_actuelle": date_actuelle
+    }
+    template = get_template("bulletin_etudiant.html")
+    html = template.render(context)
+    options = {
+        'page-size': 'Letter',
+        'encoding': "UTF-8",
+    }
+    pdf = pdfkit.from_string(html, False, options)
+    reponse = HttpResponse(pdf, content_type='application/pdf')
+    reponse['Content-Disposition'] = f"attachment; filename=Bulletin_{ student.lastname }_{ student.firstname }.pdf"
+    return reponse
+
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_directeur_etudes)  
 def proces_verbal_examen(request, salle_id, trimestre):
         anneeacademique_id = request.session.get('anneeacademique_id')
         setting = get_setting(anneeacademique_id)
         # Chemin vers notre image
         image_path = setting.logo
-
-        # Lire l'image en mode binaire et encoder en Base64
-        base64_string = base64.b64encode(image_path.read()).decode('utf-8')
+        base64_string = None     
+        if image_path:      
+            # Lire l'image en mode binaire et encoder en Base64
+            base64_string = base64.b64encode(image_path.read()).decode('utf-8')
         # Date actuelle
         date_actuelle = date.today()
     
@@ -2377,15 +2492,17 @@ def fetch_releve_examen(request, student_id, matiere_id, trimestre):
     }
     return render(request, "fetch_releve_examen.html", context)
 
-
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_directeur_etudes)
 def releve_note_controle(request, salle_id, num_controle, matiere_id, trimestre):
         anneeacademique_id = request.session.get('anneeacademique_id')
         setting = get_setting(anneeacademique_id)
         # Chemin vers notre image
         image_path = setting.logo
-
-        # Lire l'image en mode binaire et encoder en Base64
-        base64_string = base64.b64encode(image_path.read()).decode('utf-8')
+        base64_string = None    
+        if image_path:      
+            # Lire l'image en mode binaire et encoder en Base64
+            base64_string = base64.b64encode(image_path.read()).decode('utf-8')
         # Date actuelle
         date_actuelle = date.today()
         mt_id = int(dechiffrer_param(str(matiere_id)))
@@ -2431,15 +2548,72 @@ def releve_note_controle(request, salle_id, num_controle, matiere_id, trimestre)
         reponse['Content-Disposition'] = f"attachment; filename=Releve_note_{ salle }_{ trim }.pdf"
         return reponse
 
+@unauthenticated_customer
+def releve_note_controle_customer(request, salle_id, num_controle, matiere_id, trimestre):
+        anneeacademique_id = request.session.get('anneeacademique_id')
+        setting = get_setting(anneeacademique_id)
+        # Chemin vers notre image
+        image_path = setting.logo
+        base64_string = None     
+        if image_path:      
+            # Lire l'image en mode binaire et encoder en Base64
+            base64_string = base64.b64encode(image_path.read()).decode('utf-8')
+        # Date actuelle
+        date_actuelle = date.today()
+        mt_id = int(dechiffrer_param(str(matiere_id)))
+        sl_id = int(dechiffrer_param(str(salle_id)))
+        num_cont = dechiffrer_param(str(num_controle))
+        trim = dechiffrer_param(trimestre)
+        
+        matiere = Matiere.objects.get(id=mt_id)
+        compositions = Composer.objects.filter(
+            salle_id=sl_id, 
+            matiere_id=mt_id,  
+            numerocontrole=num_cont,
+            trimestre=trim,
+            anneeacademique_id=anneeacademique_id).order_by("-note")
+        
+        # Compter le nombre d'élèves qui ont composé
+        nb_student_compose = compositions.count()
+        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+        # Récuperer la salle
+        salle = Salle.objects.get(id=sl_id)
+        
+        context = {
+            "compositions": compositions, 
+            "matiere": matiere,
+            "numcontrole": num_cont,
+            "trimestre": trim,
+            "salle": salle,
+            "base64_image": base64_string,
+            "date_actuelle": date_actuelle,
+            "nb_student_compose":nb_student_compose,
+            "setting": setting,
+            "anneeacademique": anneeacademique
+        }
+    
+        template = get_template("releve_note_controle.html")
+        html = template.render(context)
+        options = {
+            'page-size': 'Letter',
+            'encoding': "UTF-8",
+        }
+        pdf = pdfkit.from_string(html, False, options)
+        reponse = HttpResponse(pdf, content_type='application/pdf')
+        reponse['Content-Disposition'] = f"attachment; filename=Releve_note_{ salle }_{ trim }.pdf"
+        return reponse
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_directeur_etudes)
 def releve_note_examen(request, salle_id, matiere_id, trimestre):
         anneeacademique_id = request.session.get('anneeacademique_id')
         setting = get_setting(anneeacademique_id)
         # Chemin vers notre image
         image_path = setting.logo
-
-        # Lire l'image en mode binaire et encoder en Base64
-        base64_string = base64.b64encode(image_path.read()).decode('utf-8')
+        base64_string = None    
+        if image_path:      
+            # Lire l'image en mode binaire et encoder en Base64
+            base64_string = base64.b64encode(image_path.read()).decode('utf-8')
         # Date actuelle
         date_actuelle = date.today()
 
@@ -2482,7 +2656,59 @@ def releve_note_examen(request, salle_id, matiere_id, trimestre):
         reponse['Content-Disposition'] = f"attachment; filename=Proces_{ sl_id }_{ trim }.pdf"
         return reponse 
     
-@login_required(login_url='connection/login')
+@unauthenticated_customer
+def releve_note_examen_customer(request, salle_id, matiere_id, trimestre):
+        anneeacademique_id = request.session.get('anneeacademique_id')
+        setting = get_setting(anneeacademique_id)
+        # Chemin vers notre image
+        image_path = setting.logo
+        base64_string = None     
+        if image_path:      
+            # Lire l'image en mode binaire et encoder en Base64
+            base64_string = base64.b64encode(image_path.read()).decode('utf-8')
+        # Date actuelle
+        date_actuelle = date.today()
+
+        mt_id = int(dechiffrer_param(str(matiere_id)))
+        sl_id = int(dechiffrer_param(str(salle_id)))
+        trim = dechiffrer_param(trimestre)
+        
+        matiere = Matiere.objects.get(id=mt_id)
+        compositions = Composer.objects.filter(
+            salle_id=sl_id, 
+            matiere_id=mt_id,  
+            evaluation="Examen",
+            trimestre=trim,
+            anneeacademique_id=anneeacademique_id).order_by("-note")
+        
+        # Compter le nombre d'élèves qui ont composé
+        nb_student_compose = compositions.count()
+        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+        salle = Salle.objects.get(id=sl_id)
+        context = {
+            "compositions": compositions, 
+            "matiere": matiere,
+            "trimestre": trim,
+            "salle": salle,
+            "nb_student_compose": nb_student_compose,
+            "base64_image": base64_string,
+            "date_actuelle": date_actuelle,
+            "anneeacademique": anneeacademique,
+            "setting": setting
+        }
+    
+        template = get_template("releve_note_examen.html")
+        html = template.render(context)
+        options = {
+            'page-size': 'Letter',
+            'encoding': "UTF-8",
+        }
+        pdf = pdfkit.from_string(html, False, options)
+        reponse = HttpResponse(pdf, content_type='application/pdf')
+        reponse['Content-Disposition'] = f"attachment; filename=Proces_{ sl_id }_{ trim }.pdf"
+        return reponse 
+    
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def deliberations(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2508,7 +2734,7 @@ def deliberations(request):
     }
     return render(request, "deliberation/deliberations.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def detail_deliberation(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2523,6 +2749,8 @@ def detail_deliberation(request, id):
     }
     return render(request, "deliberation/detail_deliberation.html", context)
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def cloture_deliberation(request):
     if request.method == "POST":
         id = int(request.POST["id"])

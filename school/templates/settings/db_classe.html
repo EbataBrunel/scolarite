@@ -64,7 +64,10 @@
             <div class="card-body">
               <h4 class="card-title text-center" style="font-family:Viner Hand ITC">Bienvenue <b>{{ user.first_name|title }} {{ user.last_name|title }}</b></h4>
               <br>
-              <h3 class="text-center text-primary">Complexe scolaire <b>{{ setting.appname }}</b></h3>
+              <h3 class="text-center">Complexe scolaire <b class="text-primary">{{ setting.appname }}</b></h3>
+              <div class="card">
+              <div class="card-body">
+              <h3 class="card-title text-center"><b>{{ request.session.cycle_lib }}</b></h3>
               <div class="d-flex justify-content-center py-4">
                 <a href="" class="logo d-flex align-items-center w-auto">
                   {% if setting %}
@@ -106,7 +109,7 @@
                         <!-- Default Card -->
                         <div class="card">
                           <div class="card-body height_min_max_card {{ setting.theme }}">
-                            <a href="{% url 'settings/db_cycle' request.session.etablissement_id|crypter_id %}" class="decoration bg-secondary">
+                            <a href="{% url 'settings/db_cycle' request.session.etablissement_id|crypter_id %}" class="decoration bg-secondary {{ setting.text_color }}">
                               <h5 class="card-title text-center">Accueil</h5>
                               <p class="text-center font-size"><i class="bi bi-arrow-left"></i></p>
                             </a>
@@ -165,6 +168,9 @@
                 </div>
                 <br>
               </div>
+
+            </div>
+          </div>
           
             </div>
           </div>

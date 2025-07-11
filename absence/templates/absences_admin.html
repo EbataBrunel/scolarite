@@ -7,7 +7,7 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Gestion des absences</h1>
+      <h1>Absences</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
@@ -32,7 +32,6 @@
                     {% endif %}
                 </div>
                 {% endif %}
-                <br>
                 {% if messages %}
                   {% for message in messages %}
                   <div class="row">
@@ -53,7 +52,8 @@
                             <tr>
                                 <th>Nom</th>
                                 <th>Prénom</th>
-                                <th>NombreAbsences</th>
+                                <th class="white-space">Nombre absences</th>
+                                <th class="white-space">Nombre motifs</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -64,11 +64,12 @@
                                 <td class="white-space">{{ s.user.last_name|title }}</td>
                                 <td class="white-space">{{ s.user.first_name|title }}</td>
                                 <td><span class="badge rounded-pill bg-secondary">{{ s.nb_absences }}</span></td>
+                                <td><span class="badge rounded-pill bg-warning"><span id="content-nb-motifs{{ s.user.id }}"> {{ s.nombre_motifs_absences }} </span></span></td>
                                 <td>
                                     <a href="#"  data-bs-toggle="modal" data-bs-target="#detailModal{{ s.user.id }}" title="Plus d'info" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
                                     <!-- Start de delete Modal -->
                                     <div class="modal fade" id="detailModal{{ s.user.id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg">
                                           <div class="modal-content">
                                             <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
                                               <h5 class="modal-title">Détails des absences</h5>
@@ -76,15 +77,37 @@
                                             </div>
                                             <div class="modal-body">
                                               <div class="table-responsive">
-                                                {% for absence in s.absences %}
+                                                {% for a in s.absences %}
                                                 <h5><b>Date de l'absence</b></h5>
-                                                <p>{{ absence.date_absence }}</p>
-                                                <p><b>Motif : </b> {{ absence.motif }}</p>
-                                                <p><b>Administrateur : </b>{{ absence.admin.last_name|title }} {{ absence.admin.first_name|title }}</p> 
+                                                <p>{{ a.absence.date_absence }}</p>
+                                                <p><b>Motif : </b> {{ a.absence.motif }}</p>
+                                                <p><b>Administrateur : </b>{{ a.absence.admin.last_name|title }} {{ a.absence.admin.first_name|title }}</p> 
+                                                <p>
+                                                  <b>Décision : </b> 
+                                                  {% if a.absence.status_decision == 0 %}
+                                                    {% if a.status_paye == False %}
+                                                      <button class="btn btn-default btn-sm modal-decision-absence" id="{{ a.absence.id }}"><span id="status-decision{{ a.absence.id }}"><span class="badge rounded-pill bg-warning"> En attente </span></span></button>
+                                                    {% else %}
+                                                      <span class="badge rounded-pill bg-warning">En attente</span>
+                                                    {% endif %}
+                                                  {% elif a.absence.status_decision == 1 %}
+                                                    {% if a.status_paye == False %}
+                                                      <button class="btn btn-default btn-sm modal-decision-absence" id="{{ a.absence.id }}"><span id="status-decision{{ a.absence.id }}"><span class="badge rounded-pill bg-success"> Recevable </span></span></button>
+                                                    {% else %}
+                                                      <span class="badge rounded-pill bg-success"> Recevable </span>
+                                                    {% endif %}
+                                                  {% else %}
+                                                    {% if a.status_paye == False %}
+                                                      <a href="#" class="modal-decision-absence" id="{{ a.absence.id }}"><span id="status-decision{{ a.absence.id }}"><span class="badge rounded-pill bg-danger"> Non recevable </span></span></a>
+                                                    {% else %}
+                                                      <span class="badge rounded-pill bg-danger"> Non recevable </span>
+                                                    {% endif %}
+                                                  {% endif %}
+                                                </p>
                                                 {% if anneeacademique.status_cloture %}
                                                 <p>
-                                                  <a class="btn btn-danger btn-sm delete-absence-admin" id="{{ absence.id }}"><i class="bi bi-trash"></i> Supprimer </a>
-                                                  <a href="{% url 'edit_absence_admin' absence.id|crypter_id %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier </a>
+                                                  <a class="btn btn-danger btn-sm delete-absence-admin" id="{{ a.absence.id }}"><i class="bi bi-trash"></i> Supprimer </a>
+                                                  <a href="{% url 'edit_absence_admin' a.absence.id|crypter_id %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier </a>
                                                 </p>
                                                 {% endif %}
                                                 <hr>
@@ -120,6 +143,22 @@
                     </div>
                   </div>
                 </div><!-- End group Modal-->
+
+
+                <!-- Start groupe Modal -->
+                        <div class="modal fade" id="content_decision" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                              <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                <h5 class="modal-title">Décision</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" class="badge bg-dark">x</span>
+                                </button>
+                              </div>
+                              <div class="modal-body" id="content-decision-absence"></div>
+                            </div>
+                          </div>
+                        </div><!-- End group Modal-->
             </div>
           </div>
         </div>

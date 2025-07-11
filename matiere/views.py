@@ -14,6 +14,7 @@ from composition.models import Composer
 from emploi_temps.models import EmploiTemps
 from emargement.models import Emargement
 from cycle.models import Cycle
+from paiement.models import ContratEtablissement
 from school.views import get_setting
 from app_auth.decorator import allowed_users
 from scolarite.utils.crypto import dechiffrer_param
@@ -21,7 +22,7 @@ from scolarite.utils.crypto import dechiffrer_param
 permission_promoteur_DG = ['Promoteur', 'Directeur Général']
 permission_admin = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Gestionnaire']
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def matieres(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -49,7 +50,7 @@ def matieres(request):
     }
     return render(request, "matieres.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def matieres_admin(request):
     cycle_id = request.session.get('cycle_id')
@@ -65,7 +66,7 @@ def matieres_admin(request):
     }
     return render(request, "matieres_admin.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def add_matiere(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -118,15 +119,21 @@ def add_matiere(request):
     themes = ['bg-primary', 'bg-info', 'bg-success', 'bg-danger', 'bg-secondary', 'bg-dark', 'bg-light']        
     textcolors = ['text-primary', 'text-info', 'text-success', 'text-danger', 'text-secondary','text-dark', 'text-light']
     cycles = Cycle.objects.filter(anneeacademique_id=anneeacademique_id) 
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                    
     context = {
         "setting": setting,
         "themes": themes,
         "colors": textcolors,
-        "cycles": cycles
+        "cycles": cycles,
+        "contrat": contrat
     }
     return render(request, "add_matiere.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_matiere(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -137,28 +144,28 @@ def edit_matiere(request,id):
     matiere_id = int(dechiffrer_param(str(id)))
     matiere = Matiere.objects.get(id=matiere_id)
     themes = ['bg-primary', 'bg-info', 'bg-success', 'bg-danger', 'bg-secondary', 'bg-dark', 'bg-light']  
-    tabThemes = []
-    for theme in themes:
-        if matiere.theme != theme:
-            tabThemes.append(theme)
+    tabThemes = [theme for theme in themes if matiere.theme != theme]
                    
     colors = ['text-primary', 'text-info', 'text-success', 'text-danger', 'text-secondary','text-dark', 'text-light']
-    tabColors = []
-    for color in colors:
-        if matiere.text_color != color:
-            tabColors.append(color)
+    tabColors = [color for color in colors if matiere.text_color != color]
     
-    cycles = Cycle.objects.filter(anneeacademique_id=anneeacademique_id).exclude(id=matiere.cycle.id)       
+    cycles = Cycle.objects.filter(anneeacademique_id=anneeacademique_id).exclude(id=matiere.cycle.id)
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                           
     context = {
         "setting": setting,
         "matiere": matiere,
         "themes": tabThemes,
         "colors": tabColors,
-        "cycles": cycles
+        "cycles": cycles,
+        "contrat": contrat
     }
     return render(request, "edit_matiere.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_mt(request):
     anneeacademique_id=request.session.get('anneeacademique_id')
@@ -206,7 +213,7 @@ def edit_mt(request):
                     "status": "success",
                     "message": "Matière modifiée avec succès."})
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def del_matiere(request, id):
     try:
@@ -227,7 +234,7 @@ def del_matiere(request, id):
             messages.error(request, "La suppression a échouée.")
     return redirect("matieres")
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def delete_matiere(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')

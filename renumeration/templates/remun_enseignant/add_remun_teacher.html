@@ -1,0 +1,134 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Enregistrer une rémunération {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Rémunérations</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'remun_enseignant/remunerations_enseignants' %}">Rémunérations</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'remun_enseignant/resume_remu_enseignant_seondaire' %}" >Résumé</a></li>
+          <li class="breadcrumb-item active">Ajout</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-12 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Enregistrer une rémunération</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <br>
+                        <div class="row">
+                            <div class="col-md-3"></div>
+                            <div class="col-md-6 {{ setting.theme }} {{ setting.text_color }}" style="border-radius:7px">
+                                <br>
+                                <table class="table">
+                                    <tr>
+                                        <th>Enseignant :</th>
+                                        <td style="padding-left:10px">{{ enseignant.last_name }} {{ enseignant.first_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Mois :</th>
+                                        <td style="padding-left:10px">{{ month }}</td>
+                                    </tr>
+                                    <tr>
+                                        {% if type_contrat == "Secondaire" %}
+                                        <th>Heure totale :</th>
+                                        {% else %}
+                                        <th>Total retard :</th>
+                                        {% endif %}
+                                        <td style="padding-left:10px">{{ total_time }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Montant ({{ setting.devise }}) :</th>
+                                        <td style="padding-left:10px">{{ montant|floatformat:2 }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-3"></div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4"></div>
+                            <div class="col-md-4">
+                                <!-- On inclut l'image de chargement -->
+                                {% include 'global/_loading.html' %}
+                                <!-- Vertical Form -->
+                                <form method="post" action="" id="formRenumeration" class="row g-3">
+                                    {% csrf_token %}
+                                    <input type="text" name="enseignant" id="enseignant" value="{{ enseignant.id }}" hidden>
+                                    <input type="text" name="month" id="month" value="{{ month }}" hidden>
+                                    <div class="col-12">
+                                    
+                                        <label for="amount" class="form-label"> Montant ({{ setting.devise }}) : </label>
+                                        <input type="text" name="amount" value="{{ montant }}" class="form-control" required readonly>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label for="indemnite" class="form-label">Indeminté ({{ setting.devise }}): </label>
+                                        <input type="text" value="0,00" class="form-control" name="indemnite" id="indemnite" required>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label for="mode_payment" class="form-label">Mode de paiement : </label>
+                                        <select name="mode_payment" id="mode_payment" class="form-select" aria-label="Default select example">
+                                            <option value="">-- Selectionnez --</option>
+                                            {% for mode_payment in mode_payments %}
+                                            <option value="{{ mode_payment }}">{{ mode_payment }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label for="password" class="form-label">Entrer votre mot de passe : </label>
+                                        <input type="password" class="form-control" name="password" id="password" required>
+                                    </div>
+                                
+                                    <div class="text-center">
+                                        <a href="{% url 'remun_enseignant/remunerations_enseignants'  %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                                    </div>
+                                </form><!-- Vertical Form -->
+
+                                <!-- Start message Modal -->
+                                <div class="modal fade" id="message" tabindex="-1">
+                                    <div class="modal-dialog modal-sm">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                        <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true" class="badge bg-dark">x</span>
+                                        </button>
+                                        </div>
+                                        <div class="modal-body" id="content-message"></div>
+                                    </div>
+                                    </div>
+                                </div><!-- End message Modal-->
+                            </div>
+                            <div class="col-md-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

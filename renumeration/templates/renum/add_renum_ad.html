@@ -1,5 +1,5 @@
 {% extends 'global/base.html' %}
-{% block title %} {{ setting.appname }} | Ajout d'une rénumeration {% endblock %}
+{% block title %} {{ setting.appname }} | Ajout d'une rémunération {% endblock %}
 {% block content %}
 {% load static %}
 {% load crypto_filters %}
@@ -7,11 +7,11 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Rénumerations</h1>
+      <h1>Rémunérations</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
-          <li class="breadcrumb-item"><a href="{% url 'personnel_renum' %}" > Rénumerations </a></li>
+          <li class="breadcrumb-item"><a href="{% url 'personnel_renum' %}" > Rémunérations </a></li>
           <li class="breadcrumb-item active">Ajout</li>
         </ol>
       </nav>
@@ -22,10 +22,10 @@
           <div class="card">
             <div class="card-body">
               {% if type_renumeration == "Administrateur scolaire" %}
-              <h5 class="card-title">Enregistrer une rénumeration de l'administrateur {{ user.last_name|title }} {{ user.first_name|title }}</h5>
+              <h5 class="card-title">Enregistrer une rémunération de l'administrateur {{ user.last_name|title }} {{ user.first_name|title }}</h5>
               {% endif %}
               {% if type_renumeration == "Enseignant du fondamental" %}
-              <h5 class="card-title">Enregistrer une rénumeration de l'enseignant {{ user.last_name|title }} {{ user.first_name|title }}</h5>
+              <h5 class="card-title">Enregistrer une rémunération de l'enseignant {{ user.last_name|title }} {{ user.first_name|title }}</h5>
               {% endif %}
               <!-- On inclut l'image de chargement -->
               {% include 'global/_loading.html' %}
@@ -41,11 +41,11 @@
                         <input type="text" name="type_renumeration" value="{{ type_renumeration }}" class="form-control" id="type_renumeration" hidden>
                     </div>
                     <div class="col-12">
-                        <label for="month" class="form-label">Mois : </label>
+                        <label for="month" class="form-label">Mois : *</label>
                         <input type="text" name="month" value="{{ month }}" class="form-control" id="month" readonly>
                     </div>
                     <div class="col-12">
-                        <label for="amount" class="form-label">Montant : </label>
+                        <label for="amount" class="form-label">Montant : *</label>
                         <input type="text" name="amount" value="{{ amount }}" class="form-control" id="amount" readonly>
                     </div>
                     <div class="col-12">
@@ -53,7 +53,7 @@
                       <input type="text" name="indemnite" value="0,00" class="form-control" id="indemnite" required>
                     </div>
                     <div class="col-12">
-                      <label for="mode_payment" class="form-label">Mode de paiement : </label>
+                      <label for="mode_payment" class="form-label">Mode de paiement : *</label>
                       <select name="mode_payment" id="mode_payment" class="form-select" aria-label="Default select example">
                           <option value="">-- Selectionnez --</option>
                           {% for mode_payment in mode_payments %}
@@ -62,7 +62,7 @@
                       </select>
                     </div>
                     <div class="col-12">
-                      <label for="password" class="form-label">Entrer votre mot de passe : </label>
+                      <label for="password" class="form-label">Entrer votre mot de passe : *</label>
                       <input type="password" class="form-control" name="password" id="password" required>
                     </div>
                   </div>

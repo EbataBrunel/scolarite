@@ -30,7 +30,6 @@
                     <a href="{% url 'autorisation_paye_etablissement/add_autorisation_paye_etablissement' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une autorisation</a>
                     {% endif %}
                 </div>
-                <br>
                 {% if messages %}
                   {% for message in messages %}
                   <div class="row">
@@ -51,7 +50,7 @@
                             <tr>
                                 <th>Id</th>
                                 <th>Etablissement</th>
-                                <th>NombreMois</th>
+                                <th class="white-space">Nombre mois</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -93,7 +92,7 @@
                                                                   <th>Utilisateur</th><td class="white-space">{{ autorisation.user.last_name|title }} {{ autorisation.user.first_name|title }}</td>
                                                                 </tr>
                                                                 <tr>
-                                                                  <th>Date d'autorisation</th><td>{{ autorisation.date_autorisation|date:"d/m/Y" }}</td>
+                                                                  <th class="white-space">Date d'autorisation</th><td>{{ autorisation.date_autorisation|date:"d/m/Y" }}</td>
                                                                 </tr>
                                                               </table>
                                                             </div>

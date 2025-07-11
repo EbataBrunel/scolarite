@@ -178,6 +178,79 @@
 
             </div><!-- End Ressources admin Card -->
 
+            {% if request.session.group_name == "Directeur des Etudes" %}
+            <!-- Ressources admin Card -->
+            <div class="col-xxl-4 col-xl-12">
+
+              <div class="card info-card customers-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">Motif d'absence enseignant</span></h5>
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-gem"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ nombre_absences_enseignants }}</h6>
+                      <a href="{% url 'absences' %}">
+                      <span class="text-danger small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                      </a>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div><!-- End Ressources admin Card -->
+
+            <!-- Ressources admin Card -->
+            <div class="col-xxl-4 col-xl-12">
+
+              <div class="card info-card customers-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">Motif d'absence admin</span></h5>
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-gem"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ nombre_absences_admin }}</h6>
+                      <a href="{% url 'absences_admin' %}">
+                      <span class="text-danger small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                      </a>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div><!-- End Ressources admin Card -->
+
+            <!-- Ressources admin Card -->
+            <div class="col-xxl-4 col-xl-12">
+
+              <div class="card info-card customers-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">Motif d'absence élève</span></h5>
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-gem"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ nombre_absences_student }}</h6>
+                      <a href="{% url 'abs_student_user' %}">
+                      <span class="text-danger small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                      </a>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div><!-- End Ressources admin Card -->
+            {% endif %}
             <!-- Recent Sales -->
             <div class="col-12">
               <div class="card recent-sales overflow-auto">
@@ -334,7 +407,7 @@
                       </div>
                     </div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermetr la fênetre</button>
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
                     </div>
                   </div>
                 </div>
@@ -398,6 +471,20 @@
           </div><!-- End Website Traffic -->
 
         </div><!-- End Right side columns -->
+
+
+        <!-- Start message Modal -->
+              <div class="modal fade" id="alert-signature" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Signature de contrat</h5>
+                    </div>
+                    <div class="modal-body" id="content-alert-signature"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+              
 
       </div>
     </section>

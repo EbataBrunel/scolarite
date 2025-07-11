@@ -9,6 +9,7 @@ from django.contrib import messages
 from .models import Serie
 from salle.models import Salle
 from anneeacademique.models import AnneeCademique
+from paiement.models import ContratEtablissement
 from school.views import get_setting
 from app_auth.decorator import allowed_users
 from scolarite.utils.crypto import dechiffrer_param
@@ -16,7 +17,7 @@ from scolarite.utils.crypto import dechiffrer_param
 permission_promoteur_DG = ['Promoteur', 'Directeur Général']
 permission_admin = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Gestionnaire']
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def series(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -33,7 +34,7 @@ def series(request):
     }
     return render(request, "series.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def series_admin(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -49,7 +50,7 @@ def series_admin(request):
     return render(request, "series_admin.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def add_serie(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -87,14 +88,20 @@ def add_serie(request):
             else:
                 return JsonResponse({
                     "status": "error",
-                    "message": "L'insertion a échouée."}) 
-    context={
+                  "message": "L'insertion a échouée."}) 
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                    
+    context = {
         "setting": setting,
+        "contrat": contrat
     }
     return render(request, "add_serie.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_serie(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -104,14 +111,20 @@ def edit_serie(request,id):
     
     serie_id = int(dechiffrer_param(id))
     serie = Serie.objects.get(id=serie_id)
-    context={
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                    
+    context = {
         "setting": setting,
-        "serie":serie
+        "serie":serie,
+        "contrat": contrat
     }
     return render(request, "edit_serie.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_sr(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -153,7 +166,7 @@ def edit_sr(request):
                     "message": "Série modifiée avec succès."})
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def del_serie(request, id):
     try:
@@ -174,7 +187,7 @@ def del_serie(request, id):
             messages.error(request, "La suppression a échouée.")
     return redirect("series")
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def delete_serie(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')

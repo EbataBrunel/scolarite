@@ -24,60 +24,68 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Enregistrer un parent</h5>
-              <!-- On inclut l'image de chargement -->
-              {% include 'global/_loading.html' %}
-              <!-- Vertical Form -->
-              <form method="post" action="" id="formParent" class="row g-3">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="col-lg-6">
-                        <div class="col-12">
-                            <label for="Lastname" class="form-label">Nom : </label>
-                            <input type="text" name="lastname" class="form-control" id="Lastname" required>
-                        </div>
-                        <div class="col-12">
-                            <label for="Firstname" class="form-label">Prénom : </label>
-                            <input type="text" name="firstname" class="form-control" id="Firstname" required>
-                        </div>
-                        <div class="col-12">
-                            <label for="Gender" class="form-label">Sexe : </label>
-                            <select name = "gender" id="Gender" class="form-select" aria-label="Default select example" required>
-                                <option value="">-- Selectionnez --</option>
-                                <option value="Masculin">Masculin</option>
-                                <option value="Feminin">Feminin</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label for="Address" class="form-label">Adresse : </label>
-                            <input type="text" name="address" class="form-control" id="Address" required>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="col-12">
-                            <label for="Phone" class="form-label">Téléphone : </label>
-                            <input type="text" name="phone" class="form-control" id="Phone" required>
-                        </div>
-                        <div class="col-12">
-                            <label for="Profession" class="form-label">Profession : </label>
-                            <input type="text" name="profession" class="form-control" id="Profession" required>
-                        </div>
-                        <div class="col-12">
-                            <label for="Country" class="form-label">Pays : </label>
-                            <select name = "country" id="Country" class="form-select" aria-label="Default select example" required>
-                                <option value="">-- Selectionnez --</option>
-                                {% for country in countries %}
-                                <option value="{{ country }}">{{ country }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
+              {% if contrat.status_signature %}
+                <!-- On inclut l'image de chargement -->
+                {% include 'global/_loading.html' %}
+                <!-- Vertical Form -->
+                <form method="post" action="" id="formParent" class="row g-3">
+                  {% csrf_token %}
+                  <div class="row">
+                      <div class="col-lg-6">
+                          <div class="col-12">
+                              <label for="Lastname" class="form-label">Nom : *</label>
+                              <input type="text" name="lastname" class="form-control" id="Lastname" required>
+                          </div>
+                          <div class="col-12">
+                              <label for="Firstname" class="form-label">Prénom : </label>
+                              <input type="text" name="firstname" class="form-control" id="Firstname" required>
+                          </div>
+                          <div class="col-12">
+                              <label for="Gender" class="form-label">Sexe : *</label>
+                              <select name = "gender" id="Gender" class="form-select" aria-label="Default select example" required>
+                                  <option value="">-- Selectionnez --</option>
+                                  <option value="Masculin">Masculin</option>
+                                  <option value="Feminin">Feminin</option>
+                              </select>
+                          </div>
+                          <div class="col-12">
+                              <label for="Address" class="form-label">Adresse : *</label>
+                              <input type="text" name="address" class="form-control" id="Address" required>
+                          </div>
+                      </div>
+                      <div class="col-lg-6">
+                          <div class="col-12">
+                              <label for="Phone" class="form-label">Téléphone : *</label>
+                              <input type="text" name="phone" class="form-control" id="Phone" required>
+                          </div>
+                          <div class="col-12">
+                              <label for="Profession" class="form-label">Profession : *</label>
+                              <input type="text" name="profession" class="form-control" id="Profession" required>
+                          </div>
+                          <div class="col-12">
+                              <label for="Country" class="form-label">Pays : *</label>
+                              <select name = "country" id="Country" class="form-select" aria-label="Default select example" required>
+                                  <option value="">-- Selectionnez --</option>
+                                  {% for country in countries %}
+                                  <option value="{{ country }}">{{ country }}</option>
+                                  {% endfor %}
+                              </select>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="text-center">
+                      <a href="{% url 'parent/parents' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                      <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                  </div>
+                </form><!-- Vertical Form -->
+              {% else %}
+              <div class="card">
+                <div class="card-body">
+                  <br>
+                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord signé le contrat, s'il n'a pas encore été fait, avant d'enregistrer un parent. <a href="{% url 'contrat_etablissement/mes_contrats_promoteur' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Je signe le contrat</a></h4>
                 </div>
-                <div class="text-center">
-                    <a href="{% url 'parent/parents' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
-                </div>
-              </form><!-- Vertical Form -->
-
+              </div>
+              {% endif %}
               <!-- Start message Modal -->
               <div class="modal fade" id="message" tabindex="-1">
                 <div class="modal-dialog modal-sm">

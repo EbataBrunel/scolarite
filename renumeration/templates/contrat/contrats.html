@@ -7,7 +7,7 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Gestion des rénumerations</h1>
+      <h1>Contrats</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
@@ -24,13 +24,13 @@
             <div class="card-body">
                 <h5 class="card-title">Liste des contrats</h5>
                 {% if anneeacademique.status_cloture %}
-                <div align="right">
-                    {% if setting.theme == "bg-default" %}
-                    <a href="{% url 'contrat/add_contrat' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer un contrat</a>
-                    {% else %}
-                    <a href="{% url 'contrat/add_contrat' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un contrat</a>
-                    {% endif %}
-                </div>
+                  <div align="right">
+                      {% if setting.theme == "bg-default" %}
+                      <a href="{% url 'contrat/add_contrat' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer un contrat</a>
+                      {% else %}
+                      <a href="{% url 'contrat/add_contrat' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un contrat</a>
+                      {% endif %}
+                  </div>
                 {% endif %}
                 {% if messages %}
                   {% for message in messages %}
@@ -97,7 +97,10 @@
                                                         <th>Description</th><td> : {{ t.contrat.description }}</td>
                                                       </tr>
                                                       <tr>
-                                                        <th>DateDébut/DateFin</th><td> : {{ t.contrat.date_debut|date:"d/m/Y" }} / {{ t.contrat.date_fin|date:"d/m/Y" }}</td> 
+                                                        <th class="white-space">Date début</th><td> : {{ t.contrat.date_debut|date:"d/m/Y" }}</td> 
+                                                      </tr>
+                                                      <tr>
+                                                        <th class="white-space">Date fin</th><td> : {{ t.contrat.date_fin|date:"d/m/Y" }}</td> 
                                                       </tr>
                                                       {% if t.contrat.type_contrat == "Admin" %}
                                                       <tr>
@@ -141,7 +144,17 @@
                                                                       <p>Date : {{ t.contrat.date_signature|date:"d/m/Y" }}</p>
                                                                   </div>
                                                               </div>
-                                                          </div>
+                                                            </div>
+                                                          {% else %}
+                                                            <div class="col-md-6">
+                                                              <div class="card">
+                                                                  <div class="card-body">
+                                                                      <br>
+                                                                      <p><i class="bi bi-circle-fill text-warning"></i> En attente de la signature de </p>
+                                                                      <h5>{{ t.contrat.admin.last_name|title }} {{ t.contrat.admin.first_name|title }}</h5>
+                                                                  </div>
+                                                              </div>
+                                                            </div>
                                                           {% endif %}
                                                         </div>
                                                     </div>

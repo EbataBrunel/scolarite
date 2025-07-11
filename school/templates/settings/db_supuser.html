@@ -115,32 +115,6 @@
 
               </div>
             </div><!-- End Sales Card -->
-
-
-
-            <!-- Customers Card -->
-            <div class="col-xxl-4 col-xl-6">
-
-              <div class="card info-card customers-card">
-
-                <div class="card-body">
-                  <h5 class="card-title">Super utilisateurs <span>| Cette année</span></h5>
-                  <div class="d-flex align-items-center">
-                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                      <i class="bi bi-people"></i>
-                    </div>
-                    <div class="ps-3">
-                      <h6>{{ nombre_supadmin }}</h6>
-                      <a href="#">
-                      <span class="text-danger small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
-                      </a>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-            </div><!-- End Customers Card -->
             
             <!-- Sales Card -->
             <div class="col-xxl-4 col-xl-6 col-md-6">
@@ -187,7 +161,7 @@
                                           <td>{{ promoteur.first_name|title }}</td>
                                           <td>{{ promoteur.email }}</td>
                                           <td>{{ promoteur.profile.gender }}</td>
-                                          <td><a href="#" class="btn btn-danger btn-sm delete-new-user" id="{{ promoteur.id }}"><i class="bi bi-trash"></i></a></td>
+                                          <td><a href="{% url 'user/delete_promoteur' promoteur.id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a></td>
                                         </tr>
                                         {% endfor%}
                                       </table>
@@ -259,14 +233,18 @@
                                         <tr>
                                           <th>Nom</th>
                                           <th>Promoteur</th>
-                                          <th>NombreElèves</th>
+                                          <th class="white-space">Nombre élèves</th>
+                                          <th class="white-space">Elèves actifs</th>
+                                          <th class="white-space">Elèves bloqués</th>
                                           <th>Action</th>
                                         </tr>
                                         {% for e in etablissements %}
                                         <tr>
                                           <td>{{ e.etablissement.name }}</td>
                                           <td>{{ e.etablissement.promoteur.last_name|title }} {{ e.etablissement.promoteur.first_name|title }}</td>
-                                          <td><span class="badge rounded-pill bg-secondary">{{ e.nombre_eleves }}</span></td>
+                                          <td><span class="badge rounded-pill bg-secondary">{{ e.nombre_students }}</span></td>
+                                          <td><span id="content-number-student-actif-etablissement{{ e.etablissement.id }}"><span class="badge rounded-pill bg-success">{{ e.nombre_students_actif }}</span></span></td>
+                                          <td><span id="content-number-student-block-etablissement{{ e.etablissement.id }}"><span class="badge rounded-pill bg-danger">{{ e.nombre_students_block }}</span></span></td>
                                           <td><a href="#" class="btn btn-info btn-sm button-salle" id="{{ e.etablissement.id }}"><i class="bi bi-eye"></i></a></td>
                                         </tr>
                                         {% endfor%}
@@ -458,6 +436,35 @@
 
               </div>
             </div><!-- End Sales Card -->
+
+
+            <!-- Customers Card -->
+            <div class="col-xxl-4 col-xl-6">
+
+              <div class="card info-card customers-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">Nouv paiements <span>| Cette année</span></h5>
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-people"></i>
+                    </div>
+                    <div class="ps-3">
+                      {% if nombre_payments == 0 %}
+                      <h6>{{ nombre_payments }}</h6>
+                      {% else %}
+                      <h6 class="text-success"><b>{{ nombre_payments }}</b></h6>
+                      {% endif %}
+                      <a href="{% url 'payment_etablissement/payment_etablissements' %}">
+                      <span class="text-danger small pt-1 fw-bold"><i class="bi bi-arrow-right-circle"></i></span> <span class="text-muted small pt-2 ps-1">Voir plus</span>
+                      </a>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div><!-- End Customers Card -->
 
             <div class="col-md-12">
               <div class="card">

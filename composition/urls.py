@@ -46,13 +46,16 @@ urlpatterns=[
     path("content_stat_comp_trimestre/<int:salle_id>", content_stat_comp_trimestre, name="content_stat_comp_trimestre"),
     
     path("bulletin-etudiant/<str:student_id>/<str:trimestre>", bulletin_etudiant, name="bulletin_etudiant"),
+    path("bulletin-etudiant-customer/<str:student_id>/<str:trimestre>", bulletin_etudiant_customer, name="bulletin_etudiant_customer"),
     path("proces_verbal_examen/<str:salle_id>/<str:trimestre>", proces_verbal_examen, name="proces_verbal_examen"),
     path("fetch_releve_controle/<int:student_id>/<int:matiere_id>/<str:num_controle>/<str:trimestre>", fetch_releve_controle, name="fetch_releve_controle"),
     path("fetch_releve_examen/<int:student_id>/<int:matiere_id>/<str:trimestre>", fetch_releve_examen, name="fetch_releve_examen"),
     path("gestion-etude-parent-detail/fetch_releve_controle/<int:student_id>/<int:matiere_id>/<str:num_controle>/<str:trimestre>", fetch_releve_controle, name="fetch_releve_controle"),
     path("gestion-etude-parent-detail/fetch_releve_examen/<int:student_id>/<int:matiere_id>/<str:trimestre>", fetch_releve_examen, name="fetch_releve_examen"),
     path("releve_note_controle/<str:salle_id>/<str:matiere_id>/<str:num_controle>/<str:trimestre>", releve_note_controle, name="releve_note_controle"),
+    path("releve_note_controle_customer/<str:salle_id>/<str:matiere_id>/<str:num_controle>/<str:trimestre>", releve_note_controle_customer, name="releve_note_controle_customer"),
     path("releve_note_examen/<str:salle_id>/<str:matiere_id>/<str:trimestre>", releve_note_examen, name="releve_note_examen"),
+    path("releve_note_examen_customer/<str:salle_id>/<str:matiere_id>/<str:trimestre>", releve_note_examen_customer, name="releve_note_examen_customer"),
     
     path("deliberation/deliberations", deliberations, name="deliberation/deliberations"),
     path("deliberation/detail_deliberation/<int:id>", detail_deliberation, name="deliberation/detail_deliberation"),

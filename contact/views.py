@@ -11,7 +11,7 @@ from django.db.models import Q
 from .models import Contact, Message
 from school.views import get_setting
 from app_auth.decorator import unauthenticated_customer, allowed_users
-from app_auth.models import Student, Parent, Profile
+from app_auth.models import Student, Parent, EtablissementUser
 from inscription.models import Inscription
 from etablissement.models import Etablissement
 from scolarite.utils.crypto import dechiffrer_param
@@ -38,7 +38,7 @@ def contacts(request):
             
             all_contacts = Contact.objects.filter(anneeacademique_id=anneeacademique_id, student_id=student_id).order_by("id")    
             # Liste des sujets
-            subjects = ['Réclamation de notes', 'Harcèlement', 'Paiement des frais'] 
+            subjects = ['Réclamation de notes', 'Harcèlement', 'Frais de scolarité', 'Autre'] 
             context = {
                 "customer": "student",
                 "contacts": all_contacts,
@@ -55,7 +55,7 @@ def contacts(request):
             
             all_contacts = Contact.objects.filter(anneeacademique_id=anneeacademique_id, parent_id=parent_id).order_by("-id")
             # Liste des sujets
-            subjects = ['Réclamation de notes', 'Harcèlement', 'Paiement des frais'] 
+            subjects = ['Réclamation de notes', 'Harcèlement', 'Frais de scolarité', 'Autre'] 
             context = {
                 "customer": "parent",
                 "contacts": all_contacts,
@@ -64,7 +64,7 @@ def contacts(request):
             }
             return render(request, "contacts.html", context)
     
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def contact_admin(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -101,7 +101,7 @@ def contact_admin(request):
     }
     return render(request, "contact_admin.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def contact_sp_admin(request, customer):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -147,7 +147,7 @@ def contact_sp_admin(request, customer):
         # Liste des inscriptionns
         inscriptions = Inscription.objects.filter(anneeacademique_id=anneeacademique_id)   
         # Liste des sujets
-        subjects = ['Réclamation de notes', 'Harcèlement', 'Paiement des frais']      
+        subjects = ['Réclamation de notes', 'Harcèlement', 'Frais de scolarité', 'Autre']      
         context = {
             "contacts_students": contacts_students_sorted,
             "customer": cust,
@@ -191,7 +191,7 @@ def contact_sp_admin(request, customer):
             if inscription.student.parent not in tabParents:
                 tabParents.append(inscription.student.parent)
         # Liste des sujets
-        subjects = ['Réclamation de notes', 'Harcèlement', 'Paiement des frais']        
+        subjects = ['Réclamation de notes', 'Harcèlement', 'Frais de scolarité', 'Autre']        
         context = {
             "contacts_parents": contacts_parents_sorted,
             "customer": cust,
@@ -202,7 +202,7 @@ def contact_sp_admin(request, customer):
         return render(request, "contact_sp_admin.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def contact_admin_detail(request, customer, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -228,7 +228,7 @@ def contact_admin_detail(request, customer, id):
                 
         contacts = Contact.objects.filter(anneeacademique_id=anneeacademique_id, student_id=student_id, user_id=user_id).order_by("id")
         # Liste des sujets
-        subjects = ['Réclamation de notes', 'Harcèlement', 'Paiement des frais'] 
+        subjects = ['Réclamation de notes', 'Harcèlement', 'Frais de scolarité', 'Autre'] 
         context = {
             "customer": cust,
             "contacts": contacts,
@@ -250,7 +250,7 @@ def contact_admin_detail(request, customer, id):
                 
         contacts = Contact.objects.filter(anneeacademique_id=anneeacademique_id, parent_id=id, user_id=user_id).order_by("id")
         # Liste des sujets
-        subjects = ['Réclamation de notes', 'Harcèlement', 'Paiement des frais']  
+        subjects = ['Réclamation de notes', 'Harcèlement', 'Frais de scolarité', 'Autre']  
         context = {
             "customer": cust,
             "contacts": contacts,
@@ -263,27 +263,27 @@ def contact_admin_detail(request, customer, id):
 @unauthenticated_customer
 def add_contact(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
+    etablissement_id = request.session.get('etablissement_id')
     if request.method == "POST":
         user_id = 0
         subject = bleach.clean(request.POST["subject"].strip())
         message = bleach.clean(request.POST["message"].strip())
         
+        # Récuperer l'établissement
+        etablissement = Etablissement.objects.get(id=etablissement_id)
+        
         users = User.objects.all()
         if subject in ["Harcèlement", "Réclamation de notes"]:
             for user in users:
-                if user.groups.exists():
-                    groups = user.groups.all()
-                    for group in groups:
-                        if group.name in ["Directeur des Etudes", "Directeur Général", "Promoteur"]:                       
-                            user_id = user.id
+                for role in EtablissementUser.objects.filter(etablissement=etablissement, user=user):
+                    if role.group.name  in ["Directeur des Etudes"]:                       
+                        user_id = user.id
                             
-        if subject in ["Paiement des frais"]:
+        if subject in ["Frais de scolarité", 'Autre']:
             for user in users:
-                if user.groups.exists():
-                    groups = user.groups.all()
-                    for group in groups:
-                        if group.name in ["Gestionnaire"]:                       
-                            user_id = user.id
+                for role in EtablissementUser.objects.filter(etablissement=etablissement, user=user):
+                    if role.group.name  in ["Gestionnaire"]:                       
+                        user_id = user.id
                                 
         type = request.POST["type"]
         if type == "student":
@@ -336,7 +336,7 @@ def add_contact(request):
                     "message": "Le message n'a pas été envoyé."})
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def del_contact(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -354,7 +354,7 @@ def del_contact(request,id):
             contact.delete()
         return redirect("contacts")
 
-@login_required(login_url='connection/login')    
+@login_required(login_url='connection/account')    
 @allowed_users(allowed_roles=permission_admin)    
 def add_contact_admin(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -377,7 +377,7 @@ def add_contact_admin(request):
             
             contacts = Contact.objects.filter(anneeacademique_id=anneeacademique_id, student_id=student_id, user_id=user_id).order_by("id")            
             # Liste des sujets
-            subjects = ['Réclamation de notes', 'Harcèlement', 'Paiement des frais'] 
+            subjects = ['Réclamation de notes', 'Harcèlement', 'Frais de scolarité', 'Autre'] 
             context = {
                 "contacts": contacts,
                 "subjects": subjects
@@ -398,14 +398,14 @@ def add_contact_admin(request):
             
             contacts = Contact.objects.filter(anneeacademique_id=anneeacademique_id, parent_id=parent_id, user_id=user_id).order_by("id")
             # Liste des sujets
-            subjects = ['Réclamation de notes', 'Harcèlement', 'Paiement des frais'] 
+            subjects = ['Réclamation de notes', 'Harcèlement', 'Frais de scolarité', 'Autre'] 
             context = {
                 "contacts": contacts,
                 "subjects": subjects
             }            
             return render(request, "content_contact.html", context)  
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)       
 def add_contact_admin_customer(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -484,28 +484,27 @@ def add_contact_admin_customer(request):
 @unauthenticated_customer
 def add_contact_customer(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
+    etablissement_id = request.session.get('etablissement_id')
     if request.method == "POST":
         user_id = 0
         subject = bleach.clean(request.POST["subject"].strip())
         message = bleach.clean(request.POST["message"].strip())
         
-        
+        # Récuperer l'établissement
+        etablissement = Etablissement.objects.get(id=etablissement_id)
+    
         users = User.objects.all()
         if subject in ["Harcèlement", "Réclamation de notes"]:
             for user in users:
-                if user.groups.exists():
-                    groups = user.groups.all()
-                    for group in groups:
-                        if group.name in ["Directeur des Etudes", "Directeur Général", "Promoteur"]:                       
-                            user_id = user.id
+                for role in EtablissementUser.objects.filter(etablissement=etablissement, user=user):
+                    if role.group.name in ["Directeur des Etudes"]:                       
+                        user_id = user.id
                             
-        if subject in ["Paiement des frais"]:
+        if subject in ["Frais de scolarité", "Autre"]:
             for user in users:
-                if user.groups.exists():
-                    groups = user.groups.all()
-                    for group in groups:
-                        if group.name in ["Gestionnaire"]:                       
-                            user_id = user.id                            
+                for role in EtablissementUser.objects.filter(etablissement=etablissement, user=user):
+                    if role.group.name in ["Gestionnaire"]:                       
+                        user_id = user.id                            
                             
         if request.session.get('student_id'): 
             student_id = request.session.get('student_id')          
@@ -553,7 +552,9 @@ def add_contact_customer(request):
                 "contacts": all_contacts
             }            
             return render(request, "content_customer.html", context)
-        
+
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_admin)          
 def messages(request):
     etablissement_id = request.session.get('etablissement_id')
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -600,7 +601,8 @@ def messages(request):
     }            
     return render(request, "messages.html", context)
 
-@login_required(login_url='connection/login')  
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_admin)   
 def detail_message(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     user_id = request.user.id
@@ -628,7 +630,8 @@ def detail_message(request, id):
     }
     return render(request, "detail_message.html", context)
 
-@login_required(login_url='connection/login')  
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_admin)    
 def add_message(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     if request.method == "POST":
@@ -659,7 +662,8 @@ def add_message(request):
         }            
         return render(request, "content_message.html", context)  
 
-@login_required(login_url='connection/login')    
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_admin)      
 def add_message_user(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     if request.method == "POST":

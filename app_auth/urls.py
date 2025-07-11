@@ -6,14 +6,14 @@ from django.contrib.auth import views as auth_views
 urlpatterns=[
     path("add_annee_setting", add_annee_setting, name="add_annee_setting" ),
     path("register_supuser", register_supuser, name="user/register_supuser"),
-    path("register/<str:etablissement_abreviation>", register, name="user/register"),
+    path("register", register, name="user/register"),
     path("success-account/<str:id>", success_account, name="user/success-account"),
-    path("success-account-etablissement/<str:id>/<str:abreviation_etablissement>", success_account_etablissement, name="user/success-account-etablissement"),
+    path("success-account-etablissement/<str:user_id>/<str:etablissement_id>", success_account_etablissement, name="user/success-account-etablissement"),
     path("activate/<uidb64>/<token>", activate, name="activate"),
     path("login", login_user, name="connection/login"),
     path("logout", logout_user, name="logout"),
-    path("account/<str:etablissement_abreviation>", account_user, name="connection/account"),
-    path("connexion/<str:etablissement_abreviation>", login_customer, name="connection/connexion"),
+    path("account", account_user, name="connection/account"),
+    path("connexion", login_customer, name="connection/connexion"),
     path("logout_customer", logout_customer, name="logout_customer"),
     
     path("user/detail_supuser/<str:id>", detail_supuser, name="user/detail_supuser"),
@@ -21,6 +21,8 @@ urlpatterns=[
     path("user/promoteurs/", promoteurs, name="user/promoteurs"),
     path("user/detail_promoteur/<str:id>", detail_promoteur, name="user/detail_promoteur"),
     path("user/delete_promoteur/<str:id>", delete_promoteur, name="user/delete_promoteur"),
+    path("del_promoteur/<str:id>", del_promoteur, name="del_promoteur"), 
+    
     path("user/admin/", administrator, name="user/admin"),
     path("user/detail_admin/<str:id>", detail_admin, name="user/detail_admin"),
     path("del_admin/<str:id>", del_admin, name="del_admin"), 
@@ -30,8 +32,8 @@ urlpatterns=[
     path("teacher/delete-teacher/<str:id>", delete_teacher, name="teacher/delete_teacher"),
     path("del-teacher/<str:id>", del_teacher, name="del_teacher"),  
     path("user/profile/", profile, name="user/profile"),
-    path("profile_supuser/", profile_supuser, name="user/profile_supuser"),
-    path("profile_sup_admin/", profile_sup_admin, name="user/profile_sup_admin"),
+    path("user/profile_supuser/", profile_supuser, name="user/profile_supuser"),
+    path("user/profile_sup_admin/", profile_sup_admin, name="user/profile_sup_admin"),
     path("edit_profile_photo", edit_profile_photo, name="edit_profile_photo"),
     path("user/permission/<str:user_id>", permission, name="user/permission"),
     path("upadate_permission", update_permission, name="update_permission"),
@@ -81,15 +83,16 @@ urlpatterns=[
     path("add_admin_to_group", add_admin_to_group, name="add_admin_to_group"),
     path("del_user_to_group/<str:id>/<str:name>", del_user_to_group, name="del_user_to_group"),
     
-    path("group/group_etablissements", group_etablissements, name="group/group_etablissements"),
-    path("group/add_group_etablissement", add_group_etablissement, name="group/add_group_etablissement"),
-    path("group/edit_group_etablissement/<str:id>", edit_group_etablissement, name="group/edit_group_etablissement"),
-    path("edit_ge", edit_ge, name="edit_ge"),
-    path("del_group_etablissement/<str:id>", del_group_etablissement, name="del_group_etablissement"),
+    path("role/roles", roles, name="role/roles"),
+    path("role/add_role", add_role, name="role/add_role"),
+    path("role/edit_role/<str:id>", edit_role, name="role/edit_role"),
+    path("edit_ro", edit_ro, name="edit_ro"),
+    path("role/ajax_delete_role/<int:id>", ajax_delete_role, name="ajax_delete_role"),
+    path("del_role/<str:id>", del_role, name="del_role"),
     
     path("group/group_etablissement_user/<str:id>", group_etablissement_user, name="group/group_etablissement_user"),
     path("add_group_etablissement_to_user", add_group_etablissement_to_user, name="add_group_etablissement_to_user"),
-    path("del_group_etablissement_to_user/<str:id>/<str:name>", del_group_etablissement_to_user, name="del_group_etablissement_to_user"),
+    path("del_group_etablissement_to_user/<str:id>", del_group_etablissement_to_user, name="del_group_etablissement_to_user"),
 
     
 ]

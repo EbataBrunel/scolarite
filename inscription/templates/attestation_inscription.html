@@ -56,6 +56,10 @@
       font-size: 14px;
       color: #555;
     }
+
+    .primary {
+      color: #222;
+    }
   </style>
 </head>
 <body>
@@ -67,14 +71,14 @@
         {% endif %}
 
       <h2>{{ setting.appname|upper }}</h2>
-      <p>Complexe scolaire {{ setting.appname }} - Agréé par l'État<br>{{ setting.address }}<br>Tél : 01 23 45 67 89</p>
+      <p>Complexe scolaire {{ setting.appname }} - Agréé par l'État<br>{{ setting.address }}<br>Tél : {{ setting.phone }}</p>
     </div>
 
-    <h1>Attestation d'inscription</h1>
+    <h1 class="primary">Attestation d'inscription</h1>
 
     <div class="content">
-      Je soussigné(e), la direction de l’établissement <strong>École Privée Sainte Lucie</strong>, atteste que :<br><br>
-      <strong>Nom de l'élève :</strong> {{ inscription.student.lastname }} {{ inscription.student.firstname|title }}<br>
+      Je soussigné(e), la direction de l’établissement <strong>{{ setting.appname }}</strong>, atteste que :<br><br>
+      <strong>Nom de l'élève :</strong> {{ inscription.student.lastname|upper }} {{ inscription.student.firstname|title }}<br>
       <strong>Date de naissance :</strong> {{ inscription.student.datenais|date:"d/m/Y" }}<br>
       <strong>Lieu de naissance :</strong> {{ inscription.student.country }}<br><br>
       est régulièrement inscrit(e) au sein de notre établissement pour l’année scolaire <strong>{{ anneeacademique.annee_debut }} {{ anneeacademique.separateur }} {{ anneeacademique.annee_fin }}</strong>, en classe de <strong>{{ inscription.salle }}</strong> (cycle collège).<br><br>
@@ -83,7 +87,7 @@
 
     <div class="signature">
       <div>
-        Fait à Paris, le 09 avril 2025<br><br>
+        Fait à {{ anneeacademique.etablissement.ville|title }}, le {{ date_actuelle }}<br><br>
         <strong>Le Chef d’établissement : {{ user.first_name|title }} {{ user.last_name|title }}</strong><br><br><br>
         ______________________
       </div>

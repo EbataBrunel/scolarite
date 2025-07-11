@@ -51,9 +51,9 @@
                     <div class="modal-body">
                       <div class="text-center">
                         {% if profile.photo %}
-                          <img class="img-responsive rounded-circle" src="{{ profile.photo.url }}">
+                          <img class="img-responsive" width="260" height="250" src="{{ profile.photo.url }}">
                         {% else %}
-                          <img class="img-responsive rounded-circle" src="{% static 'assets/img/user.png' %}">
+                          <img class="img-responsive" width="200" height="200" src="{% static 'assets/img/user.png' %}">
                         {% endif %}
                       </div>
                     </div>
@@ -61,15 +61,15 @@
                       <form method="POST" action="{% url 'edit_profile_photo' %}" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                               <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <div class="form-group mb-1">
                                     <input type="file" name="photo" class="form-control"/>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <button class="btn btn-primary btn-sm pull-right">Valider</button>
                             </div>
                         </div>
@@ -164,11 +164,11 @@
                   </div>
 
                   <div class="row">
-                    <div class="col-lg-3 col-md-4 label">Groupes</div>
+                    <div class="col-lg-3 col-md-4 label">Rôles</div>
                     <div class="col-lg-9 col-md-8">
                       <ul>
-                        {% for group in groups %}
-                        <li>{{ group.name }}</li>
+                        {% for role in roles %}
+                        <li>{{ role.group.name }}</li>
                         {% endfor %}
                       </ul>
                     </div>

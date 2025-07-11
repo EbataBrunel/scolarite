@@ -1,5 +1,5 @@
 {% extends 'global/base.html' %}
-{% block title %} {{ setting.appname }} | Rénumeration des admin {% endblock %}
+{% block title %} {{ setting.appname }} | Rémunération des admin {% endblock %}
 {% block content %}
 {% load static %}
 {% load crypto_filters %}
@@ -7,11 +7,11 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Gestion des rénumerations</h1>
+      <h1>Rémunérations</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id %}">Tableau de bord</a></li>
-          <li class="breadcrumb-item active">Rénumerations</li>
+          <li class="breadcrumb-item active">Rémunérations</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -22,13 +22,13 @@
 
           <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Liste de rénumerations des admin</h5>
+                <h5 class="card-title">Liste des rémunérations des administrateurs</h5>
                 {% if anneeacademique.status_cloture %}
                 <div align="right">
                     {% if setting.theme == "bg-default" %}
-                    <a href="{% url 'renum/add_renum_admin' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une rénumeration</a>
+                    <a href="{% url 'renum/add_renum_admin' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une rémunération</a>
                     {% else %}
-                    <a href="{% url 'renum/add_renum_admin' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une rénumeration</a>
+                    <a href="{% url 'renum/add_renum_admin' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une rémunération</a>
                     {% endif %}
                 </div>
                 {% endif %}
@@ -50,9 +50,9 @@
                     <table class="table datatable">
                         <thead>
                             <tr>
-                                <th>Nom</th>
-                                <th>Prénom</th>
-                                <th>NombreRénum</th>
+                                <th>Noms</th>
+                                <th>Prénoms</th>
+                                <th class="white-space">Nombre rénum</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -66,10 +66,10 @@
                                     <a href="#"  data-bs-toggle="modal" data-bs-target="#detailModal{{ r.user.id }}" title="Plus d'info" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
                                     <!-- Start de delete Modal -->
                                     <div class="modal fade" id="detailModal{{ r.user.id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                                        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
                                           <div class="modal-content">
                                             <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
-                                              <h5 class="modal-title">Détail de rénumeration</h5>
+                                              <h5 class="modal-title">Détail de rémunération</h5>
                                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
@@ -78,25 +78,29 @@
                                                     <table class="table">
                                                         <tr>
                                                             <th>Mois</th>
-                                                            <th>Montant({{ setting.devise }})</th>
-                                                            <th>Indemnité({{ setting.devise }})</th>
-                                                            <th>Total({{ setting.devise }})</th>
+                                                            <th class="white-space">Montant ({{ setting.devise }})</th>
+                                                            <th class="white-space">Indemnité ({{ setting.devise }})</th>
+                                                            <th class="white-space">Net à payer ({{ setting.devise }})</th>
                                                             <th class="white-space">Mode paiement</th>
+                                                            <th class="white-space">Date de paye</th>
+                                                            <th>Gestionnaire</th>
                                                             {% if anneeacademique.status_cloture %}
                                                             <th>Actions</th>
                                                             {% endif %}
                                                         </tr>
-                                                        {% for renumeration in r.renumerations %}
+                                                        {% for remuneration in r.renumerations %}
                                                         <tr>
-                                                            <td>{{ renumeration.month }}</td>
-                                                            <td>{{ renumeration.amount }}</td>
-                                                            <td>{{ renumeration.indemnite }}</td>
-                                                            <td>{{ renumeration.total_amount }}</td>
-                                                            <td>{{ renumeration.mode_payment }}</td>
+                                                            <td>{{ remuneration.month }}</td>
+                                                            <td>{{ remuneration.amount }}</td>
+                                                            <td>{{ remuneration.indemnite }}</td>
+                                                            <td>{{ remuneration.total_amount }}</td>
+                                                            <td>{{ remuneration.mode_payment }}</td>
+                                                            <td class="white-space">{{ remuneration.date|date:"d/m/Y" }}</td>
+                                                            <td class="white-space">{{ remuneration.responsable.last_name|title }} - {{ remuneration.responsable.first_name|title }}</td>
                                                             {% if anneeacademique.status_cloture %}
                                                             <td class="white-space">
-                                                                <a class="btn btn-danger btn-sm delete-renum-admin" id="{{ renumeration.id }}"><i class="bi bi-trash"></i></a>
-                                                                <a href="{% url 'renum/edit_renum_admin' renumeration.id|crypter_id %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                                                                <a class="btn btn-danger btn-sm delete-renum-admin" id="{{ remuneration.id }}"><i class="bi bi-trash"></i></a>
+                                                                <a href="{% url 'renum/edit_renum_admin' remuneration.id|crypter_id %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
                                                             </td>
                                                             {% endif %}
                                                         </tr>

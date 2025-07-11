@@ -30,7 +30,6 @@
                     <a href="{% url 'contrat_etablissement/add_contrat_etablissement' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un contrat</a>
                     {% endif %}
                 </div>
-                <br>
                 {% if messages %}
                   {% for message in messages %}
                   <div class="row">
@@ -82,6 +81,12 @@
                                                       </tr>
                                                       <tr>
                                                         <th>Description</th><td> : {{ contrat.description }}</td>
+                                                      </tr>
+                                                      <tr>
+                                                        <th class="white-space">Date début</th><td> : {{ contrat.start_date|date:"Y-m-d" }}</td>
+                                                      </tr>
+                                                      <tr>
+                                                        <th class="white-space">Date fin</th><td> : {{ contrat.end_date|date:"Y-m-d" }}</td>
                                                       </tr>
                                                       <tr>
                                                       {% if contrat.status_signature %}

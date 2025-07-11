@@ -30,8 +30,9 @@
                         <thead>
                             <tr>
                                 <th>Id</th>
-                                <th>Salles</th>
-                                <th>NombreAbsences</th>
+                                <th>Salle</th>
+                                <th class="white-space">Nombre absences</th>
+                                <th class="white-space">Nombre motifs</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -40,13 +41,14 @@
                             {% if s.nb_absences_students %}
                             <tr>
                                 <td>{{ s.salle.id }}</td>
-                                <td>{{ s.salle }}</td>
+                                <td class="white-space">{{ s.salle }}</td>
                                 <td><span class="badge rounded-pill bg-secondary">{{ s.nb_absences_students }}</span></td>
+                                <td><span class="badge rounded-pill bg-warning">{{ s.nombre_motifs_students }}</span></td>
                                 <td>
                                     <a href="#"  data-bs-toggle="modal" data-bs-target="#detailModal{{ s.salle.id }}" title="Plus d'info" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
                                     <!-- Start de delete Modal -->
                                     <div class="modal fade" id="detailModal{{ s.salle.id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
                                           <div class="modal-content">
                                             <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
                                               <h5 class="modal-title">Détails des absences</h5>
@@ -56,9 +58,10 @@
                                               <div class="table-responsive">
                                                 <table class="table">
                                                   <tr>
-                                                    <th>Nom</th>
-                                                    <th>Prénom</th>
-                                                    <th>NombreAbsences</th>
+                                                    <th>Noms</th>
+                                                    <th>Prénoms</th>
+                                                    <th class="white-space">Nombre absences</th>
+                                                    <th class="white-space">Nombre motifs</th>
                                                     <th>Action</th>
                                                   </tr>
                                                   {% for a in s.students %}
@@ -66,6 +69,7 @@
                                                       <td>{{ a.student.lastname|title }}</td>
                                                       <td>{{ a.student.firstname|title }}</td>
                                                       <td><span class="badge rounded-pill bg-secondary">{{ a.nb_absences }}</span></td>
+                                                      <td><span class="badge rounded-pill bg-warning">{{ a.nb_motifs_absence }}</span></td>
                                                       <td>
                                                         <a href="{% url 'abs_student_mat_user' a.student.id|crypter_id %}" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i> PlusInfo</a>
                                                       </td>

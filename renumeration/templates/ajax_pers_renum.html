@@ -21,45 +21,43 @@
                 {% if r.status == "Payé" %}
                     <td><span class="badge bg-success">{{ r.status }}</span></td>
                     <td>
-                        <td><span class="badge bg-success">{{ r.status }}</span></td>
-                    <td>
                         <a href="#"  data-bs-toggle="modal" data-bs-target="#renumEnseignantFondamentalModal{{ r.enseignant.id }}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
                         <!-- Start de delete Modal -->
                         <div class="modal fade" id="renumEnseignantFondamentalModal{{ r.enseignant.id }}" tabindex="-1">
                             <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
-                                <h5 class="modal-title text-center">Rénumération de {{ enseignant.last_name|title }} {{ enseignant.first_name|title }}</span></h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <h5 class="modal-title text-center">Rénumération de {{ r.enseignant.last_name|title }} {{ r.enseignant.first_name|title }}</span></h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                <div class="card">
-                                    <div class="card-body">
-                                    <h3 class="card-title">{{ month }}</h3>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                        <tr>
-                                            <th class="white-space">Montant ({{ setting.devise }})</th>
-                                            <th>Indemnité ({{ setting.devise }})</th>
-                                            <th class="white-space">Date de paye</th>
-                                            <th class="white-space">Mode paiement</th>
-                                            <th>Gestionnaire</th>
-                                        </tr>
-                                        <tr>
-                                            <td>{{ r.renumeration.amount }}</td>
-                                            <td>{{ r.renumeration.indemnite }}</td>
-                                            <td class="white-space">{{ renumeration.date|date:"d/m/Y" }}</td>
-                                            <td>{{renumeration.mode_payment }}</td>
-                                            <td class="white-space">{{ r.renumeration.responsable.last_name|title }} - {{ r.renumeration.responsable.first_name|title }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="4" class="text-center">Salaire net ({{ setting.devise }})</td>
-                                            <td class="text-success"><b>{{ net_payer|floatformat:2 }}</b></td>
-                                        </tr>
-                                        </table>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h3 class="card-title">{{ month }}</h3>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                <tr>
+                                                    <th class="white-space">Montant ({{ setting.devise }})</th>
+                                                    <th>Indemnité ({{ setting.devise }})</th>
+                                                    <th class="white-space">Date de paye</th>
+                                                    <th class="white-space">Mode paiement</th>
+                                                    <th>Gestionnaire</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{ r.renumeration.amount }}</td>
+                                                    <td>{{ r.renumeration.indemnite }}</td>
+                                                    <td class="white-space">{{ r.renumeration.date|date:"d/m/Y" }}</td>
+                                                    <td>{{ r.renumeration.mode_payment }}</td>
+                                                    <td class="white-space">{{ r.renumeration.responsable.last_name|title }} - {{ r.renumeration.responsable.first_name|title }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="4" class="text-center">Salaire net ({{ setting.devise }})</td>
+                                                    <td class="text-success"><b>{{ net_payer|floatformat:2 }}</b></td>
+                                                </tr>
+                                                </table>
+                                            </div>
+                                        </div>
                                     </div>
-                                    </div>
-                                </div>
                                 </div>
                                 <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button></div>
@@ -73,6 +71,8 @@
                     <td>
                         <a href="{% url 'renum/add_renum_ad' r.enseignant.id|crypter_id month|crypter_id r.type_renumeration|crypter_id %}" class="btn btn-primary btn-sm"><i class="bi-plus-circle"></i></a>
                     </td>
+                    {% else %}
+                    <td></td>
                     {% endif %}
                 {% endif %}
             </tr>

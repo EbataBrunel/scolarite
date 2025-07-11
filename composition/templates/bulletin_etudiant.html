@@ -86,15 +86,19 @@
 </head>
 <body>
   <div class="bulletin">
+    {% if base64_image_student %}
     <div class="student-photo">
       <img src="data:image/png;base64,{{ base64_image_student }}" alt="Photo">
     </div>
+    {% endif %}
     <div class="header">
+      {% if base64_image %}
       <img src="data:image/png;base64,{{ base64_image }}" alt="Logo" class="logo">
+      {% endif %}
       <div class="header-center">
         <h2>BULLETIN DE NOTES DU {{ trimestre|upper }}</h2>
         <p>Année scolaire: {{ anneeacademique.annee_debut }} {{ anneeacademique.separateur }} {{ anneeacademique.annee_fin }}</p>
-        <p>Complexe scolaire {{ setting.appname }}, 75008 PARIS - Tél: {{ setting.phone }} - Email: {{ setting.email }}</p>
+        <p>Complexe scolaire {{ setting.appname }}, {{ setting.address }} - Tél: {{ setting.phone }} - Email: {{ setting.email }}</p>
       </div>
     </div>
 
@@ -183,12 +187,12 @@
     </table>
 
     <div class="footer">
-      <div>Fais à Brazzaville, le {{ date_actuelle|date:"d/m/Y" }}</div>
+      <div>Fais à {{ anneeacademique.etablissement.ville|title }}, le {{ date_actuelle|date:"d/m/Y" }}</div>
     </div>
 
     <div class="summary">
       {% if moyenne_generale >= 12 %}
-      Excellent trimestre pour {{ inscription.student.firstname|title }} {{ inscription.student.lastname|title }}. Au delà de ses très bons résultats homogènes, {{ inscription.student.firstname }} fait preuve d'une maturité et d'une autonomie de travail à la hauteur de sa réussite académique. Bravo !
+      Excellent trimestre pour {{ inscription.student.firstname|title }} {{ inscription.student.lastname|title }}. Au delà de ses très bons résultats homogènes, {{ inscription.student.lastname|title }} {{ inscription.student.firstname|title }} fait preuve d'une maturité et d'une autonomie de travail à la hauteur de sa réussite académique. Bravo !
       {% endif %}
     </div>
   </div>

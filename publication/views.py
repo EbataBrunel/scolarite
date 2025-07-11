@@ -1,6 +1,5 @@
 # Importation des modules standards
 import bleach
-import hashlib
 import os
 # Importation des modules tiers
 from django.shortcuts import render, redirect
@@ -15,17 +14,16 @@ from .models import Publication
 from salle.models import Salle
 from inscription.models import Inscription
 from anneeacademique.models import AnneeCademique
+from renumeration.models import Contrat
 from school.views import get_setting
-from app_auth.decorator import unauthenticated_customer
-from scolarite.utils.crypto import dechiffrer_param
+from school.methods import get_file_hash
+from app_auth.decorator import allowed_users, unauthenticated_customer
+from scolarite.utils.crypto import chiffrer_param, dechiffrer_param
 
-def get_file_hash(file):
-    hash_md5 = hashlib.md5() # Cette objet de MD5 servira de stocker et calculer l'empreinte MD5.
-    for chunk in file.chunks(): # Parcourir le fichier par morceau pour ne pas surcherger la memoire
-        hash_md5.update(chunk) # Ajout de chaque morceau au calcul de hash et en mettant en même à jour le hash
-    return hash_md5.hexdigest() # retourner l'empreinte MD5 sous forme de chaîne hexadécimale
+permission = ["Promoteur", "Directeur Général", "Directeur des Etudes", "Gestionnaire"]
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def publications(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -51,7 +49,8 @@ def publications(request):
     }
     return render(request, "publications.html", context=context)
         
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def detail_publication(request, salle_id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     id = int(dechiffrer_param(str(salle_id)))
@@ -60,7 +59,7 @@ def detail_publication(request, salle_id):
     if setting is None:
         return redirect("settings/maintenance")
     
-    publications = Publication.objects.filter(anneeacademique_id=anneeacademique_id, salle_id=id)
+    publications = Publication.objects.filter(anneeacademique_id=anneeacademique_id, salle_id=id).select_related("user")
     anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id) 
     context = {
         "setting": setting,
@@ -70,7 +69,8 @@ def detail_publication(request, salle_id):
     }   
     return render(request, "detail_publication.html", context)
     
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def add_publication(request):
     classe_id = request.session.get('classe_id')
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -134,15 +134,19 @@ def add_publication(request):
                         "message": "L'insertion a échouée."})
                 
     salles = Salle.objects.filter(classe_id=classe_id)
-
-    context={
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
+    context = {
         "setting": setting,
-        "salles": salles
+        "salles": salles,
+        "contrat": contrat
     }
     return render(request, "add_publication.html", context)
                 
                 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def edit_publication(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -154,16 +158,19 @@ def edit_publication(request,id):
     classe_id = request.session.get('classe_id')
    
     salles = Salle.objects.filter(classe_id=classe_id).exclude(id=publication.salle.id)
-                 
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()             
     context = {
         "setting": setting,
         "publication": publication,
-        "salles": salles
+        "salles": salles,
+        "contrat": contrat
     }
     return render(request, "edit_publication.html", context)
 
-
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def edit_pub(request):
    anneeacademique_id = request.session.get('anneeacademique_id') 
    if request.method == "POST":
@@ -232,25 +239,35 @@ def edit_pub(request):
                 "status": "success",
                 "message": "Publication modifiée avec succès."})
 
-@login_required(login_url='connection/login')        
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)       
 def del_publication(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
     if setting is None:
         return redirect("settings/maintenance")
     
-    publication_id = int(dechiffrer_param(str(id)))
-    publication = Publication.objects.get(id=publication_id)
-    # Nombre de publications avant la suppression
-    count0 = Publication.objects.all().count()
-    pub_student.delete()
-    # Nombre de publications après la suppression
-    count1 = Publication.objects.all().count()
-    if count1 < count0: 
-        messages.success(request, "Elément supprimé avec succès.")
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
+    if contrat and contrat.status_signature:
+        publication_id = int(dechiffrer_param(str(id)))
+        publication = Publication.objects.get(id=publication_id)
+        # Nombre de publications avant la suppression
+        count0 = Publication.objects.all().count()
+        pub_student.delete()
+        # Nombre de publications après la suppression
+        count1 = Publication.objects.all().count()
+        if count1 < count0: 
+            messages.success(request, "Elément supprimé avec succès.")
+        else:
+            messages.error(request, "La suppression a échouée.")
+        return redirect("detail_publication", chiffrer_param(str(publication.salle.id)))
     else:
-        messages.error(request, "La suppression a échouée.")
-    return redirect("detail_publication", publication.salle.id)
+        messages.error(request, "Veuillez signer votre contrat avant de procéder à la suppression d’un programme.")
+        return redirect("detail_publication", chiffrer_param(str(publication.salle.id)))
+    
+
 
 @unauthenticated_customer
 def pub_student(request):

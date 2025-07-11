@@ -37,5 +37,8 @@ urlpatterns = [
     path("settings/ajax_delete_new_user/<int:id>", ajax_delete_new_user, name="ajax_delete_new_user"),
     path("settings/ajax_group_new_user/<int:id>", ajax_group_new_user, name="ajax_group_new_user"),
     path("add_new_user_to_group", add_new_user_to_group, name="add_new_user_to_group"),
-    path("send_message/<int:id>", send_message, name="send_message")
+    
+    path("settings/alert_signature_contrat", alert_signature_contrat, name="alert_signature_contrat"),
+    path("settings/dashboard/<str:id>/alert_signature_contrat_de", alert_signature_contrat_de, name="alert_signature_contrat_de"),
+    path("send_message", send_message, name="send_message")
 ]

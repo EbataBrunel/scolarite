@@ -20,7 +20,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if 'settings/dashboard' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">
+            <a class="nav-link {% if 'settings/dashboard' in request.path or 'user/profile' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">
               <i class="bi bi-grid"></i>
               <span>Tableau de bord</span>
             </a>
@@ -56,17 +56,17 @@
 
           <li class="nav-item">
             <a class="nav-link {% if 'trimestre/trimestres' in request.path or 'trimestre/add_trimestre' in request.path or 'trimestre/edit_trimestre' in request.path or 'evenement/evenements' in request.path or 'evenement/add_evenement' in request.path or 'evenement/edit_evenement' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#calendar-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-calendar"></i><span>Gestion de calendriers</span><i class="bi bi-chevron-down ms-auto"></i>
+              <i class="bi bi-calendar"></i><span>Calendriers</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="calendar-nav" class="nav-content collapse {% if 'trimestre/trimestres' in request.path or 'trimestre/add_trimestre' in request.path or 'trimestre/edit_trimestre' in request.path or 'evenement/evenements' in request.path or 'evenement/add_evenement' in request.path or 'evenement/edit_evenement' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{% url 'trimestre/trimestres' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Trimestres</span>
+                  <i class="bi bi-circle"></i><span>Gestion de trimestres</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'evenement/evenements' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Evenements</span>
+                  <i class="bi bi-circle"></i><span>Gestion d'événements</span>
                 </a>
               </li>
             </ul>
@@ -77,7 +77,27 @@
               <span>Salles</span>
             </a>
           </li><!-- End Profile Page Nav -->
-
+          {% if request.session.cycle_lib == "Lycée" %}
+          <li class="nav-item">
+            <a class="nav-link {% if 'series_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'series_admin' %}">
+              <i class="bi bi-menu-button-wide"></i>
+              <span>Séries</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'matieres_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'matieres_admin' %}">
+              <i class="bi bi-card-list"></i>
+              <span>Matières</span>
+            </a>
+          </li><!-- End Register Page Nav -->
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link {% if 'matieres_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'matieres_admin' %}">
+              <i class="bi bi-card-list"></i>
+              <span>Matières</span>
+            </a>
+          </li><!-- End Register Page Nav -->
+          {% endif %}
           <li class="nav-item">
             <a class="nav-link {% if 'inscriptions' in request.path or 'detail_inscription' in request.path or 'add_inscription' in request.path or 'edit_inscription' in request.path or 'inscription_parents' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#inscription-nav" data-bs-toggle="collapse" href="#">
               <i class="bi bi-file-break-fill"></i><span>Inscriptions</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -104,7 +124,7 @@
           </li><!-- End Register Page Nav -->
 
           <li class="nav-item">
-            <a class="nav-link {% if 'enseignements' in request.path or 'trim_enseignement' in request.path or 'detail_enseignement' in request.path or 'add_enseignement' in request.path or 'edit_enseignement' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'enseignements' %}">
+            <a class="nav-link {% if 'enseignements' in request.path or 'trim_enseignement' in request.path or 'detail_enseignement' in request.path or 'add_enseignement' in request.path or 'edit_enseignement' in request.path or 'droit_eval' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'enseignements' %}">
               <i class="bi bi-file-earmark"></i>
               <span>Enseignements</span>
             </a>
@@ -116,32 +136,6 @@
               <span>Emploi du temps</span>
             </a>
           </li><!-- End Error Emploi du temps Nav -->
-          {% if request.session.cycle_lib == "Lycée" %}
-          <li class="nav-item">
-            <a class="nav-link {% if 'matieres_admin' in request.path or 'series_admin' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-menu-button-wide"></i><span>Matières & Séries</span><i class="bi bi-chevron-down ms-auto"></i>
-            </a>
-            <ul id="components-nav" class="nav-content collapse {% if 'matieres_admin' in request.path or 'series_admin' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
-              <li>
-                <a href="{% url 'matieres_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Matières</span>
-                </a>
-              </li>
-              <li>
-                <a href="{% url 'series_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Séries</span>
-                </a>
-              </li>
-            </ul>
-          </li><!-- End Components Nav -->
-          {% else %}
-          <li class="nav-item">
-            <a class="nav-link {% if 'matieres_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'matieres_admin' %}">
-              <i class="bi bi-card-list"></i>
-              <span>Matières</span>
-            </a>
-          </li><!-- End Register Page Nav -->
-          {% endif %}
           <li class="nav-item">
             <a class="nav-link {% if 'autorisation/autorisation_payments' in request.path or 'autorisation/add_autorisation_payment' in request.path or 'autorisation/edit_autorisation_payment' in request.path or 'autorisation_paye_salle/autorisation_payments_salle'  in request.path or 'autorisation_paye_salle/add_autorisation_payment_salle' in request.path or 'autorisation_paye_salle/edit_autorisation_payment_salle' in request.path or 'payments' in request.path or 'students_payments' in request.path or 'add_payment' in request.path or 'edit_payment' in request.path or 'detail_payment' in request.path or 'dette_parents' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-payment" data-bs-toggle="collapse" href="#">
               <i class="bi bi-cash"></i><span>Gestion des paiements</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -174,22 +168,22 @@
 
           <li class="nav-item">
             <a class="nav-link {% if 'compositions' in request.path or 'add_composition' in request.path or 'edit_composition' in request.path or 'detail_cmp_salle'  in request.path or 'detail_cmp_trimestre' in request.path or 'detail_comp_student' in request.path or 'detail_comp_matiere' in request.path or 'comp_deliberation' in request.path or 'comp_resultat' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-layout-text-window-reverse"></i><span>Gestion des examens</span><i class="bi bi-chevron-down ms-auto"></i>
+              <i class="bi bi-layout-text-window-reverse"></i><span>Examens</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="tables-nav" class="nav-content collapse {% if 'compositions' in request.path or 'add_composition' in request.path or 'edit_composition' in request.path or 'detail_cmp_salle'  in request.path or 'detail_cmp_trimestre' in request.path or 'detail_comp_student' in request.path or 'detail_comp_matiere' in request.path or 'comp_deliberation' in request.path or 'comp_resultat' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{% url 'compositions' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Compositions</span>
+                  <i class="bi bi-circle"></i><span>Gestion des compositions</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'comp_deliberation' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Délibération</span>
+                  <i class="bi bi-circle"></i><span>Délibération des résultats</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'comp_resultat' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Résultats</span>
+                  <i class="bi bi-circle"></i><span>Résultats des examens</span>
                 </a>
               </li>
             </ul>
@@ -197,12 +191,17 @@
 
           <li class="nav-item">
             <a class="nav-link {% if 'absences' in request.path or 'detail_salle_absence' in request.path or 'detail_absences' in request.path or 'edit_absence'  in request.path or 'abs_student_user' in request.path or 'abs_student_mat_user' in request.path or 'absence_admin' in request.path or 'edit_absence_admin' in request.path or 'add_absence_admin' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-gem"></i><span>Gestion des absences</span><i class="bi bi-chevron-down ms-auto"></i>
+              <i class="bi bi-gem"></i><span>Absences</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="icons-nav" class="nav-content collapse {% if 'absences' in request.path or 'detail_salle_absence' in request.path or 'detail_absences' in request.path or 'edit_absence'  in request.path or 'abs_student_user' in request.path or 'abs_student_mat_user' in request.path or 'absence_admin' in request.path or 'edit_absence_admin' in request.path or 'add_absence_admin' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
+                <a href="{% url 'absences_admin' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Gestion des absences des admin</span>
+                </a>
+              </li>
+              <li>
                 <a href="{% url 'absences' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Absences des enseignants</span>
+                  <i class="bi bi-circle"></i><span>Gestion des absences des enseignants</span>
                 </a>
               </li>
               <li>
@@ -210,17 +209,12 @@
                   <i class="bi bi-circle"></i><span>Absences des élèves</span>
                 </a>
               </li>
-              <li>
-                <a href="{% url 'absences_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Absences du Personnel</span>
-                </a>
-              </li>
             </ul>
           </li><!-- End Icons Nav -->
 
           <li class="nav-item">
             <a class="nav-link {% if 'emargements' in request.path or 'salles_emargements' in request.path or 'matieres_emargements' in request.path or 'months_emargements'  in request.path or 'detail_emargements' in request.path or 'edit_emargement' in request.path or 'heures_emargements' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-emar" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-inboxes-fill"></i><span>Gestion d'émargements</span><i class="bi bi-chevron-down ms-auto"></i>
+              <i class="bi bi-inboxes-fill"></i><span>Emargements</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="icons-emar" class="nav-content collapse {% if 'emargements' in request.path or 'salles_emargements' in request.path or 'matieres_emargements' in request.path or 'months_emargements'  in request.path or 'detail_emargements' in request.path or 'edit_emargement' in request.path or 'heures_emargements' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
@@ -237,61 +231,61 @@
           </li><!-- End Icons Nav -->
 
           <li class="nav-item">
-            <a class="nav-link {% if 'contrat/contrats' in request.path or 'contrat/add_contrat' in request.path or 'contrat/edit_contrat' in request.path or 'renumerations' in request.path  or 'renum/renum_admin'  in request.path or 'renum/add_renum_admin' in request.path or 'renum/edit_renum_admin' in request.path or 'renum/mes_renum_admin' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-renum" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-cash-coin"></i><span>Gestion des rénum</span><i class="bi bi-chevron-down ms-auto"></i>
+            <a class="nav-link {% if 'contrat/contrats' in request.path or 'contrat/add_contrat' in request.path or 'contrat/edit_contrat' in request.path or 'remun_enseignant/remunerations_enseignants' in request.path  or 'renum/renum_admin'  in request.path or 'renum/add_renum_admin' in request.path or 'renum/edit_renum_admin' in request.path or 'renum/mes_renum_admin' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-renum" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-cash-coin"></i><span>Rémunérations</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-            <ul id="icons-renum" class="nav-content collapse {% if 'contrat/contrats' in request.path or 'contrat/add_contrat' in request.path or 'contrat/edit_contrat' in request.path or 'renum/renum_admin'  in request.path or 'renumerations' in request.path  or 'renum/add_renum_admin' in request.path or 'renum/edit_renum_admin' in request.path or 'renum/mes_renum_admin' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+            <ul id="icons-renum" class="nav-content collapse {% if 'contrat/contrats' in request.path or 'contrat/add_contrat' in request.path or 'contrat/edit_contrat' in request.path or 'renum/renum_admin'  in request.path or 'remun_enseignant/remunerations_enseignants' in request.path  or 'renum/add_renum_admin' in request.path or 'renum/edit_renum_admin' in request.path or 'renum/mes_renum_admin' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{% url 'contrat/contrats' %}" class="{{ setting.text_color }}">
                   <i class="bi bi-circle"></i><span>contrats</span>
                 </a>
               </li>
               <li>
-                <a href="{% url 'renum/renum_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Administrateurs</span>
-                </a>
-              </li>
-              <li>
-                <a href="{% url 'renumerations' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Enseignants</span>
-                </a>
-              </li>
-              <li>
                 <a href="{% url 'renum/mes_renum_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Mes rénumerations</span>
+                  <i class="bi bi-circle"></i><span>Mes rémunérations</span>
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'renum/renum_admin' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Gestion des rémunérations des administarteurs</span>
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'remun_enseignant/remunerations_enseignants' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Gestion des rémunérations des enseignants</span>
                 </a>
               </li>
             </ul>
           </li><!-- End Icons Nav -->
           
           <li class="nav-item">
-            <a class="nav-link {% if 'comptabilite_inscription' in request.path or 'comptabilite_payment' in request.path or 'personnel_renum' in request.path or 'recapitulatif'  in request.path or 'caisse' in request.path or 'recap_emargement' in request.path or 'add_renumeration' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-comp" data-bs-toggle="collapse" href="#">
+            <a class="nav-link {% if 'comptabilite_inscription' in request.path or 'comptabilite_payment' in request.path or 'comptabilite_remuneration' in request.path or 'recapitulatif'  in request.path or 'caisse' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-comp" data-bs-toggle="collapse" href="#">
               <i class="bi bi-door-closed-fill"></i><span>Comptabilité</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-            <ul id="icons-comp" class="nav-content collapse {% if 'comptabilite_inscription' in request.path or 'comptabilite_payment' in request.path or 'personnel_renum' in request.path or 'recapitulatif'  in request.path or 'caisse' in request.path or 'recap_emargement' in request.path or 'add_renumeration' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+            <ul id="icons-comp" class="nav-content collapse {% if 'comptabilite_inscription' in request.path or 'comptabilite_payment' in request.path or 'comptabilite_remuneration' in request.path or 'recapitulatif'  in request.path or 'caisse' in request.path  %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{% url 'comptabilite_inscription' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Inscriptions</span>
+                  <i class="bi bi-circle"></i><span>Comptabilisation des inscriptions</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'comptabilite_payment' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Paiements</span>
+                  <i class="bi bi-circle"></i><span>Comptabilisation des paiements</span>
                 </a>
               </li>
               <li>
-                <a href="{% url 'personnel_renum' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Rénumerations</span>
+                <a href="{% url 'comptabilite_remuneration' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Comptabilisation des rémunérations</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'recapitulatif' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Récapitulatif & Récette</span>
+                  <i class="bi bi-circle"></i><span>Bilan et Recette</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'caisse' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Caisse</span>
+                  <i class="bi bi-circle"></i><span>Solde de la caisse</span>
                 </a>
               </li>
             </ul>
@@ -354,7 +348,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if 'settings/dashboard' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">
+            <a class="nav-link {% if 'settings/dashboard' in request.path or 'user/profile' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">
               <i class="bi bi-grid"></i>
               <span>Tableau de bord</span>
             </a>
@@ -362,7 +356,7 @@
           
           <li class="nav-item">
             <a class="nav-link {% if 'user/admin' in request.path or 'teacher/teachers' in request.path or 'parent/parents' in request.path or 'student/students' in request.path or 'user/detail_admin' in request.path or 'teacher/detail_teacher' in request.path or 'parent/detail_parent' in request.path or 'student/detail_student' in request.path or 'parent/add_parent' in request.path or 'parent/edit_parent' in request.path or 'student/add_student' in request.path or 'student/edit_student' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-people"></i><span>Gestion des utilisateurs</span><i class="bi bi-chevron-down ms-auto"></i>
+              <i class="bi bi-people"></i><span>Utilisateurs</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="forms-nav" class="nav-content collapse {% if 'user/admin' in request.path or 'teacher/teachers' in request.path or 'parent/parents' in request.path or 'student/students' in request.path or 'user/detail_admin' in request.path or 'teacher/detail_teacher' in request.path or 'parent/detail_parent' in request.path or 'student/detail_student' in request.path or 'parent/add_parent' in request.path or 'parent/edit_parent' in request.path or 'student/add_student' in request.path or 'student/edit_student' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
@@ -375,62 +369,74 @@
                   <i class="bi bi-circle"></i><span>Enseignants</span>
                 </a>
               </li>
-              <li>
-                <a href="{% url 'parent/parents' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Parents</span>
-                </a>
-              </li>
-              <li>
-                <a href="{% url 'student/students' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Elèves</span>
-                </a>
-              </li>
             </ul>
           </li><!-- End Forms Nav -->
 
           <li class="nav-item">
-            <a class="nav-link {% if 'trimestre/trimestres' in request.path or 'trimestre/add_trimestre' in request.path or 'trimestre/edit_trimestre' in request.path or 'evenement/evenements' in request.path or 'evenement/add_evenement' in request.path or 'evenement/edit_evenement' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#calendar-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-calendar"></i><span>Gestion de calendriers</span><i class="bi bi-chevron-down ms-auto"></i>
+            <a class="nav-link {% if 'inscriptions' in request.path or 'detail_inscription' in request.path or 'add_inscription' in request.path or 'edit_inscription' in request.path or 'inscription_parents' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#inscription-nav" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-file-break-fill"></i><span>Inscriptions</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-            <ul id="calendar-nav" class="nav-content collapse {% if 'trimestre/trimestres' in request.path or 'trimestre/add_trimestre' in request.path or 'trimestre/edit_trimestre' in request.path or 'evenement/evenements' in request.path or 'evenement/add_evenement' in request.path or 'evenement/edit_evenement' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+            <ul id="inscription-nav" class="nav-content collapse {% if 'inscriptions' in request.path or 'detail_inscription' in request.path or 'add_inscription' in request.path or 'edit_inscription' in request.path or 'inscription_parents' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
-                <a href="{% url 'trimestre/trimestres' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Trimestre</span>
+                <a href="{% url 'inscriptions' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Elèves</span>
                 </a>
               </li>
               <li>
-                <a href="{% url 'evenement/evenements' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Evenements</span>
+                <a href="{% url 'inscription_parents' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Parents</span>
                 </a>
               </li>
             </ul>
           </li><!-- End Components Nav -->
-
+          <li class="nav-item">
+            <a class="nav-link {% if 'series_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'series_admin' %}">
+              <i class="bi bi-menu-button-wide"></i>
+              <span>Séries</span>
+            </a>
+          </li><!-- End Profile Page Nav -->
           <li class="nav-item">
             <a class="nav-link {% if 'salles_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'salles_admin' %}">
               <i class="bi bi-shop"></i>
               <span>Salles</span>
             </a>
           </li><!-- End Profile Page Nav -->
-
           <li class="nav-item">
-            <a class="nav-link {% if 'inscriptions' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'inscriptions' %}">
-              <i class="bi bi-file-break-fill"></i>
-              <span>Inscriptions</span>
+            <a class="nav-link {% if 'matieres_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'matieres_admin' %}">
+              <i class="bi bi-list"></i>
+              <span>Matières</span>
             </a>
-          </li><!-- End F.A.Q Page Nav -->
+          </li><!-- End Profile Page Nav -->
 
           <li class="nav-item">
             <a class="nav-link {% if 'programmes' in request.path or 'detail_programme' in request.path or 'add_programme' in request.path or 'edit_programme' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'programmes' %}">
               <i class="bi bi-card-list"></i>
-              <span>Programmes</span>
+              <span>Gestion des programmes</span>
             </a>
           </li><!-- End Register Page Nav -->
 
           <li class="nav-item">
-            <a class="nav-link {% if 'enseignements' in request.path or 'trim_enseignement' in request.path or 'detail_enseignement' in request.path or 'add_enseignement' in request.path or 'edit_enseignement' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'enseignements' %}">
+            <a class="nav-link {% if 'contrat/contrats' in request.path or 'contrat/add_contrat' in request.path or 'contrat/edit_contrat' in request.path or 'contrat/contrat_user' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-contrat" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-cash"></i><span>Gestion des contrats</span><i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+            <ul id="icons-contrat" class="nav-content collapse {% if 'contrat/contrats' in request.path or 'contrat/add_contrat' in request.path or 'contrat/edit_contrat' in request.path or 'contrat/contrat_user' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+              <li>
+                <a href="{% url 'contrat/contrats_user' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Mes contrats</span>
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'contrat/contrats' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Contrats enseignants</span>
+                </a>
+              </li>
+            </ul>
+          </li><!-- End Icons Nav -->
+
+          <li class="nav-item">
+            <a class="nav-link {% if 'enseignements' in request.path or 'trim_enseignement' in request.path or 'detail_enseignement' in request.path or 'add_enseignement' in request.path or 'edit_enseignement' in request.path or 'droit_eval' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'enseignements' %}">
               <i class="bi bi-file-earmark"></i>
-              <span>Enseignements</span>
+              <span>Gestion des enseignements</span>
             </a>
           </li><!-- End Blank Page Nav -->
 
@@ -442,18 +448,18 @@
           </li><!-- End Error Emploi du temps Nav -->
 
           <li class="nav-item">
-            <a class="nav-link {% if 'matieres_admin' in request.path or 'series_admin' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-menu-button-wide"></i><span>Matières & Séries</span><i class="bi bi-chevron-down ms-auto"></i>
+            <a class="nav-link {% if 'trimestre/trimestres' in request.path or 'trimestre/add_trimestre' in request.path or 'trimestre/edit_trimestre' in request.path or 'evenement/evenements' in request.path or 'evenement/add_evenement' in request.path or 'evenement/edit_evenement' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#calendar-nav" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-calendar"></i><span>Calendrier</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-            <ul id="components-nav" class="nav-content collapse {% if 'matieres_admin' in request.path or 'series_admin' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+            <ul id="calendar-nav" class="nav-content collapse {% if 'trimestre/trimestres' in request.path or 'trimestre/add_trimestre' in request.path or 'trimestre/edit_trimestre' in request.path or 'evenement/evenements' in request.path or 'evenement/add_evenement' in request.path or 'evenement/edit_evenement' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
-                <a href="{% url 'matieres_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Matières</span>
+                <a href="{% url 'trimestre/trimestres' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Gestion de trimestres</span>
                 </a>
               </li>
               <li>
-                <a href="{% url 'series_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Séries</span>
+                <a href="{% url 'evenement/evenements' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Gestion d'événements</span>
                 </a>
               </li>
             </ul>
@@ -461,17 +467,12 @@
 
           <li class="nav-item">
             <a class="nav-link {% if 'compositions' in request.path or 'add_composition' in request.path or 'edit_composition' in request.path or 'detail_cmp_salle'  in request.path or 'detail_cmp_trimestre' in request.path or 'detail_comp_student' in request.path or 'detail_comp_matiere' in request.path or 'comp_deliberation' in request.path or 'comp_resultat' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-layout-text-window-reverse"></i><span>Gestion des examens</span><i class="bi bi-chevron-down ms-auto"></i>
+              <i class="bi bi-layout-text-window-reverse"></i><span>Examens</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="tables-nav" class="nav-content collapse {% if 'compositions' in request.path or 'add_composition' in request.path or 'edit_composition' in request.path or 'detail_cmp_salle'  in request.path or 'detail_cmp_trimestre' in request.path or 'detail_comp_student' in request.path or 'detail_comp_matiere' in request.path or 'comp_deliberation' in request.path or 'comp_resultat' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{% url 'compositions' %}" class="{{ setting.text_color }}">
                   <i class="bi bi-circle"></i><span>Compositions</span>
-                </a>
-              </li>
-              <li>
-                <a href="{% url 'comp_deliberation' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Délibération</span>
                 </a>
               </li>
               <li>
@@ -484,12 +485,17 @@
 
           <li class="nav-item">
             <a class="nav-link {% if 'absences' in request.path or 'detail_salle_absence' in request.path or 'detail_absences' in request.path or 'edit_absence'  in request.path or 'abs_student_user' in request.path or 'abs_student_mat_user' in request.path or 'absence_admin' in request.path or 'edit_absence_admin' in request.path or 'add_absence_admin' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-gem"></i><span>Gestion des absences</span><i class="bi bi-chevron-down ms-auto"></i>
+              <i class="bi bi-gem"></i><span>Absences</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="icons-nav" class="nav-content collapse {% if 'absences' in request.path or 'detail_salle_absence' in request.path or 'detail_absences' in request.path or 'edit_absence'  in request.path or 'abs_student_user' in request.path or 'abs_student_mat_user' in request.path or 'absence_admin' in request.path or 'edit_absence_admin' in request.path or 'add_absence_admin' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
+                <a href="{% url 'absences_admin' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Gestion des absences des admin</span>
+                </a>
+              </li>
+              <li>
                 <a href="{% url 'absences' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Absences des enseignants</span>
+                  <i class="bi bi-circle"></i><span>Gestion des absences des enseignants</span>
                 </a>
               </li>
               <li>
@@ -497,22 +503,17 @@
                   <i class="bi bi-circle"></i><span>Absences des élèves</span>
                 </a>
               </li>
-              <li>
-                <a href="{% url 'absences_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Absences du Personnel</span>
-                </a>
-              </li>
             </ul>
           </li><!-- End Icons Nav -->
 
           <li class="nav-item">
             <a class="nav-link {% if 'emargements' in request.path or 'salles_emargements' in request.path or 'matieres_emargements' in request.path or 'months_emargements'  in request.path or 'detail_emargements' in request.path or 'edit_emargement' in request.path or 'heures_emargements' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-emar" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-inboxes-fill"></i><span>Gestion d'émargements</span><i class="bi bi-chevron-down ms-auto"></i>
+              <i class="bi bi-inboxes-fill"></i><span>Emargements</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="icons-emar" class="nav-content collapse {% if 'emargements' in request.path or 'salles_emargements' in request.path or 'matieres_emargements' in request.path or 'months_emargements'  in request.path or 'detail_emargements' in request.path or 'edit_emargement' in request.path or 'heures_emargements' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{% url 'emargements' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Gestion d'émargements</span>
+                  <i class="bi bi-circle"></i><span>Gestion des émargements</span>
                 </a>
               </li>
               <li>
@@ -536,37 +537,23 @@
               </li>
             </ul>
           </li><!-- End Charts Nav -->
-
-          <li class="nav-heading">Pages</li>
-
           <li class="nav-item">
-            <a class="nav-link {% if 'contrat/contrats_user' in request.path or 'renum/mes_renum_admin' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-renum" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-cash-coin"></i><span>Gestion des rénum</span><i class="bi bi-chevron-down ms-auto"></i>
+            <a class="nav-link {% if 'renum/mes_renum_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'renum/mes_renum_admin' %}">
+              <i class="bi bi-cash-coin"></i>
+              <span>Mes rémunérations</span>
             </a>
-            <ul id="icons-renum" class="nav-content collapse {% if 'contrat/contrats_user' in request.path or 'renum/renum_admin' in request.path or 'renum/mes_renum_admin' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
-              <li>
-                <a href="{% url 'contrat/contrats_user' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Mes contrats</span>
-                </a>
-              </li>
-              <li>
-                <a href="{% url 'renum/mes_renum_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Mes rénumerations</span>
-                </a>
-              </li>
-            </ul>
-          </li><!-- End Icons Nav -->
+          </li><!-- End Error Emploi du temps Nav -->
           <li class="nav-item">
             <a class="nav-link {% if 'publications' in request.path or 'detail_publication' in request.path or 'add_publication' in request.path or 'edit_publication' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'publications' %}">
               <i class="bi bi-book"></i>
-              <span>Publications</span>
+              <span>Gestion des publications</span>
             </a>
           </li><!-- End Contact Page Nav -->
 
           <li class="nav-item">
             <a class="nav-link {% if 'activities' in request.path or 'detail_activity' in request.path or 'add_activity' in request.path or 'edit_activity' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'activities' %}">
               <i class="bi bi-gift-fill"></i>
-              <span>Activités</span>
+              <span>Gestion des activités</span>
             </a>
           </li><!-- End Contact Page Nav -->
 
@@ -585,7 +572,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if 'settings/dashboard' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">
+            <a class="nav-link {% if 'settings/dashboard' in request.path or 'user/profile' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">
               <i class="bi bi-grid"></i>
               <span>Tableau de bord</span>
             </a>
@@ -593,7 +580,7 @@
           
           <li class="nav-item">
             <a class="nav-link {% if 'user/admin' in request.path or 'teacher/teachers' in request.path or 'parent/parents' in request.path or 'student/students' in request.path or 'user/detail_admin' in request.path or 'teacher/detail_teacher' in request.path or 'parent/detail_parent' in request.path or 'student/detail_student' in request.path or 'parent/add_parent' in request.path or 'parent/edit_parent' in request.path or 'student/add_student' in request.path or 'student/edit_student' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-people"></i><span>Gestion des utilisateurs</span><i class="bi bi-chevron-down ms-auto"></i>
+              <i class="bi bi-people"></i><span>Utilisateurs</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="forms-nav" class="nav-content collapse {% if 'user/admin' in request.path or 'teacher/teachers' in request.path or 'parent/parents' in request.path or 'student/students' in request.path or 'user/detail_admin' in request.path or 'teacher/detail_teacher' in request.path or 'parent/detail_parent' in request.path or 'student/detail_student' in request.path or 'parent/add_parent' in request.path or 'parent/edit_parent' in request.path or 'student/add_student' in request.path or 'student/edit_student' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
@@ -608,34 +595,16 @@
               </li>
               <li>
                 <a href="{% url 'parent/parents' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Parents</span>
+                  <i class="bi bi-circle"></i><span>Gestion des parents</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'student/students' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Elèves</span>
+                  <i class="bi bi-circle"></i><span>Gestion des élèves</span>
                 </a>
               </li>
             </ul>
           </li><!-- End Forms Nav -->
-
-          <li class="nav-item">
-            <a class="nav-link {% if 'trimestre/trimestres' in request.path or 'trimestre/add_trimestre' in request.path or 'trimestre/edit_trimestre' in request.path or 'evenement/evenements' in request.path or 'evenement/add_evenement' in request.path or 'evenement/edit_evenement' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#calendar-nav" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-calendar"></i><span>Gestion de calendriers</span><i class="bi bi-chevron-down ms-auto"></i>
-            </a>
-            <ul id="calendar-nav" class="nav-content collapse {% if 'trimestre/trimestres' in request.path or 'trimestre/add_trimestre' in request.path or 'trimestre/edit_trimestre' in request.path or 'evenement/evenements' in request.path or 'evenement/add_evenement' in request.path or 'evenement/edit_evenement' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
-              <li>
-                <a href="{% url 'trimestre/trimestres' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Trimestre</span>
-                </a>
-              </li>
-              <li>
-                <a href="{% url 'evenement/evenements' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Evenements</span>
-                </a>
-              </li>
-            </ul>
-          </li><!-- End Components Nav -->
 
           <li class="nav-item">
             <a class="nav-link {% if 'salles_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'salles_admin' %}">
@@ -645,25 +614,22 @@
           </li><!-- End Profile Page Nav -->
 
           <li class="nav-item">
-            <a class="nav-link {% if 'inscriptions' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'inscriptions' %}">
-              <i class="bi bi-file-break-fill"></i>
-              <span>Inscriptions</span>
+            <a class="nav-link {% if 'inscriptions' in request.path or 'detail_inscription' in request.path or 'add_inscription' in request.path or 'edit_inscription' in request.path or 'inscription_parents' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#inscription-nav" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-file-break-fill"></i><span>Inscriptions</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-          </li><!-- End F.A.Q Page Nav -->
-
-          <li class="nav-item">
-            <a class="nav-link {% if 'programmes' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'programmes' %}">
-              <i class="bi bi-card-list"></i>
-              <span>Programmes</span>
-            </a>
-          </li><!-- End Register Page Nav -->
-
-          <li class="nav-item">
-            <a class="nav-link {% if 'enseignements' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'enseignements' %}">
-              <i class="bi bi-file-earmark"></i>
-              <span>Enseignements</span>
-            </a>
-          </li><!-- End Blank Page Nav -->
+            <ul id="inscription-nav" class="nav-content collapse {% if 'inscriptions' in request.path or 'detail_inscription' in request.path or 'add_inscription' in request.path or 'edit_inscription' in request.path or 'inscription_parents' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+              <li>
+                <a href="{% url 'inscriptions' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Gestion des inscriptions des élèves</span>
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'inscription_parents' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Parents des élèves actuellement inscrits</span>
+                </a>
+              </li>
+            </ul>
+          </li><!-- End Components Nav -->
 
           <li class="nav-item">
             <a class="nav-link {% if 'emploitemps' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'emploitemps' %}">
@@ -674,24 +640,24 @@
 
           <li class="nav-item">
             <a class="nav-link {% if 'autorisation/autorisation_payments' in request.path or 'autorisation/add_autorisation_payment' in request.path or 'autorisation/edit_autorisation_payment' in request.path or 'autorisation_paye_salle/autorisation_payments_salle'  in request.path or 'autorisation_paye_salle/add_autorisation_payment_salle' in request.path or 'autorisation_paye_salle/edit_autorisation_payment_salle' in request.path or 'payments' in request.path or 'students_payments' in request.path or 'add_payment' in request.path or 'edit_payment' in request.path or 'detail_payment' in request.path or 'dette_parents' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-payment" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-cash"></i><span>Gestion des paiements</span><i class="bi bi-chevron-down ms-auto"></i>
+              <i class="bi bi-cash"></i><span>Paiements</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="icons-payment" class="nav-content collapse {% if 'autorisation/autorisation_payments' in request.path or 'autorisation/add_autorisation_payment' in request.path or 'autorisation/edit_autorisation_payment' in request.path or 'autorisation_paye_salle/autorisation_payments_salle'  in request.path or 'autorisation_paye_salle/add_autorisation_payment_salle' in request.path or 'autorisation_paye_salle/edit_autorisation_payment_salle' in request.path or 'payments' in request.path or 'students_payments' in request.path or 'add_payment' in request.path or 'edit_payment' in request.path or 'detail_payment' in request.path or 'dette_parents' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{% url 'autorisation/autorisation_payments' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Autorisations élèves</span>
+                  <i class="bi bi-circle"></i><span>Gestion d'autorisations de paiements des élèves</span>
                 </a>
               </li>
 
               <li>
                 <a href="{% url 'autorisation_paye_salle/autorisation_payments_salle' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Autorisations salles</span>
+                  <i class="bi bi-circle"></i><span>Gestion d'autorisations de paiements des salles</span>
                 </a>
               </li>
 
               <li>
                 <a href="{% url 'payments' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Paiements</span>
+                  <i class="bi bi-circle"></i><span>Gestion des paiements</span>
                 </a>
               </li>
               <li>
@@ -703,10 +669,10 @@
           </li><!-- End Icons Nav -->
 
           <li class="nav-item">
-            <a class="nav-link {% if 'contrat/contrats_user' in request.path  or 'renum/renum_admin'  in request.path or 'renum/add_renum_admin' in request.path or 'renum/edit_renum_admin' in request.path or 'renum/mes_renum_admin' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-renum" data-bs-toggle="collapse" href="#">
-              <i class="bi bi-cash-coin"></i><span>Gestion des rénum</span><i class="bi bi-chevron-down ms-auto"></i>
+            <a class="nav-link {% if 'contrat/contrats_user' in request.path  or 'renum/renum_admin'  in request.path or 'renum/add_renum_admin' in request.path or 'renum/edit_renum_admin' in request.path or 'renum/mes_renum_admin' in request.path or 'remun_enseignant/remunerations_enseignants' in request.path or 'remun_enseignant/resume_remu_enseignant_seondaire' in request.path or 'remun_enseignant/add_remun_teacher_secondaire' in request.path or 'remun_enseignant/edit_remun_teacher_secondaire' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-renum" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-cash-coin"></i><span>Rémunérations</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-            <ul id="icons-renum" class="nav-content collapse {% if 'contrat/contrats_user' in request.path or 'renum/renum_admin'  in request.path or 'renum/add_renum_admin' in request.path or 'renum/edit_renum_admin' in request.path or 'renum/mes_renum_admin' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+            <ul id="icons-renum" class="nav-content collapse {% if 'contrat/contrats_user' in request.path or 'renum/renum_admin'  in request.path or 'renum/add_renum_admin' in request.path or 'renum/edit_renum_admin' in request.path or 'renum/mes_renum_admin' in request.path or 'remun_enseignant/remunerations_enseignants' in request.path or 'remun_enseignant/resume_remu_enseignant_seondaire' in request.path or 'remun_enseignant/add_remun_teacher_secondaire' in request.path or 'remun_enseignant/edit_remun_teacher_secondaire' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{% url 'contrat/contrats_user' %}" class="{{ setting.text_color }}">
                   <i class="bi bi-circle"></i><span>Mes contrats</span>
@@ -714,49 +680,61 @@
               </li>
               <li>
                 <a href="{% url 'renum/mes_renum_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Mes rénumerations</span>
+                  <i class="bi bi-circle"></i><span>Mes rémunérations</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'renum/renum_admin' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Rénumerations admin</span>
+                  <i class="bi bi-circle"></i><span>Gestion des rémunérations des administarteurs</span>
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'remun_enseignant/remunerations_enseignants' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Gestion des rémunérations des enseignants</span>
                 </a>
               </li>
             </ul>
           </li><!-- End Icons Nav -->
           
           <li class="nav-item">
-            <a class="nav-link {% if 'comptabilite_inscription' in request.path or 'comptabilite_payment' in request.path or 'personnel_renum' in request.path or 'recapitulatif'  in request.path or 'caisse' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-comp" data-bs-toggle="collapse" href="#">
+            <a class="nav-link {% if 'comptabilite_inscription' in request.path or 'comptabilite_payment' in request.path or 'comptabilite_remuneration' in request.path or 'recapitulatif'  in request.path or 'caisse' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-comp" data-bs-toggle="collapse" href="#">
               <i class="bi bi-door-closed-fill"></i><span>Comptabilité</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-            <ul id="icons-comp" class="nav-content collapse {% if 'comptabilite_inscription' in request.path or 'comptabilite_payment' in request.path or 'personnel_renum' in request.path or 'recapitulatif'  in request.path or 'caisse' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+            <ul id="icons-comp" class="nav-content collapse {% if 'comptabilite_inscription' in request.path or 'comptabilite_payment' in request.path or 'comptabilite_remuneration' in request.path or 'recapitulatif'  in request.path or 'caisse' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{% url 'comptabilite_inscription' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Inscriptions</span>
+                  <i class="bi bi-circle"></i><span>Comptabilisation des inscriptions</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'comptabilite_payment' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Paiements</span>
+                  <i class="bi bi-circle"></i><span>Comptabilisation des paiements</span>
                 </a>
               </li>
               <li>
-                <a href="{% url 'personnel_renum' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Rénumerations</span>
+                <a href="{% url 'comptabilite_remuneration' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Comptabilisation des rémunérations</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'recapitulatif' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Récapitulatif & Récette</span>
+                  <i class="bi bi-circle"></i><span>Bilan et Recette</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'caisse' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Caisse</span>
+                  <i class="bi bi-circle"></i><span>Solde de la caisse</span>
                 </a>
               </li>
             </ul>
           </li><!-- End Icons Nav -->
+
+          <li class="nav-item">
+            <a class="nav-link {% if 'mes_absences_admin' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'mes_absences_admin' %}">
+              <i class="bi bi-gem"></i>
+              <span>Mes absences</span>
+            </a>
+          </li><!-- End Contact Page Nav -->
 
           <li class="nav-item">
             <a class="nav-link {% if 'stat_composition' in request.path or 'apercu_global' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
@@ -765,43 +743,41 @@
             <ul id="charts-nav" class="nav-content collapse {% if 'stat_composition' in request.path or 'apercu_global' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
               <li>
                 <a href="{% url 'stat_composition' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Composition</span>
+                  <i class="bi bi-circle"></i><span>Statistiques des examens scolaires</span>
                 </a>
               </li>
               <li>
                 <a href="{% url 'apercu_global' %}" class="{{ setting.text_color }}">
-                  <i class="bi bi-circle"></i><span>Aperçu global</span>
+                  <i class="bi bi-circle"></i><span>Bilan global des recettes</span>
                 </a>
               </li>
             </ul>
           </li><!-- End Charts Nav -->
 
-          <li class="nav-heading">Pages</li>
-
           <li class="nav-item">
             <a class="nav-link {% if 'depenses' in request.path or 'add_depense' in request.path or 'edit_depense' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'depenses' %}">
               <i class="bi bi-hdd-fill"></i>
-              <span>Dépenses</span>
+              <span>Gestion des dépenses</span>
             </a>
           </li><!-- End Profile Page Nav -->
           <li class="nav-item">
             <a class="nav-link {% if 'publications' in request.path or 'detail_publication' in request.path or 'add_publication' in request.path or 'edit_publication' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'publications' %}">
               <i class="bi bi-book"></i>
-              <span>Publications</span>
+              <span>Gestion des publications</span>
             </a>
           </li><!-- End Contact Page Nav -->
 
           <li class="nav-item">
             <a class="nav-link {% if 'activities' in request.path or 'detail_activity' in request.path or 'add_activity' in request.path or 'edit_activity' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'activities' %}">
               <i class="bi bi-gift-fill"></i>
-              <span>Activités</span>
+              <span>Gestion des activités</span>
             </a>
           </li><!-- End Contact Page Nav -->
 
       {% elif request.session.group_name == "Surveillant Général" %}
 
         <li class="nav-item">
-          <a class="nav-link {% if 'settings/db_cycle'  in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/db' request.session.etablissement_id|crypter_id %}">
+          <a class="nav-link {% if 'settings/db_cycle'  in request.path or 'user/profile' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/db' request.session.etablissement_id|crypter_id %}">
             <i class="bi bi-grid"></i>
             <span>Tableau de bord</span>
           </a>
@@ -851,7 +827,7 @@
               </a>
             </li><!-- End Dashboard Nav -->
             <li class="nav-item">
-              <a class="nav-link {% if 'settings/db' in request.path or 'contact/messages' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/db' %}">
+              <a class="nav-link {% if 'settings/db' in request.path or 'contact/messages' in request.path or 'user/profile' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/db' %}">
                 <i class="bi bi-grid"></i>
                 <span>Tableau de bord</span>
               </a>
@@ -873,13 +849,13 @@
             <li class="nav-item">
               <a class="nav-link {% if 'mes_renumerations' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'mes_renumerations' %}">
                 <i class="bi bi-cash-coin"></i>
-                <span>Mes rénumérations</span>
+                <span>Mes rémunérations</span>
               </a>
             </li><!-- End Contact Page Nav -->
 
             <li class="nav-item">
               <a class="nav-link {% if 'mes_absences' in request.path or 'abs_students' in request.path or 'abs_studentmatiere' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
-                <i class="bi bi-gem"></i><span>Gestion des absences</span><i class="bi bi-chevron-down ms-auto"></i>
+                <i class="bi bi-gem"></i><span>Absences</span><i class="bi bi-chevron-down ms-auto"></i>
               </a>
               <ul id="icons-nav" class="nav-content collapse {% if 'mes_absences' in request.path or 'abs_students' in request.path or 'abs_studentmatiere' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
                 <li>
@@ -907,7 +883,7 @@
                 </li>
                 <li>
                   <a href="{% url 'cmp_teacher' %}" class="{{ setting.text_color }}">
-                    <i class="bi bi-circle"></i><span>Compositions</span>
+                    <i class="bi bi-circle"></i><span>Gestion des compositions</span>
                   </a>
                 </li>
               </ul>

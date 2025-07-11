@@ -39,10 +39,10 @@
                                 <td class="white-space">{{ contrat.etablissement }}</td>
                                 <td>{{ contrat.date_contrat|date:"d/m/Y" }}</td>
                                 {% if contrat.status_signature %}
-                                  <td><span class="badge rounded-pill bg-success">Validé</span></td>
+                                  <td><span class="badge rounded-pill bg-success">Contrat signé</span></td>
                                 {% else %}
                                   <td class="white-space">
-                                    <span class="badge rounded-pill bg-warning">En attente</span>
+                                    <span class="content-status-contrat{{ contrat.id }}"><span class="badge rounded-pill bg-warning">Contrat à signer </span></span>
                                   </td>
                                 {% endif %}
                                 <td>
@@ -52,7 +52,7 @@
                                         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
                                           <div class="modal-content">
                                             <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
-                                              <h5 class="modal-title">Détail de mes contrats</h5>
+                                              <h5 class="modal-title">Détail du contrat</h5>
                                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
@@ -65,15 +65,21 @@
                                                         <th>Etablissement</th><td> : {{ contrat.etablissement }}</td>
                                                       </tr>
                                                       <tr>
-                                                        <th>Montant par élève ({{ setting.devise }})</th> <td> : {{ contrat.amount }}</td>
+                                                        <th>Montant par élève ({{ setting_supuser.devise }})</th> <td> : {{ contrat.amount }}</td>
                                                       </tr>
                                                       <tr>
                                                         <th>Description</th><td> : {{ contrat.description }}</td>
                                                       </tr>
+                                                      <tr>
+                                                        <th>Date début</th><td> : {{ contrat.start_date|date:"d/m/Y" }}</td>
+                                                      </tr>
+                                                      <tr>
+                                                        <th>Date fin</th><td> : {{ contrat.end_date|date:"d/m/Y" }}</td>
+                                                      </tr>
                                                       {% if contrat.status_signature %}
-                                                        <th>Statut</th><td> : <span class="badge rounded-pill bg-success">Validé</span></td>
+                                                        <th>Statut</th><td> : <span class="badge rounded-pill bg-success">Contrat signé</span></td>
                                                       {% else %}
-                                                        <th>Statut</th><td class="white-space"> : <span class="badge rounded-pill bg-warning">En attente</span></td>
+                                                        <th>Statut</th><td class="white-space"> : <span class="content-status-contrat{{ contrat.id }}"><span class="badge rounded-pill bg-warning">Contrat à signer</span></span></td>
                                                       {% endif %}
                                                     </table>
                                                   </div>
@@ -107,6 +113,7 @@
                                                                   <div class="card-body">
                                                                     <div id="content-signature-contrat{{ contrat.id }}">
                                                                         <br>
+                                                                        <p>Cliquez sur le bouton suivant pour valider le contrat.</p>
                                                                         <p class="text-center">
                                                                             <a href="#" class="btn btn-primary btn-sm signer-contrat-etablissement" id="{{ contrat.id }}">Je signe ce contrat</a>
                                                                         </b>

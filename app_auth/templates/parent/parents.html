@@ -23,6 +23,7 @@
           <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Liste des parents</h5>
+                {% if anneeacademique.status_cloture %}
                 <div align="right">
                     {% if setting.theme == "bg-default" %}
                     <a href="{% url 'parent/add_parent' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer un parent</a>
@@ -30,6 +31,7 @@
                     <a href="{% url 'parent/add_parent' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer un parent</a>
                     {% endif %}
                 </div>
+                {% endif %}
                 <!-- Table with stripped rows -->
                 <div class="table-responsive">
                     <table class="table datatable">
@@ -52,27 +54,9 @@
                                 <td class="white-space">{{ parent.phone }}</td>
                                 <th class="white-space"> {{ parent.profession }}</td>
                                 <td class="white-space">
-                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ parent.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                    <a href="{% url 'parent/delete_parent' parent.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
                                     <a href="{% url 'parent/edit_parent' parent.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
                                     <a href="{% url 'parent/detail_parent' parent.id|crypter_id %}" title="Detail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
-                                    <!-- Start de delete Modal -->
-                                    <div class="modal fade" id="deleteModal{{parent.id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-sm">
-                                          <div class="modal-content">
-                                            <div class="modal-header">
-                                              <h5 class="modal-title">Suppression</h5>
-                                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                              <p class="text-center">Voulez-vous vraiment supprimer <br>ce parent ?</p>
-                                            </div>
-                                            <div class="modal-footer">
-                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                              <a href="{% url 'parent/delete_parent' parent.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
-                                            </div>
-                                          </div>
-                                        </div>
-                                    </div><!-- Fin de delete Modal-->
                                 </td>
                             </tr>
                             {% endfor %}

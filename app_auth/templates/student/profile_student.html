@@ -79,6 +79,11 @@
                         </div>
 
                         <div class="row">
+                            <div class="col-lg-4 col-md-4 label">Lieu de naissance</div>
+                            <div class="col-lg-8 col-md-8">{{ student.lieunais }}</div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-lg-4 col-md-4 label">Sexe</div>
                             <div class="col-lg-8 col-md-8">{{ student.gender }}</div>
                         </div>
@@ -113,18 +118,12 @@
                             <div class="row mb-3">
                             <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Image du profile</label>
                             <div class="col-md-8 col-lg-9">
-                                {% if student.photo %}
-                                <img src="{{ student.photo.url }}" alt="Profil">
-                                <div class="pt-2">
-                                <a href="#" class="btn btn-primary btn-sm" title="Upload new profile image"><i class="bi bi-upload"></i></a>
-                                <a href="#" class="btn btn-danger btn-sm" title="Remove my profile image"><i class="bi bi-trash"></i></a>
-                                </div>
+                                {% if request.session.photo %}
+                                <img src="{{ request.session.photo }}" alt="Profil">
+                                <div class="pt-2"></div>
                                 {% else %}
-                                <img src="{% static 'assets/img/profile-img.jpg' %}" alt="Profile">
-                                <div class="pt-2">
-                                <a href="#" class="btn btn-primary btn-sm" title="Upload new profile image"><i class="bi bi-upload"></i></a>
-                                <a href="#" class="btn btn-danger btn-sm" title="Remove my profile image"><i class="bi bi-trash"></i></a>
-                                </div>
+                                <img src="{% static 'assets/img/user.png' %}" alt="Profile">
+                                <div class="pt-2"></div>
                                 {% endif %}
                             </div>
                             </div>

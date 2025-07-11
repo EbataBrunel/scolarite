@@ -23,35 +23,41 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Enregistrer une classe</h5>
-              {% if cycles %}
-              <!-- On inclut l'image de chargement -->
-              {% include 'global/_loading.html' %}
-              <!-- Vertical Form -->
-              <form method="post" action="" id="formClass" class="row g-3">
-                {% csrf_token %}
-                <div class="col-12">
-                  <label for="cycle" class="form-label">Cycle : </label>
-                  <select name="cycle" id="cycle" class="form-select" aria-label="Default select example" required>
-                      <option value="">-- Selectionnez --</option>
-                      {% for cycle in cycles %}
-                      <option value="{{ cycle.id }}">{{ cycle }}</option>
-                      {% endfor %}
-                  </select>
+              {% if contrat.status_signature %}
+                {% if cycles %}
+                <!-- On inclut l'image de chargement -->
+                {% include 'global/_loading.html' %}
+                <!-- Vertical Form -->
+                <form method="post" action="" id="formClass" class="row g-3">
+                  {% csrf_token %}
+                  <div class="col-12">
+                    <label for="cycle" class="form-label">Cycle : </label>
+                    <select name="cycle" id="cycle" class="form-select" aria-label="Default select example" required>
+                        <option value="">-- Selectionnez --</option>
+                        {% for cycle in cycles %}
+                        <option value="{{ cycle.id }}">{{ cycle }}</option>
+                        {% endfor %}
+                    </select>
+                  </div>
+                  <div id="nameclasseview"></div>
+                  <div class="text-center">
+                    <a href="{% url 'classes' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                  </div>
+                </form><!-- Vertical Form -->
+                {% else %}
+                <div class="card">
+                  <div class="card-body">
+                    <br>
+                    <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord enregistrer un cycle, s'il n'a pas encore été créé, avant d'enregistrer une classe.</h4>
+                  </div>
                 </div>
-                <div class="col-12">
-                  <label for="libelle" class="form-label">Libellé : </label>
-                  <input type="text" name="libelle" class="form-control" id="libelle" required>
-                </div>
-                <div class="text-center">
-                  <a href="{% url 'classes' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
-                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
-                </div>
-              </form><!-- Vertical Form -->
+                {% endif %}
               {% else %}
               <div class="card">
                 <div class="card-body">
                   <br>
-                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord enregistrer un cycle, s'il n'a pas encore été créé, avant d'enregistrer une classe.</h4>
+                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord signé le contrat, s'il n'a pas encore été fait, avant d'enregistrer un cycle. <a href="{% url 'contrat_etablissement/mes_contrats_promoteur' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Je signe le contrat</a></h4>
                 </div>
               </div>
               {% endif %}

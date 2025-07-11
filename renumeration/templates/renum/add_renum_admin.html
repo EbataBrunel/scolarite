@@ -1,5 +1,5 @@
 {% extends 'global/base.html' %}
-{% block title %} {{ setting.appname }} | Ajout d'une rénumeration {% endblock %}
+{% block title %} {{ setting.appname }} | Ajout d'une rémunération {% endblock %}
 {% block content %}
 {% load static %}
 {% load crypto_filters %}
@@ -7,11 +7,11 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Rénumerations</h1>
+      <h1>Rémunérations</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
-          <li class="breadcrumb-item"><a href="{% url 'renum/renum_admin' %}" > Rénumerations </a></li>
+          <li class="breadcrumb-item"><a href="{% url 'renum/renum_admin' %}" > Rémunérations </a></li>
           <li class="breadcrumb-item active">Ajout</li>
         </ol>
       </nav>
@@ -21,7 +21,7 @@
         <div class="col-md-12">
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Enregistrer une rénumeration</h5>
+              <h5 class="card-title">Enregistrer une rémunération</h5>
               {% if users %}
               <!-- On inclut l'image de chargement -->
               {% include 'global/_loading.html' %}
@@ -31,7 +31,7 @@
                 <div class="row">
                   <div class="col-md-6">
                     <div class="col-12">
-                      <label for="user" class="form-label">Utilisateur : </label>
+                      <label for="user" class="form-label">Utilisateur : *</label>
                       <select name="user" id="user" class="form-select" aria-label="Default select example" required>
                           <option value="">-- Selectionnez --</option>
                           {% for user in users %}
@@ -46,7 +46,7 @@
                       <input type="text" name="indemnite" value="0,00" class="form-control" id="indemnite" required>
                     </div>
                     <div class="col-12">
-                      <label for="mode_payment" class="form-label">Mode de paiement : </label>
+                      <label for="mode_payment" class="form-label">Mode de paiement : *</label>
                       <select name="mode_payment" id="mode_payment" class="form-select" aria-label="Default select example">
                           <option value="">-- Selectionnez --</option>
                           {% for mode_payment in mode_payments %}
@@ -55,7 +55,7 @@
                       </select>
                     </div>
                     <div class="col-12">
-                      <label for="password" class="form-label">Entrer votre mot de passe : </label>
+                      <label for="password" class="form-label">Entrer votre mot de passe : *</label>
                       <input type="password" class="form-control" name="password" id="password" required>
                     </div>
                   </div>

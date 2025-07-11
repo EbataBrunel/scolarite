@@ -1,16 +1,16 @@
 {% extends 'global/base.html' %}
-{% block title %} {{ setting.appname }} | Caisse{% endblock %}
+{% block title %} {{ setting.appname }} | Solde de la caisse{% endblock %}
 {% block content %}
 {% load static %}
 
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Caisse</h1>
+      <h1>Comptabilité</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id %}">Tableau de bord</a></li>
-          <li class="breadcrumb-item active">Caisse</li>
+          <li class="breadcrumb-item active">Solde de la caisse</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -44,14 +44,14 @@
                         <div class="col-md-6">
                           <div class="card">
                             <div class="card-body">
-                              <h5 class="card-title text-center">Récette mensuelle</h5>
+                              <h5 class="card-title text-center">Recette mensuelle</h5>
                               <!-- Table with stripped rows -->
                               <div class="table-responsive">
                                   <table class="table">
                                       <thead>
                                           <tr>
                                               <th class="{{ setting.theme }} {{ setting.text_color }}">Mois</th>
-                                              <th class="{{ setting.theme }} {{ setting.text_color }}">Récette({{ setting.devise }})</th>
+                                              <th class="{{ setting.theme }} {{ setting.text_color }}">Recette({{ setting.devise }})</th>
                                           </tr>
                                       </thead>
                                       <tbody>
@@ -78,7 +78,7 @@
                           <!-- Table with stripped rows -->
                           <div class="card">
                             <div class="card-body">
-                              <h5 class="card-title text-center">Récette des inscriptions</h5>
+                              <h5 class="card-title text-center">Recette des inscriptions</h5>
                                 <div class="table-responsive">
                                   <table class="table">
                                       <thead>

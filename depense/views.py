@@ -5,8 +5,6 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Count
-from django.contrib.auth.models import User
-from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db import transaction
 from django.contrib import messages
@@ -20,7 +18,7 @@ from scolarite.utils.crypto import dechiffrer_param
 permission_gestionnaire = ['Promoteur', 'Directeur Général', 'Gestionnaire']
 
 #================== Gestion de contrats =================================
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def depenses(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -97,7 +95,7 @@ def depenses(request):
     }
     return render(request, "depenses.html", context)    
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 @transaction.atomic
 def add_depense(request):
@@ -173,7 +171,7 @@ def add_depense(request):
     return render(request, "add_depense.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_depense(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -185,16 +183,10 @@ def edit_depense(request,id):
     depense = Depense.objects.get(id=depense_id)
         
     tab_months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
-    months = []
-    for month in tab_months:
-        if month != depense.month:
-            months.append(month)
+    months = [month for month in tab_months if month != depense.month]
             
     tab_type_depenses = type_depenses = ["Frais du loyer", "Frais de l'électricité", "Frais de l'internet", "Frais du téléphone", "Travaux", "Don", "Autre"]
-    type_depenses = []
-    for type_depense in tab_type_depenses:
-        if type_depense != depense.type_depense:
-            type_depenses.append(type_depense)
+    type_depenses = [type_depense for type_depense in tab_type_depenses if type_depense != depense.type_depense]
             
     context = {
         "setting": setting,
@@ -205,7 +197,7 @@ def edit_depense(request,id):
     return render(request, "edit_depense.html", context)
    
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_dp(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -283,7 +275,7 @@ def ajax_delete_depense(request, id):
     return render(request, "ajax_delete_depense.html", context)
     
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def del_depense(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')

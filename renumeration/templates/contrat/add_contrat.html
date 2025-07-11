@@ -7,7 +7,7 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Rénumerations</h1>
+      <h1>Contrats</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
@@ -22,66 +22,139 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Enregistrer un contrat</h5>
-              {% if users %}
-              <!-- On inclut l'image de chargement -->
-              {% include 'global/_loading.html' %}
-              <!-- Vertical Form -->
-              <form method="post" action="" id="formContrat" class="row g-3">
-                {% csrf_token %}
-                <div class="row">
-                  <div class="col-md-6">
-                    <div class="col-12">
-                      <label for="type_contrat" class="form-label">Type contrat : </label>
-                      <select name="type_contrat" id="type_contrat" class="form-select" aria-label="Default select example" required>
-                          <option value="">-- Selectionnez --</option>
-                          {% for type_contrat in types_contrat %}
-                          <option value="{{ type_contrat }}">{{ type_contrat }}</option>
-                          {% endfor %}
-                      </select>
+              {% if request.session.group_name == "Promoteur" %}
+                {% if users %}
+                <!-- On inclut l'image de chargement -->
+                {% include 'global/_loading.html' %}
+                <!-- Vertical Form -->
+                <form method="post" action="" id="formContrat" class="row g-3">
+                  {% csrf_token %}
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="col-12">
+                        <label for="type_contrat" class="form-label">Type contrat : *</label>
+                        <select name="type_contrat" id="type_contrat" class="form-select" aria-label="Default select example" required>
+                            <option value="">-- Selectionnez --</option>
+                            {% for type_contrat in types_contrat %}
+                            <option value="{{ type_contrat }}">{{ type_contrat }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-12">
+                        <label for="user" class="form-label">Utilisateur : *</label>
+                        <select name="user" id="user" class="form-select" aria-label="Default select example" required>
+                            <option value="">-- Selectionnez --</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.last_name|title }} {{ user.first_name|title }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-12">
+                        <label for="poste" class="form-label">Poste : *</label>
+                        <input type="text" name="poste" class="form-control" id="poste" required>
+                      </div>
+                      <div class="col-12">
+                        <label for="description" class="form-label">Description : *</label>
+                        <textarea class="form-control" name="description" id="description" style="height: 50px;"></textarea>
+                      </div>
                     </div>
-                    <div class="col-12">
-                      <label for="user" class="form-label">Utilisateur : </label>
-                      <select name="user" id="user" class="form-select" aria-label="Default select example" required>
-                          <option value="">-- Selectionnez --</option>
-                          {% for user in users %}
-                          <option value="{{ user.id }}">{{ user.last_name|title }} {{ user.first_name|title }}</option>
-                          {% endfor %}
-                      </select>
-                    </div>
-                    <div class="col-12">
-                      <label for="poste" class="form-label">Poste : </label>
-                      <input type="text" name="poste" class="form-control" id="poste" required>
-                    </div>
-                    <div class="col-12">
-                      <label for="description" class="form-label">Description : </label>
-                      <textarea class="form-control" name="description" id="description" style="height: 50px;"></textarea>
+                    <div class="col-md-6">
+                      <div id="amountview_contrat"></div>
+                      <div class="col-12">
+                          <label for="date_debut" class="form-label">Date début : *</label>
+                          <input type="date" name="date_debut" class="form-control" id="date_debut" required>
+                      </div>
+                      <div class="col-12">
+                          <label for="date_fin" class="form-label">Date fin : *</label>
+                          <input type="date" name="date_fin" class="form-control" id="date_fin" required>
+                      </div>
                     </div>
                   </div>
-                  <div class="col-md-6">
-                    <div id="amountview_contrat"></div>
-                    <div class="col-12">
-                        <label for="date_debut" class="form-label">Date début : </label>
-                        <input type="date" name="date_debut" class="form-control" id="date_debut" required>
-                    </div>
-                    <div class="col-12">
-                        <label for="date_fin" class="form-label">Date fin : </label>
-                        <input type="date" name="date_fin" class="form-control" id="date_fin" required>
-                    </div>
-                  </div>
-                </div>
-                <br>
-                <div class="text-center">
-                  <a href="{% url 'contrat/contrats' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
-                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
-                </div>
-              </form><!-- Vertical Form -->
-              {% else %}
-              <div class="card">
-                <div class="card-body">
                   <br>
-                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord enregistrer un utilisateur, s'il n'a pas encore été crée, avant d'enregistrer un un contrat.</h4>
+                  <div class="text-center">
+                    <a href="{% url 'contrat/contrats' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                  </div>
+                </form><!-- Vertical Form -->
+                {% else %}
+                <div class="card">
+                  <div class="card-body">
+                    <br>
+                    <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord enregistrer un utilisateur, s'il n'a pas encore été crée, avant d'enregistrer un un contrat.</h4>
+                  </div>
                 </div>
-              </div>
+                {% endif %}
+              {% else %}
+                {% if contrat.status_signature %}
+                  {% if users %}
+                  <!-- On inclut l'image de chargement -->
+                  {% include 'global/_loading.html' %}
+                  <!-- Vertical Form -->
+                  <form method="post" action="" id="formContrat" class="row g-3">
+                    {% csrf_token %}
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="col-12">
+                          <label for="type_contrat" class="form-label">Type contrat : *</label>
+                          <select name="type_contrat" id="type_contrat" class="form-select" aria-label="Default select example" required>
+                              <option value="">-- Selectionnez --</option>
+                              {% for type_contrat in types_contrat %}
+                              <option value="{{ type_contrat }}">{{ type_contrat }}</option>
+                              {% endfor %}
+                          </select>
+                        </div>
+                        <div class="col-12">
+                          <label for="user" class="form-label">Utilisateur : *</label>
+                          <select name="user" id="user" class="form-select" aria-label="Default select example" required>
+                              <option value="">-- Selectionnez --</option>
+                              {% for user in users %}
+                              <option value="{{ user.id }}">{{ user.last_name|title }} {{ user.first_name|title }}</option>
+                              {% endfor %}
+                          </select>
+                        </div>
+                        <div class="col-12">
+                          <label for="poste" class="form-label">Poste : *</label>
+                          <input type="text" name="poste" class="form-control" id="poste" required>
+                        </div>
+                        <div class="col-12">
+                          <label for="description" class="form-label">Description : *</label>
+                          <textarea class="form-control" name="description" id="description" style="height: 50px;"></textarea>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div id="amountview_contrat"></div>
+                        <div class="col-12">
+                            <label for="date_debut" class="form-label">Date début : *</label>
+                            <input type="date" name="date_debut" class="form-control" id="date_debut" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="date_fin" class="form-label">Date fin : *</label>
+                            <input type="date" name="date_fin" class="form-control" id="date_fin" required>
+                        </div>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="text-center">
+                      <a href="{% url 'contrat/contrats' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                      <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                    </div>
+                  </form><!-- Vertical Form -->
+                  {% else %}
+                  <div class="card">
+                    <div class="card-body">
+                      <br>
+                      <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord enregistrer un utilisateur, s'il n'a pas encore été crée, avant d'enregistrer un un contrat.</h4>
+                    </div>
+                  </div>
+                  {% endif %}
+                {% else %}
+                <div class="card">
+                  <div class="card-body">
+                    <br>
+                    <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord signé le contrat, s'il n'a pas encore été fait, avant d'enregistrer un contrat. <a href="{% url 'contrat/contrats_user' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Je signe le contrat</a></h4>
+                  </div>
+                </div>
+                {% endif %}
               {% endif %}
               <!-- Start message Modal -->
               <div class="modal fade" id="message" tabindex="-1">

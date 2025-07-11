@@ -28,11 +28,7 @@
                 <div class="row">
                     <div class="col-md-3">
                         <p>
-                          {% if student.photo %}
-                            <img src="{{ student.photo.url }}" class="img-responsive img-detail" />
-                          {% else %}
                           <img class="img-responsive img-detail" src="{% static 'assets/img/user.png' %}">
-                          {% endif %}
                         </p>
                     </div>
                     <div class="col-md-9">
@@ -40,15 +36,19 @@
                             <table class="table">
                                 <tr>
                                     <td>Nom : </td>
-                                    <td>{{ student.lastname|upper }}</td>
+                                    <td class="with-space">{{ student.lastname|upper }}</td>
                                 </tr>
                                 <tr>
                                     <td>Prénom : </td>
-                                    <td>{{ student.firstname|title }}</td>
+                                    <td class="with-space">{{ student.firstname|title }}</td>
                                 </tr>
                                 <tr>
-                                    <td>Date de naissance : </td>
+                                    <td class="with-space">Date de naissance : </td>
                                     <td>{{ student.datenais|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="with-space">Lieu de naissance : </td>
+                                    <td>{{ student.lieunais }}</td>
                                 </tr>
                                 <tr>
                                     <td>Sexe : </td>
@@ -56,15 +56,15 @@
                                 </tr>
                                 <tr>
                                     <td>Adresse : </td>
-                                    <td>{{ student.address }}</td>
+                                    <td class="with-space">{{ student.address }}</td>
                                 </tr>
                                 <tr>
                                     <td>Pays : </td>
-                                    <td>{{ student.country }}</td>
+                                    <td class="with-space">{{ student.country }}</td>
                                 </tr>
                                 <tr>
                                   <td>Parent : </td>
-                                  <td>{{ student.parent.lastname|upper }} {{ student.parent.firstname|title }}</td>
+                                  <td class="with-space">{{ student.parent.lastname|upper }} {{ student.parent.firstname|title }}</td>
                               </tr>
                             </table>
                         <!-- End Table with stripped rows -->

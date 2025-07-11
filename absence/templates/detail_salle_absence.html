@@ -31,7 +31,8 @@
                             <tr>
                                 <th>Id</th>
                                 <th>Salles</th>
-                                <th>NombreAbsences</th>
+                                <th class="white-space">Nombre absences</th>
+                                <th class="white-space">Nombre motifs</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -41,6 +42,7 @@
                                 <td>{{ absence.salle.id }}</td>
                                 <td>{{ absence.salle }}</td>
                                 <td><span class="badge rounded-pill bg-secondary">{{ absence.nb_absence }}</span></td>
+                                 <td><span class="badge rounded-pill bg-warning"> {{ absence.nombre_motifs_absences }} </span></td>
                                 <td>
                                     <a href="{% url 'detail_absences' enseignant.id|crypter_id absence.salle.id|crypter_id %}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye "></i></a>
                                  </td>

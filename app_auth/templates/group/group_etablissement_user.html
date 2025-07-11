@@ -36,11 +36,11 @@
                             <div class="card-body">
                                 <input type="text" name="id" value="{{ user.id }}" hidden="True" required>
                                 <div class="col-12">
-                                    <label for="name" class="form-label">Groupe : </label>
-                                    <select name="name" id="name" class="form-select" aria-label="Default select example" required>
+                                    <label for="group" class="form-label">Groupe : </label>
+                                    <select name="group" id="group" class="form-select" aria-label="Default select example" required>
                                         <option value="">-- Selectionnez un groupe --</option>
                                         {% for group in groups %}
-                                        <option value="{{ group.name }}">{{ group.name }}</option>
+                                        <option value="{{ group.id }}">{{ group.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -86,14 +86,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for group in groups_user %}
+                                {% for role in roles_user %}
                                 <tr>
-                                    <td>{{ group.id }}</td>
-                                    <td>{{ group.name }}</td>
+                                    <td>{{ role.group.id }}</td>
+                                    <td>{{ role.group.name }}</td>
                                     <td>
-                                        <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ group.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                        <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ role.group.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
                                         <!-- Start de delete Modal -->
-                                        <div class="modal fade" id="deleteModal{{ group.id }}" tabindex="-1">
+                                        <div class="modal fade" id="deleteModal{{ role.group.id }}" tabindex="-1">
                                             <div class="modal-dialog modal-sm">
                                               <div class="modal-content">
                                                 <div class="modal-header">
@@ -101,11 +101,11 @@
                                                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                  <p class="text-center">Voulez-vous vraiment supprimer ce groupe ?</p>
+                                                  <p class="text-center">Voulez-vous vraiment supprimer ce role ?</p>
                                                 </div>
                                                 <div class="modal-footer">
                                                   <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                                  <a href="{% url 'del_group_etablissement_to_user' user.id|crypter_id group.name|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                                  <a href="{% url 'del_group_etablissement_to_user' role.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
                                                 </div>
                                               </div>
                                             </div>

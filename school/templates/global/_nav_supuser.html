@@ -13,7 +13,7 @@
           </a>
         </li><!-- End Dashboard Nav -->
           <li class="nav-item">
-            <a class="nav-link {% if 'settings/db_supuser' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/db_supuser' %}">
+            <a class="nav-link {% if 'settings/db_supuser' in request.path or 'user/profile_supuser' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'settings/db_supuser' %}">
               <i class="bi bi-grid"></i>
               <span>Tableau de bord</span>
             </a>
@@ -78,11 +78,22 @@
             </a>
           </li><!-- End Profile Page Nav -->
           <li class="nav-item">
-            <a class="nav-link {% if 'payment_etablissement/payment_etablissements' in request.path or 'payment_etablissement/add_payment_etablissement' in request.path or 'payment_etablissement/edit_payment_etablissement' in request.path  %} {% else %}collapsed{% endif %}" href="{% url 'payment_etablissement/payment_etablissements' %}">
-              <i class="bi bi-cash"></i>
-              <span>Paiements</span>
+            <a class="nav-link {% if 'payment_etablissement/payment_etablissements' in request.path or 'payment_etablissement/add_payment_etablissement' in request.path or 'payment_etablissement/edit_payment_etablissement' in request.path or 'payment_etablissement/payment_months_etablissement' in request.path %} {% else %}collapsed{% endif %}" data-bs-target="#icons-payment" data-bs-toggle="collapse" href="#">
+              <i class="bi bi-cash"></i><span>Gestion de paiements</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-          </li><!-- End Profile Page Nav -->
+            <ul id="icons-payment" class="nav-content collapse {% if 'payment_etablissement/payment_etablissements' in request.path or 'payment_etablissement/add_payment_etablissement' in request.path or 'payment_etablissement/edit_payment_etablissement' in request.path or 'payment_etablissement/payment_months_etablissement' in request.path %}show{% endif %}" data-bs-parent="#sidebar-nav">
+              <li>
+                <a href="{% url 'payment_etablissement/payment_etablissements' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Paiements</span>
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'payment_etablissement/payments_months_etablissement' %}" class="{{ setting.text_color }}">
+                  <i class="bi bi-circle"></i><span>Paiements mensuels</span>
+                </a>
+              </li>
+            </ul>
+          </li><!-- End Icons Nav -->
           <li class="nav-item">
             <a class="nav-link {% if 'payment_etablissement/comptabilite_supuser' in request.path %} {% else %}collapsed{% endif %}" href="{% url 'payment_etablissement/comptabilite_supuser' %}">
               <i class="bi bi-door-closed-fill"></i>

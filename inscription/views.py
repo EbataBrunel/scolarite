@@ -16,11 +16,12 @@ from django.template.loader import get_template
 from django.contrib.sites.shortcuts import get_current_site
 # Importation des modules locaux
 from .models import*
-from school.views import get_setting
 from enseignement.models import Enseigner
-from app_auth.models import Parent
-from app_auth.decorator import allowed_users, unauthenticated_customer
+from app_auth.models import Parent, EtablissementUser
+from school.views import get_setting
+from app_auth.decorator import allowed_users
 from scolarite.utils.crypto import dechiffrer_param
+from datetime import date
 
 permission_user = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Gestionnaire', 'Surveillant Général']
 permission_admin = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Gestionnaire']
@@ -29,7 +30,7 @@ permission_DG = ['Promoteur', 'Directeur Général']
 permission_enseignant = ['Enseignant']
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def inscriptions(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -70,7 +71,7 @@ def inscriptions(request):
     }
     return render(request, "inscriptions.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def detail_inscription(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -93,7 +94,7 @@ def detail_inscription(request, id):
     }
     return render(request, "detail_inscription.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def add_inscription(request):
     etablissement_id = request.session.get('etablissement_id')
@@ -108,7 +109,10 @@ def add_inscription(request):
         student_id = request.POST["student"]
         amount = bleach.clean(request.POST["amount"].strip())
         salle_id = request.POST["salle"]
-        
+        photo = None
+        if request.POST.get('photo', True):
+            photo = request.FILES["photo"]
+            
         user_id = request.user.id        
         # Récuperer la délibération pour verifier si ses activités ont été cloturées ou pas
         anneescolaire = AnneeCademique.objects.filter(status_cloture=False, id=anneeacademique_id)
@@ -155,7 +159,8 @@ def add_inscription(request):
                 student_id=student_id, 
                 amount=amount, 
                 anneeacademique_id=anneeacademique_id, 
-                user_id=user_id)
+                user_id=user_id,
+                photo=photo)
             
             inscription.save()
             # Nombre d'inscriptions après l'ajout
@@ -182,7 +187,7 @@ def add_inscription(request):
     }
     return render(request, "add_inscription.html", context) 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_inscription(request,id):
     cycle_id = request.session.get('cycle_id')  
@@ -198,10 +203,7 @@ def edit_inscription(request,id):
     students = Student.objects.filter(etablissement_id=etablissement_id).exclude(id=inscription.student.id)
     salles = Salle.objects.filter(classe_id=classe_id, cycle_id=cycle_id, anneeacademique_id=anneeacademique_id).exclude(id=inscription.salle.id)
     mode_paiements = ["Espèce", "Virement", "Mobile"]
-    tab_mode_paiements = []
-    for mode_paiement in mode_paiements:
-        if mode_paiement != inscription.mode_paiement:
-            tab_mode_paiements.append(mode_paiement)
+    tab_mode_paiements = [mode_paiement for mode_paiement in mode_paiements if mode_paiement != inscription.mode_paiement]
     
     context = {            
             "inscription": inscription,
@@ -213,7 +215,7 @@ def edit_inscription(request,id):
     return render(request, "edit_inscription.html", context)
     
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_in(request): 
     anneeacademique_id = request.session.get('anneeacademique_id') 
@@ -251,7 +253,11 @@ def edit_in(request):
             if anneescolaire.exists(): # Verifier si on a déjà cloturé les opérations de cette année
                 return JsonResponse({
                     "status": "error",
-                    "message": "Les opérations de cette année académique ont déjà été clôturées."})        
+                    "message": "Les opérations de cette année académique ont déjà été clôturées."}) 
+            if inscription.status_block == False:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Le compte de cet élève a été définitivement bloqué. Vous ne pouvez donc effectuer aucune opération le concernant."})            
             if salle.price_inscription != amount: # Verifier si le montant corresponds à celui de la salle
                 return JsonResponse({
                     "status": "error",
@@ -279,12 +285,19 @@ def edit_in(request):
                 inscription.salle_id = salle_id
                 inscription.student_id = student_id
                 inscription.amount = amount
+                
+                photo = None
+                if request.POST.get('photo', True):
+                    photo = request.FILES["photo"]
+                if photo is not None :
+                    inscription.photo = photo
+                    
                 inscription.save()
                 return JsonResponse({
                     "status": "success",
                     "message": "Inscription modifiée avec succès."})
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def del_inscription(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -310,6 +323,8 @@ def del_inscription(request,id):
             messages.error(request, "La suppression a échouée.")
     return redirect("d_inscription", inscription.serieclasse.id)
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_gestionnaire)
 def inscription_parents(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -327,7 +342,7 @@ def inscription_parents(request):
             list_students = Student.objects.filter(parent_id=inscription.student.parent.id)
             for student in list_students:
                 if Inscription.objects.filter(student_id=student.id, anneeacademique_id=anneeacademique_id).exists():
-                    students.append(student)
+                    students.append(Inscription.objects.filter(student_id=student.id, anneeacademique_id=anneeacademique_id).first())
             dic["students"] = students
             parents.append(dic)
             tabParents.append(inscription.student.parent)
@@ -338,6 +353,8 @@ def inscription_parents(request):
     }
     return render(request, "inscription_parents.html", context)
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_gestionnaire)
 def access_parent(request, id):
     parent = Parent.objects.get(id=id)
     if parent.status_access:
@@ -352,7 +369,9 @@ def access_parent(request, id):
         return JsonResponse({
             "status": parent.status_access
         })
-        
+
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_gestionnaire)       
 def access_student(request, id):
     inscription = Inscription.objects.get(id=id)
     if inscription.status_access:
@@ -367,10 +386,14 @@ def access_student(request, id):
         return JsonResponse({
             "status": inscription.status_access
         })
-        
+
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_gestionnaire)       
 def block_account_student(request, id):
+    user = request.user
     inscription = Inscription.objects.get(id=id)
     inscription.status_block = False
+    inscription.responsable = user
     inscription.save()
     return JsonResponse({
         "status": "success"
@@ -394,7 +417,7 @@ def nombre_student_inscris(salle_id, anneeacademique_id):
     nb_inscriptions = Inscription.objects.filter(anneeacademique_id=anneeacademique_id, salle_id=salle_id).count()
     return nb_inscriptions
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def comptabilite_inscription(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -431,7 +454,7 @@ def comptabilite_inscription(request):
     return render(request, "comptabilite_inscription.html", context=context)
 
 # Liste des étudiants de la salle de l'eenseignant
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_enseignant)
 def inscriptions_enseignant(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -461,7 +484,7 @@ def inscriptions_enseignant(request):
     return render(request, "inscriptions_enseignant.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_user)
 def inscriptions_admin(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -498,24 +521,23 @@ def inscriptions_admin(request):
     }
     return render(request, "inscriptions_admin.html", context)
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_gestionnaire)
 def attestation_inscription(request, student_id):
     etablissement_id = request.session.get('etablissement_id')
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
+    date_actuelle = date.today()
     
     id = int(dechiffrer_param(str(student_id)))
     inscription = Inscription.objects.filter(student_id=id, anneeacademique_id=anneeacademique_id).first()
     # Récuperer l'établissement
     etablissement = Etablissement.objects.get(id=etablissement_id)
     user = None
-    users = User.objects.all()
-    for user in users:
-        if etablissement.groups.filter(user=user).exists():
-            groups = etablissement.groups.filter(user=user)
-            for group in groups:
-                    if group.name in ["Promoteur"]:                       
-                            user = user
-                            break
+    for role in EtablissementUser.objects.filter(etablissement=etablissement):
+        if role.group.name == "Promoteur":                       
+            user = user
+            break
                             
     anneeacademique  = AnneeCademique.objects.get(id=anneeacademique_id)
     
@@ -523,7 +545,7 @@ def attestation_inscription(request, student_id):
     image_path = setting.logo
 
     # Lire l'image en mode binaire et encoder en Base64
-    base64_string = ""
+    base64_string = None
     if image_path:
         base64_string = base64.b64encode(image_path.read()).decode('utf-8')
     
@@ -532,6 +554,7 @@ def attestation_inscription(request, student_id):
         "inscription": inscription,      
         "base64_image": base64_string, 
         "setting": setting,
+        "date_actuelle": date_actuelle,
         "anneeacademique": anneeacademique,
         'domain':get_current_site(request).domain
     }

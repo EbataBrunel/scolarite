@@ -6,12 +6,16 @@
                 <tr>
                     <th>Salle</th>
                     <th class="white-space">Nombre elèves</th>
+                    <th class="white-space">Elèves actifs</th>
+                    <th class="white-space">Elèves bloqués</th>
                     <th>Action</th>
                 </tr>
                 {% for s in salles %}
                 <tr>
-                    <td>{{ s.salle }}</td>
+                    <td class="white-space">{{ s.salle }}</td>
                     <td><span class="badge rounded-pill bg-secondary">{{ s.nombre_students }}</span></td>
+                    <td><span id="content-number-student-actif-salle{{ s.salle.id }}"><span class="badge rounded-pill bg-success">{{ s.nombre_students_actif }}</span></span></td>
+                    <td><span id="content-number-student-block-salle{{ s.salle.id }}"><span class="badge rounded-pill bg-danger">{{ s.nombre_students_block }}</span></span></td>
                     <td><a href="#" class="btn btn-info btn-sm button-student" id="{{ s.salle.id }}"><i class="bi bi-eye"></i></a></td>
                 </tr>
                 {% endfor %} 

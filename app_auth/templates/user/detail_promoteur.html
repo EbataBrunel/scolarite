@@ -63,7 +63,17 @@
                                 <tr>
                                   <td>Profession : </td>
                                   <td>{{ promoteur.profile.profession }}</td>
-                              </tr>
+                                </tr>
+                                <tr>
+                                  <td>Etablissements</td>
+                                  <td>
+                                    <ul>
+                                      {% for etablissement in etablissements %}
+                                      <li>{{ etablissement }}</li>
+                                      {% endfor %}
+                                    </ul>
+                                  </td>
+                                </tr>
                             </table>
                         <!-- End Table with stripped rows -->
                     </div>

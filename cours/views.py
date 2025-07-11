@@ -5,31 +5,30 @@ import os
 # Importation des modules tiers
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
 from django.db.models import Count
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 # Importation des modules locaux
-from .models import Cours, CommentCours
+from .models import Cours, CommentCours, ReadCours
 from enseignement.models import Enseigner
 from salle.models import Salle
 from matiere.models import Matiere
 from inscription.models import Inscription
 from app_auth.models import Student
+from renumeration.models import Contrat
+from anneeacademique.models import AnneeCademique
+from app_auth.decorator import allowed_users, unauthenticated_customer
 from school.views import get_setting
+from school.methods import get_file_hash
 from scolarite.utils.crypto import dechiffrer_param
 
-def get_file_hash(file):
-    hash_md5 = hashlib.md5() # Cette objet de MD5 servira de stocker et calculer l'empreinte MD5.
-    for chunk in file.chunks(): # Parcourir le fichier par morceau pour ne pas surcherger la memoire
-        hash_md5.update(chunk) # Ajout de chaque morceau au calcul de hash et en mettant en même à jour le hash
-    return hash_md5.hexdigest() # retourner l'empreinte MD5 sous forme de chaîne hexadécimale
+permission = ["Enseignant"]
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission) 
 def cours(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     user_id = request.user.id
@@ -85,13 +84,16 @@ def cours(request):
         
         tabCours.append(dic)
     
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id) 
     context = {
         "setting": setting,
-        "cours": tabCours
+        "cours": tabCours,
+        "anneeacademique": anneeacademique
     }
     return render(request, "cours.html", context)
 
-
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission) 
 def detail_cours(request, salle_id, matiere_id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     user_id = request.user.id
@@ -105,34 +107,7 @@ def detail_cours(request, salle_id, matiere_id):
     salle = Salle.objects.get(id=sl_id)
     matiere = Matiere.objects.get(id=mt_id)
     list_cours = Cours.objects.filter(salle_id=sl_id, matiere_id=mt_id, enseignant_id=user_id, anneeacademique_id=anneeacademique_id)
-    """
-    if cours.count() > 0:
-            dic = {}
-            dic["matiere"] = matiere
-            nb_newcomment = 0
-            for cours in list_cours:
-                comments = CommentCours.objects.filter(cours=cours)
-                
-                for comment in comments:
-                    # Verifier si le commentaire appartient à l'étudiat
-                    # Récupérer le commentaire
-                    commentaire = get_object_or_404(CommentCours, id=comment.id)
-
-                    # Vérifier si l'auteur est un étudiant
-                    student_type = ContentType.objects.get_for_model(Student)  # Type de modèle pour Student
-                    if commentaire.author_content_type != student_type:
-                        dic_comment = eval(comment.reading_status)
-                        if dic_comment:
-                            for key in dic_comment.values():
-                                if key != request.user.id:
-                                    nb_newcomment += 1
-                        else:
-                            nb_newcomment += 1
-                                
-            dic["nb_newcomment"] = nb_newcomment
-        
-            matieres.append(dic)"""
-            
+    
     context = {
         "setting": setting,
         "cours": list_cours,
@@ -143,7 +118,8 @@ def detail_cours(request, salle_id, matiere_id):
     return render(request, "detail_cours.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission) 
 def add_cours(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     user_id = request.user.id
@@ -210,14 +186,18 @@ def add_cours(request):
     for se in salles_enseignements:
         salle = Salle.objects.get(id=se["salle_id"])
         salles.append(salle)
-        
+    
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()      
     context = {       
         "salles": salles,
+        "contrat": contrat,
         "setting": setting
     }
     return render(request, "add_cours.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission) 
 def edit_cours(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -251,20 +231,23 @@ def edit_cours(request, id):
             matiere = Matiere.objects.get(id=me["matiere_id"])
             if matiere.id != cours.matiere.id:
                 tabMatiere.append(matiere)
-                
+        
+        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+        contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()       
         context = {
             "setting": setting,
             "cours": cours,
             "salles": tabSalles,
             "matieres": tabMatiere,
+            "contrat": contrat
         }
         return render(request, "edit_cours.html", context)
     else:
         return redirect("settings/authorization")
 
-@login_required(login_url='connection/login')
-def edit_cour(request):
-   
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission) 
+def edit_cour(request):  
    if request.method == "POST":
         id = request.POST["id"]
         try:
@@ -342,7 +325,9 @@ class mat_enseignant(View):
             "matieres": matieres
         }
         return render(request, "mat_enseignant.html", context)
-    
+
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)    
 def del_cours(request, id):
     try:
         cours_id = int(dechiffrer_param(str(id)))
@@ -354,7 +339,8 @@ def del_cours(request, id):
         cours.delete()
     
     redirect("detail_coursligne", cours.salle.id, cours.matiere.id)
-    
+
+@unauthenticated_customer 
 def cours_ligne(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -364,6 +350,20 @@ def cours_ligne(request):
     student_id = request.session.get('student_id')
     inscription = Inscription.objects.filter(anneeacademique_id=anneeacademique_id, student_id=student_id).first()
     
+    # Marquer la lecture de l'élève
+    liste_cours = Cours.objects.filter(salle_id=inscription.salle.id, anneeacademique_id=anneeacademique_id)
+    nombre_cours = 0
+    for cours in liste_cours:
+        reads = ReadCours.objects.filter(cours_id=cours.id, student_id=student_id, anneeacademique_id=anneeacademique_id)
+        if reads.exists():
+            for read in reads:
+                if read.reading_status == 0:
+                    nombre_cours += 1
+        else: 
+            read = ReadCours(cours_id=cours.id, student_id=student_id, anneeacademique_id=anneeacademique_id)
+            read.save()
+            nombre_cours += 1
+            
     matieres_enseignements = (Enseigner.objects.values("matiere_id")
                     .filter(salle_id=inscription.salle.id, anneeacademique_id=anneeacademique_id)
                     .annotate(nb_mat=Count("matiere_id")))
@@ -393,13 +393,17 @@ def cours_ligne(request):
     context = {
         "setting": setting,
         "matieres": matieres,
-        "salle": inscription.salle
+        "salle": inscription.salle,
+        "nombre_cours": nombre_cours
     }
     
     return render(request, "cours_ligne.html", context)
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission) 
 def detail_coursligne(request, salle_id, matiere_id):
     anneeacademique_id = request.session.get('anneeacademique_id')
+    student_id = request.session.get('student_id')
     setting = get_setting(anneeacademique_id)
     if setting is None:
         return redirect("settings/maintenance")
@@ -412,6 +416,12 @@ def detail_coursligne(request, salle_id, matiere_id):
         salle_id=sl_id, 
         matiere_id=mt_id, 
         anneeacademique_id=anneeacademique_id).order_by("-id")
+    
+    # Changement de statut de lecture du cours
+    reads = ReadCours.objects.filter(student_id=student_id, anneeacademique_id=anneeacademique_id, reading_status=0)
+    for read in reads:
+        read.reading_status = 1
+        read.save()
     
     # Changement de status des commentaires pour marquer qu'ils sont déjà lus
     for cour in cours:
@@ -464,7 +474,111 @@ def detail_coursligne(request, salle_id, matiere_id):
     
     return render(request, "detail_coursligne.html", context) 
 
+@unauthenticated_customer
+def detail_coursligne_student(request, salle_id, matiere_id):
+    anneeacademique_id = request.session.get('anneeacademique_id')
+    setting = get_setting(anneeacademique_id)
+    if setting is None:
+        return redirect("settings/maintenance")
+    
+    sl_id = int(dechiffrer_param(str(salle_id)))
+    mt_id = int(dechiffrer_param(str(matiere_id)))
+    
+    matiere = Matiere.objects.get(id=mt_id)
+    cours = Cours.objects.filter(
+        salle_id=sl_id, 
+        matiere_id=mt_id, 
+        anneeacademique_id=anneeacademique_id).order_by("-id")
+    
+    # Changement de status des commentaires pour marquer qu'ils sont déjà lus
+    for cour in cours:
+        if request.user:
+            comments = CommentCours.objects.filter(cours=cour, reading_status=0).exclude(author_object_id=request.user.id)
+            for comment in comments:
+                comment.reading_status = 1
+                comment.save()
+        else:
+            comments = CommentCours.objects.filter(cours=cour, reading_status=0).exclude(author_object_id=request.session.get('student_id'))
+            for comment in comments:
+                comment.reading_status = 1
+                comment.save()
+    
+    tabCours = []
+    for c in cours:
+        dic = {}
+        dic["cours"] = c
+        # Récuperer les commentaires de cd cours
+        comments = CommentCours.objects.filter(cours=c).order_by("-id")
+        dic["comments"] = comments 
+        dic["nb_comments"] = comments.count()    
+        nb_newcomment = 0
+        # Récupérer le commentaire
+        for comment in comments:
+            commentaire = get_object_or_404(CommentCours, id=comment.id)
+
+            # Vérifier si l'auteur est un étudiant
+            student_type = ContentType.objects.get_for_model(User)  # Type de modèle pour Student
+            if commentaire.author_content_type != student_type:
+                nb_newcomment += 1
+                    
+        dic["nb_newcomment"] = nb_newcomment                        
+        tabCours.append(dic)
+    
+    salle = Salle.objects.get(id=sl_id)       
+
+    context = {
+        "setting": setting,
+        "cours": tabCours,
+        "salle": salle,
+        "matiere": matiere
+    }
+    
+    return render(request, "detail_coursligne_student.html", context) 
+
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission) 
 def add_commentcours(request):
+    
+    if request.method == "POST":
+        content = bleach.clean(request.POST["content"].strip())
+        cours_id = request.POST["cours_id"]
+        cours = Cours.objects.get(id=cours_id)  # Exemple de cours
+        if request.user.id:
+            enseignant = User.objects.get(id=request.user.id)  # Exemple d'enseignant
+            CommentCours.objects.create(
+                cours=cours,
+                author_content_type=ContentType.objects.get_for_model(User),
+                author_object_id=enseignant.id,
+                content=content
+            ) 
+            comments = CommentCours.objects.filter(cours=cours).order_by("-id")
+            context = {
+                "cours_id": cours_id,
+                "comments": comments,
+                "nb_comments": comments.count()
+            }            
+            return render(request, "content_commentcours.html", context)
+        
+        if request.session.get('student_id'):
+            student_id = request.session.get('student_id')
+            student = Student.objects.get(id=student_id)  # Exemple d'étudiant
+
+            CommentCours.objects.create(
+                cours=cours,
+                author_content_type=ContentType.objects.get_for_model(Student),
+                author_object_id=student.id,
+                content=content
+            )
+            
+            comments = CommentCours.objects.filter(cours=cours).order_by("-id")
+            context = {
+                "comments": comments,
+                "nb_comments": comments.count()
+            }            
+            return render(request, "content_commentcours.html", context)
+
+@unauthenticated_customer
+def add_commentcours_student(request):
     
     if request.method == "POST":
         content = bleach.clean(request.POST["content"].strip())
@@ -511,5 +625,8 @@ class delete_comment(View):
         nb_comment = CommentCours.objects.filter(cours=cours).count()  
         comment.delete() 
         total_comment = nb_comment - 1      
-        return JsonResponse({'status': 1, 'nb_comment': total_comment})
+        return JsonResponse({
+            'status': 1, 
+            'nb_comment': total_comment
+        })
         

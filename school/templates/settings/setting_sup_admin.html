@@ -27,7 +27,7 @@
                 <div class="col-md-6">
                     {% if messages %}
                         {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
                             <strong>{{ message }}</strong>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div> 
@@ -58,7 +58,7 @@
                             <div class="col-lg-4 col-md-4 col-xs-12">
                                 <div class="col-12">
                                     <label for="version" class="form-label">Version : </label>
-                                    <input type="text" name="version" value="{{ setting.version }}" class="form-control" id="version" required>
+                                    <input type="text" name="version" value="{{ setting.version }}" class="form-control" id="version" required readonly>
                                 </div>
                             </div>
                         </div>

@@ -91,7 +91,9 @@
 <body>
   <div class="bulletin">
     <div class="header">
+      {% if base64_image %}
       <img src="data:image/png;base64,{{ base64_image }}" alt="Logo" class="logo">
+      {% endif %}
       <div class="header-center">
         <h2>RELEVE DE NOTES</h2>
         <p>Classe : {{ salle }}<p>
@@ -130,7 +132,7 @@
     </div>
 
     <div class="footer">
-      <div>Fais à Brazzaville, le {{ date_actuelle|date:"d/m/Y" }}</div>
+      <div>Fais à {{ anneeacademique.etablissement.ville|title }}, le {{ date_actuelle|date:"d/m/Y" }}</div>
     </div>
 
   </div>

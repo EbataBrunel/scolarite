@@ -56,7 +56,7 @@
                       {% if setting.logo %}
                       <img src="{{ setting.logo.url }}" width="{{ setting.width_logo }}" height="{{ setting.height_logo }}" style="border-radius:100px" alt="Logo">
                       {% else %}
-                      <span class="d-none d-lg-block">{{ parametre.appname }}</span>
+                      <span class="d-none d-lg-block text-warning"><b>{{ setting.appname }}</b></span>
                       {% endif %}
                     {% endif %}
                   </a>
@@ -81,18 +81,27 @@
                   <form method="POST" action="" class="row g-3 needs-validation" novalidate>
                     {% csrf_token %}
                     <div class="col-12">
+                        <select name="etablissement" id="etablissement" class="form-select" aria-label="Default select example" required>
+                            <option value="">-- Selectionnez un établissement --</option>
+                            {% for etablissement in etablissements %}
+                            <option value="{{ etablissement.id }}">{{ etablissement }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <hr>
+                    <div class="col-12">
                       <label for="yourUsername" class="form-label">Non utilisateur</label>
                       <div class="input-group has-validation">
                         <span class="input-group-text" id="inputGroupPrepend">@</span>
                         <input type="text" name="username" class="form-control" id="yourUsername" required>
-                        <div class="invalid-feedback">Please enter your username.</div>
+                        <div class="invalid-feedback">Entrer votre nom utilisateur !</div>
                       </div>
                     </div>
 
                     <div class="col-12">
                       <label for="yourPassword" class="form-label">Mot de passe</label>
                       <input type="password" name="password" class="form-control" id="yourPassword" required>
-                      <div class="invalid-feedback">Please enter your password!</div>
+                      <div class="invalid-feedback">Entrer votre mot de passe !</div>
                     </div>
                     <div class="col-12">
                       {% if setting %}

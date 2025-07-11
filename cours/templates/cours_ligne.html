@@ -35,8 +35,8 @@
                                     <ul class="list-group">
                                       {% for m in matieres %}
                                       <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <a href="{% url 'detail_coursligne' salle.id|crypter_id m.matiere.id|crypter_id %}" class="text-dark">{{ m.matiere }}</a>
-                                        <span class="badge {{ setting.theme }} {{ setting.text_color }} rounded-pill">{{ m.nb_newcomment }}</span>
+                                        <a href="{% url 'detail_coursligne_student' salle.id|crypter_id m.matiere.id|crypter_id %}" class="text-dark">{{ m.matiere }}</a>
+                                        <span class="badge {{ setting.theme }} {{ setting.text_color }} rounded-pill">{{ nombre_cours }}</span>
                                       </li>
                                       {% endfor %}
                                     </ul><!-- End List With badges -->

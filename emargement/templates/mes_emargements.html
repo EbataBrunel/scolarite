@@ -27,8 +27,8 @@
                     <div class="col-md-6">
                         <div class="card">
                             <div class="card-body">
+                              {% if emargement.salle.cycle.libelle == "Collège" or emargement.salle.cycle.libelle == "Lycée" %}
                                 <h5 class="card-title">{{ emargement.salle }}</h5>
-                                
                                 <div class="card">
                                     <div class="card-body">
                                       <h5 class="card-title">Matières</h5>
@@ -56,7 +56,7 @@
                                                                 <div class="modal-dialog modal-dialog-centered modal-xl">
                                                                   <div class="modal-content">
                                                                     <div class="modal-header text-center {{ setting.theme }} {{ setting.text_color }} ">
-                                                                      <h5>Emargement</h5>
+                                                                      <h5>Détails des émargements</h5>
                                                                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                                     </div>
                                                                     <div class="modal-body">
@@ -95,37 +95,37 @@
                                                                                 <table class="table table-bordered">
                                                                                     <thead>
                                                                                         <tr>
-                                                                                            <th>Horaires</th>
-                                                                                            <th>Jours</th>
-                                                                                            <th>Dates</th>
-                                                                                            <th>Séances</th>
-                                                                                            <th>Titres</th>
-                                                                                            <th>Résponsables</th>
+                                                                                            <th>Horaire</th>
+                                                                                            <th>Jour</th>
+                                                                                            <th>Date</th>
+                                                                                            <th>Séance</th>
+                                                                                            <th>Titre</th>
+                                                                                            <th>Résponsable</th>
                                                                                             <th></th>
                                                                                         </tr>
                                                                                     </thead>
                                                                                     <tbody>
                                                                                         {% for e in mt.liste_emargements %}
                                                                                         <tr>
-                                                                                            <td>{{ e.heure_debut }}-{{ e.heure_fin }}</td>
+                                                                                            <td class="white-space">{{ e.heure_debut }}-{{ e.heure_fin }}</td>
                                                                                             <td>{{ e.jour }}</td>
-                                                                                            <td>{{ e.date_emargement|date:"d/m/Y" }}</td>
-                                                                                            <td>{{ e.seance }}</td>
+                                                                                            <td class="white-space">{{ e.date_emargement|date:"d/m/Y" }}</td>
+                                                                                            <td class="white-space">{{ e.seance }}</td>
                                                                                             <td>{{ e.titre }}</td>
-                                                                                            <td>{{ e.user.last_name|title}} {{ e.user.first_name|title}}</td>
-                                                                                            <td><a href="{% url 'presence_student' e.id|crypter_id %}" class="btn btn-secondary btn-sm">Absence des élèves</a></td>
+                                                                                            <td class="white-space">{{ e.user.last_name|title}} {{ e.user.first_name|title}}</td>
+                                                                                            <td class="white-space"><a href="{% url 'presence_student' e.id|crypter_id %}" class="btn btn-secondary btn-sm">Absence des élèves</a></td>
                                                                                         </tr>
                                                                                         {% endfor %}
                                                                                     </tbody>
                                                                                     <tfooter>
                                                                                         <tr>
-                                                                                            <td class="text-center" colspan="6"><b>Heures Totales</b></td>
+                                                                                            <td class="text-center white-space" colspan="6"><b>Heures totales</b></td>
                                                                                             <td>{{ mt.total_time }}</td>
                                                                                         </tr>
                                                                                         <tr>
-                                                                                          <td class="text-center" colspan="4"><b>Cout par heure</b></td>
-                                                                                          <td>{{ mt.cout_heure }}{{ setting.devise }}</td>
-                                                                                          <td>Montant net</td><td class="text-danger"><b>{{ mt.montant_payer|floatformat:2 }}{{ setting.devise }}</b></td>
+                                                                                          <td class="text-center white-space" colspan="4"><b>Coût par heure ({{ setting.devise }})</b></td>
+                                                                                          <td>{{ mt.cout_heure }}</td>
+                                                                                          <td class="white-space">Montant net ({{ setting.devise }})</td><td class="text-danger"><b>{{ mt.montant_payer|floatformat:2 }}</b></td>
                                                                                       </tr>
                                                                                     </tfooter>
                                                                                 </table>
@@ -135,7 +135,7 @@
                                                                         </div>
                                                                     </div>
                                                                     <div class="modal-footer">
-                                                                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer la fenêtre</button>
+                                                                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fenêtre</button>
                                                                     </div>
                                                                   </div>
                                                                 </div>
@@ -151,6 +151,115 @@
                                       {% endfor %}
                                     </div>
                                   </div>
+                              {% else %}
+                                <h5 class="card-title">{{ emargement.salle }}</h5>
+                                <div class="card">
+                                    <div class="card-body">
+                                      {% for m in emargement.months %}
+                                        <div class="card">
+                                          <div class="card-body">
+                                            <h5 class="card-title">{{ m.month }}
+                                              <button type="button" class="btn btn-secondary btn-sm" style="float:right" data-bs-toggle="modal" data-bs-target="#verticalycentered{{ m.month }}">
+                                                Voir plus
+                                              </button>
+                                            </h5>
+                                            <!-- Vertically centered Modal -->
+                                            <div class="modal fade" id="verticalycentered{{ m.month }}" tabindex="-1">
+                                              <div class="modal-dialog modal-dialog-centered modal-xl">
+                                                <div class="modal-content">
+                                                  <div class="modal-header text-center {{ setting.theme }} {{ setting.text_color }} ">
+                                                    <h5>Détails des émargements</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                  </div>
+                                                  <div class="modal-body">
+                                                    <div class="row">
+                                                      <div class="col-md-2"></div>
+                                                      <div class="col-md-8">
+                                                        <div class="card">
+                                                          <div class="card-body">
+                                                            <div class="table-responsive">
+                                                              <table class="table">
+                                                                <tr>
+                                                                  <th>Salle</th>
+                                                                  <td> : {{ emargement.salle }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                  <th>Mois</th>
+                                                                  <td> : {{ m.month }}</td>
+                                                                </tr>
+                                                              </table>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                      <div class="col-md-2"></div>
+                                                    </div>
+                                                    <div class="card">
+                                                      <div class="card-body">
+                                                        <br>
+                                                        <!-- Table with stripped rows -->
+                                                        <div class="table-responsive">
+                                                          <table class="table table-bordered">
+                                                            <thead>
+                                                              <tr>
+                                                                <th>Horaire</th>
+                                                                <th>Jour</th>
+                                                                <th>Date</th>
+                                                                <th class="white-space">Heure à faire</th>
+                                                                <th class="white-space">Heure faite</th>
+                                                                <th class="white-space">Retard total</th>
+                                                                <th>Résponsable</th>
+                                                                <th></th>
+                                                              </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                              {% for e in m.emargements %}
+                                                                <tr>
+                                                                  <td class="white-space">{{ e.emargement.heure_debut }}-{{ e.emargement.heure_fin }}</td>
+                                                                  <td>{{ e.emargement.jour }}</td>
+                                                                  <td class="white-space">{{ e.emargement.date_emargement|date:"d/m/Y" }}</td>
+                                                                  <td class="white-space">{{ e.heure_faire }}</td>
+                                                                  <td>{{ e.heure_faite }}</td>
+                                                                  <td>{{ e.total_heure }}</td>
+                                                                  <td class="white-space">{{ e.emargement.user.last_name|title}} {{ e.emargement.user.first_name|title}}</td>
+                                                                  <td class="white-space"><a href="{% url 'presence_student' e.emargement.id|crypter_id %}" class="btn btn-secondary btn-sm">Absence des élèves</a></td>
+                                                                </tr>
+                                                              {% endfor %}
+                                                            </tbody>
+                                                            <tfooter>
+                                                              <tr>
+                                                                <td class="text-center white-space" colspan="6"><b>Retard total</b></td>
+                                                                <td>{{ m.total_time }}</td>
+                                                              </tr>
+                                                              <tr>
+                                                                <td class="text-center white-space"><b>Coût par jour ({{ setting.devise }})</b></td>
+                                                                <td>{{ m.cout_jour|floatformat:2 }}</td>
+                                                                <td class="text-center white-space"><b>Coût par heure ({{ setting.devise }})</b></td>
+                                                                <td>{{ m.cout_heure|floatformat:2 }}</td>
+                                                                <td class="text-center white-space"><b>Nombre absences</b></td>
+                                                                <td>{{ m.nombre_absences }}</td>
+                                                                <td class="white-space">Salaire ({{ setting.devise }})</td><td class="text-danger"><b>{{ m.montant_payer|floatformat:2 }}</b></td>
+                                                              </tr>
+                                                            </tfooter>
+                                                          </table>
+                                                        </div>
+                                                        <!-- End Table with stripped rows -->
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                  <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div><!-- End Vertically centered Modal-->
+                                                
+                                          </div>
+                                        </div>
+                                      {% endfor %}
+                                    </div>
+                                  </div>
+                              {% endif %}
                             </div>
                         </div>
                     </div>

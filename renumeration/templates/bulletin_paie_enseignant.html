@@ -90,9 +90,9 @@
 
     <table>
       <tr><td colspan="2" class="section-title">Informations Employé</td></tr>
-      <tr><th>Nom</th><td>{{ renumeration.personnel.last_name|title }} {{ renumeration.personnel.first_name|title }}</td></tr>
+      <tr><th>Nom</th><td>{{ renumeration.user.last_name|title }} {{ renumeration.user.first_name|title }}</td></tr>
       <tr><th>Poste</th><td>{{ poste }}</td></tr>
-      <tr><th>Matricule</th><td>EMP0{{ renumeration.personnel.id }}</td></tr>
+      <tr><th>Matricule</th><td>EMP0{{ renumeration.user.id }}</td></tr>
     </table>
 
     <table>
@@ -101,24 +101,26 @@
       <tr><th>Adresse</th><td>{{ setting.address }}</td></tr>
       <tr><th>Téléphone</th><td>{{ setting.phone }} </td></tr>
       <tr><th>Email</th><td>{{ setting.email }}</td></tr>
-      <tr><th>Période</th><td>{{ renumeration.month }} 2025</td></tr>
+      <tr><th>Mois </th><td>{{ periode }} </td></tr>
     </table>
 
     <table>
-      <tr><td colspan="2" class="section-title">Rémunération</td></tr>
-      <tr><th>Salaire de base</th><td>{{ renumeration.amount|floatformat:2 }} {{ setting.devise }}</td></tr>
-      <tr><th>Heures supplémentaires</th><td>0,00 {{ setting.devise }}</td></tr>
-      <tr><th>Primes (Transport, repas)</th><td>{{ renumeration.indeminte|floatformat:2 }} {{ setting.devise }}</td></tr>
+      <tr><td colspan="2" class="section-title">Rémunération ({{ setting.devise }})</td></tr>
+      <tr><th>Salaire de base </th><td>{{ renumeration.amount|floatformat:2 }}</td></tr>
+      <tr><th>Heures supplémentaires</th><td>0,00 </td></tr>
+      <tr><th>Primes (Transport, repas)</th><td>{{ renumeration.indeminte|floatformat:2 }}</td></tr>
     </table>
 
     <table>
-      <tr><td colspan="2" class="section-title">Retenues</td></tr>
-      <tr><th>Cotisations sociales</th><td>0,00 {{ setting.devise }}</td></tr>
-      <tr><th>Epargne</th><td>0,00 {{ setting.devise }}</td></tr>
+      <tr><td colspan="2" class="section-title">Retenues ({{ setting.devise }})</td></tr>
+      <tr><th>Cotisations sociales</th><td>0,00 </td></tr>
+      <tr><th>Epargne</th><td>0,00</td></tr>
     </table>
 
     <div class="net-pay">Net à payer : {{ renumeration.total_amount|floatformat:2 }} {{ setting.devise }}</div>
-
+    <div>
+      Fait à {{ anneeacademique.etablissement.ville|title }}, le {{ date_actuelle }}<br><br>
+    </div>
     <div class="footer">
         Dans votre intérêt et pour vous aider à faire valoir vos droits, conservez ce bulletin sans limitation de durée<br>
         Pour la définition des termes employés, contater le {{ setting.phone }}

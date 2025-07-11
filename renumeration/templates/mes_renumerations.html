@@ -11,7 +11,7 @@
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
-          <li class="breadcrumb-item active">Mes rénumérations</li>
+          <li class="breadcrumb-item active">Mes rémunérations</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -22,7 +22,7 @@
 
           <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Liste de mes rénumérations</h5>
+                <h5 class="card-title">Liste de mes rémunérations</h5>
 
                 <!-- Table with stripped rows -->
                 <div class="table-responsive">
@@ -64,34 +64,34 @@
                                                             </thead>
                                                             <tbody>
                                                             {% for m in e.matieres %}
-                                                                <tr>
+                                                              <tr>
                                                                     <th colspan="5" class="text-center">{{ m.matiere }}</th>
-                                                                </tr>
-                                                                <tr>
+                                                              </tr>
+                                                              <tr>
                                                                 <th>Horaire</th>
                                                                 <th>Jour</th>
                                                                 <th>Date</th>
                                                                 <th>Séance</th>
-                                                                <th>Heure</th>
-                                                            </tr>
-                                                                {% for e in m.emargements %}
+                                                                <th class="white-space">Heure total</th>
+                                                              </tr>
+                                                              {% for e in m.emargements %}
                                                                 <tr>
-                                                                    <td>{{ e.emargement.heure_debut }} - {{ e.emargement.heure_fin }}</td>
+                                                                    <td class="white-space">{{ e.emargement.heure_debut }} - {{ e.emargement.heure_fin }}</td>
                                                                     <td>{{ e.emargement.jour }}</td>
-                                                                    <td>{{ e.emargement.date_emargement|date:"d/m/Y" }}</td>
+                                                                    <td class="white-space">{{ e.emargement.date_emargement|date:"d/m/Y" }}</td>
                                                                     <td>{{ e.emargement.seance }}</td>
-                                                                    <td>{{ e.hour }}</th>
+                                                                    <td class="white-space">{{ e.hour }}</th>
                                                                 </tr>
-                                                                {% endfor %}
+                                                              {% endfor %}
                                                                 <tr>
-                                                                <td class="text-center white-space">Cout heure ({{ setting.devise }})</td>
-                                                                <th>{{ m.cout_heure|floatformat:2 }}</th>
-                                                                <th colspan="2" class="text-center">Total</th>
-                                                                <th><b>{{ m.total_time }}</b></th>
+                                                                  <td class="text-center white-space">Cout heure ({{ setting.devise }})</td>
+                                                                  <th>{{ m.cout_heure|floatformat:2 }}</th>
+                                                                  <th colspan="2" class="text-center">Total</th>
+                                                                  <th><b>{{ m.total_time }}</b></th>
                                                                 </tr>
                                                                 <tr>
-                                                                <td colspan="4" class="text-center white-space">Montant total ({{ setting.devise }})</td>
-                                                                <td>{{ m.montant_total_matiere|floatformat:2 }}</td>
+                                                                  <td colspan="4" class="text-center white-space">Montant total ({{ setting.devise }})</td>
+                                                                  <td>{{ m.montant_total_matiere|floatformat:2 }}</td>
                                                                 </tr>
                                                             {% endfor %}
                                                             </tbody>
@@ -102,11 +102,11 @@
                                                     <div class="table-responsive">
                                                         <table class="table table-bordered">
                                                             <tr>
-                                                                <th>HeureTotal</th>
+                                                                <th class="white-space">Heure totale</th>
                                                                 <th><b>{{ r.time_total }}</b></th>
                                                             </tr>
                                                             <tr>
-                                                                <th>MontantTotal ({{ setting.devise }})</th>
+                                                                <th class="white-space">Montant total ({{ setting.devise }})</th>
                                                                 <th>{{ r.montant_total|floatformat:2 }}</th>
                                                             </tr>
                                                             <tr>
@@ -114,13 +114,13 @@
                                                                 <th>{{ r.renumeration.indeminte|floatformat:2 }}</th>
                                                             </tr>
                                                             <tr>
-                                                                <th>SalaireNet ({{ setting.devise }})</th>                                                            
-                                                                <th class="bg-success text-light"><span>{{ r.net_payer|floatformat:2 }}</span></th>
+                                                                <th class="white-space">Salaire net ({{ setting.devise }})</th>                                                            
+                                                                <th class="text-success">{{ r.net_payer|floatformat:2 }}</th>
                                                             </tr>
                                                         </table>
                                                     </div>
                                                     <p class="text-center">
-                                                      <a href="{% url 'bulletin_paie_enseignant' r.renumeration.id|crypter_id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i> Télécharger le fichier</a>
+                                                      <a href="{% url 'bulletin_paie_enseignant' r.renumeration.id|crypter_id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i> Télécharger le bulletin de paye</a>
                                                     </p>
                                                 </div>
                                               </div>

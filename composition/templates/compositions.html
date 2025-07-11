@@ -24,13 +24,15 @@
             <div class="card-body">
                 <h5 class="card-title">Liste des compositions</h5>
                 {% if anneeacademique.status_cloture %}
-                <div align="right">
-                    {% if setting.theme == "bg-default" %}
-                    <a href="{% url 'add_composition' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
-                    {% else %}
-                    <a href="{% url 'add_composition' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
-                    {% endif %}
-                </div>
+                  {% if request.session.group_name == "Promoteur" or request.session.group_name == "Directeur Général" %}
+                  <div align="right">
+                      {% if setting.theme == "bg-default" %}
+                      <a href="{% url 'add_composition' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                      {% else %}
+                      <a href="{% url 'add_composition' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une composition</a>
+                      {% endif %}
+                  </div>
+                  {% endif %}
                 {% endif %}
                 <!-- Table with stripped rows -->
                 <div class="table-responsive">

@@ -61,29 +61,132 @@
                         <thead>
                             <tr>
                                 <th>Id</th>
+                                {% if salle.cycle.libelle == "Collège" or salle.cycle.libelle == "Lycée" %}
                                 <th>Matière</th>
+                                {% endif %}
                                 <th>Horaire</th>
                                 <th>Jour</th>
-                                <th>Date</th>
-                                {% if anneeacademique.status_cloture == False %}
+                                <th>Motif</th>
+                                <th class="whie-space">Date absence</th>
+                                <th class="white-space">Date enregistrement</th>
+                                <th>Décision</th>
+                                {% if anneeacademique.status_cloture %}
                                 <th>Actions</th>
                                 {% endif %}
                             </tr>
                         </thead>
                         <tbody>
-                            {% for absence in absences %}
+                            {% for a in absences %}
                             <tr>
-                                <td>{{ absence.id }}</td>
-                                <td class="white-space">{{ absence.matiere }}</td>
-                                <td class="white-space">{{ absence.heure_debut }}-{{ absence.heure_fin }}</td>
-                                <td>{{ absence.jour }}</td>
-                                <td class="white-space">{{ absence.date_absence|date:"d/m/Y" }}</td>
-                                {% if anneeacademique.status_cloture == False %}
+                                <td>{{ a.absence.id }}</td>
+                                {% if salle.cycle.libelle == "Collège" or salle.cycle.libelle == "Lycée" %}
+                                <td class="white-space">{{ a.absence.matiere }}</td>
+                                {% endif %}
+                                <td class="white-space">{{ a.absence.heure_debut }}-{{ a.absence.heure_fin }}</td>
+                                <td>{{ a.absence.jour }}</td>
+                                <td>{{ a.absence.motif }}</td>
+                                <td class="white-space">{{ a.absence.date_absence|date:"d/m/Y" }}</td>
+                                <td class="white-space">{{ a.absence.date_enregistrement|date:"d/m/Y h:m:s" }}</td>
                                 <td>
-                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ absence.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
-                                    <a href="{% url 'edit_absence' absence.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
+                                  {% if a.absence.status_decision == 0 %}
+                                    {% if a.status_paye == False %}
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ a.absence.id }}" title="Détail"><span id="status-decision{{ a.absence.id }}"><span class="badge rounded-pill bg-warning">En attente</span></span></a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="deleteModal{{ a.absence.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                              <div class="modal-header bg-warning">
+                                                <h5 class="modal-title">Décision</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <h3 class="card-title"><b>Motif : </b>{{ a.absence.motif }}</h3>
+                                                    <p class="content-status-decision{{ a.absence.id }}">
+                                                      <a href="#" data-id="{{ a.absence.id }}" data-status="1" data-enseignant="{{ a.absence.enseignant.id|crypter_id }}" class="btn btn-success btn-sm decision-absence-enseignant">Redevable</a>
+                                                      <a href="#" data-id="{{ a.absence.id }}" data-status="2" data-enseignant="{{ a.absence.enseignant.id|crypter_id }}" class="btn btn-danger btn-sm decision-absence-enseignant">Non redevable</a>
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                      </div><!-- Fin de delete Modal-->
+                                    {% else %}
+                                      <span class="badge rounded-pill bg-warning">En attente</span>
+                                    {% endif %}
+                                  {% elif a.absence.status_decision == 1 %}
+                                    {% if a.status_paye == False %}
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ a.absence.id }}" title="Détail"><span id="status-decision{{ a.absence.id }}"><span class="badge rounded-pill bg-success"> Recevable </span></span></a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="deleteModal{{ a.absence.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                              <div class="modal-header bg-warning">
+                                                <h5 class="modal-title">Décision</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <h3 class="card-title"><b>Motif : </b>{{ a.absence.motif }}</h3>
+                                                    <p class="content-status-decision{{ a.absence.id }}">
+                                                      <a href="#" data-id="{{ a.absence.id }}" data-status="2" data-enseignant="{{ a.absence.enseignant.id|crypter_id }}" class="btn btn-danger btn-sm decision-absence-enseignant">Non redevable</a>
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                      </div><!-- Fin de delete Modal-->
+                                    {% else %}
+                                      <span class="badge rounded-pill bg-success"> Recevable </span>
+                                    {% endif %}
+                                  {% else %}
+                                    {% if a.status_paye == False %}
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ a.absence.id }}" title="Détail"><span id="status-decision{{ a.absence.id }}"><span class="badge rounded-pill bg-danger"> Non recevable </span></span></a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="deleteModal{{ a.absence.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                              <div class="modal-header bg-warning">
+                                                <h5 class="modal-title">Décision</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <h3 class="card-title"><b>Motif : </b>{{ a.absence.motif }}</h3>
+                                                    <p class="content-status-decision{{ a.absence.id }}">
+                                                      <a href="#" data-id="{{ a.absence.id }}" data-status="1" data-enseignant="{{ a.absence.enseignant.id|crypter_id }}" class="btn btn-success btn-sm decision-absence-enseignant"> Redevable </a>
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                      </div><!-- Fin de delete Modal-->
+                                    {% else %}
+                                      <span class="badge rounded-pill bg-danger"> Non recevable </span>
+                                    {% endif %}
+                                  {% endif %}
+                                </td>
+                                {% if anneeacademique.status_cloture %}
+                                <td>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ a.absence.id }}" title="Supprimer" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                    <a href="{% url 'edit_absence' a.absence.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil "></i></a>
                                     <!-- Start de delete Modal -->
-                                    <div class="modal fade" id="deleteModal{{ absence.id }}" tabindex="-1">
+                                    <div class="modal fade" id="deleteModal{{ a.absence.id }}" tabindex="-1">
                                         <div class="modal-dialog modal-sm">
                                           <div class="modal-content">
                                             <div class="modal-header">
@@ -95,7 +198,7 @@
                                             </div>
                                             <div class="modal-footer">
                                               <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                              <a href="{% url 'del_absence' absence.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                              <a href="{% url 'del_absence' a.absence.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
                                             </div>
                                           </div>
                                         </div>

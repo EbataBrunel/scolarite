@@ -13,7 +13,7 @@
             {% if request.session.group_name == "Surveillant Général"%}
             <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
             {% else %}
-                <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
             {% endif %}
           <li class="breadcrumb-item active">Mes absences</li>
         </ol>
@@ -28,28 +28,103 @@
             <div class="card-body">
                 <h5 class="card-title">Mes absences</h5>
                 
-                <!-- Table with stripped rows -->
-                <div class="table-responsive">
-                    <table class="table datatable">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Motif</th>
-                                <th>Responsable</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for absence in absences %}
-                            <tr>
-                                <td>{{ absence.date_absence|date:"d/m/Y" }}</td>
-                                <td>{{ absence.motif }}</td>
-                                <td>{{ absence.admin.last_name|title }} {{ absence.admin.first_name|title }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">Mois</h5>
+                    {% for m in months_absence %}
+                        <!-- Accordion without outline borders -->
+                        <div class="accordion accordion-flush" id="accordionFlushExample">
+                          <div class="accordion-item">
+                            <h2 class="accordion-header" id="flush-headingOne">
+                              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ m.month }}" aria-expanded="false" aria-controls="flush-collapseOne">
+                                {% if m.nb_absences > 1 %}
+                                  {{ m.month }} | <span class="text-secondary"> {{ m.nb_absences }} absences </span>
+                                {% else %}
+                                  {{ m.month }} | <span class="text-secondary"> {{ m.nb_absences }} absence </span>
+                                {% endif %}
+                              </button>
+                            </h2>
+                            <div id="flush-collapse{{ m.month }}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                              <div class="accordion-body">
+                                <div class="card">
+                                  <div class="card-body">
+                                    <h6 class="card-title text-center">Mes absences en <b>{{ m.month }}</b></h6>
+                                    <div class="table-responsive">
+                                      <table class="table">
+                                        <tr>
+                                          <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Date absence</th>
+                                          <th class="{{ setting.theme }} {{ setting.text_color }}">Motif</th>
+                                          <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Date enregistrement</th>
+                                          <th class="{{ setting.theme }} {{ setting.text_color }}">Decision</th>
+                                        </tr>
+                                        {% for a in m.absences %}  
+                                        <tr>
+                                          <td class="white-space">{{ a.date_absence|date:"d/m/Y" }}</td>
+                                          <td>
+                                            <span id="content-motif{{ a.id }}">
+                                            {% if a.motif %}
+                                              <span>{{ a.motif }}</span>
+                                            {% elif a.date_limite <= timezone.now %}
+                                              <span></span>
+                                            {% else %}
+                                                <a href="#"  data-bs-toggle="modal" data-bs-target="#motifModal{{ a.id }}" title="Motif" class="btn btn-primary btn-sm"> Justifier </a>
+                                                <!-- Start de delete Modal -->
+                                                <div class="modal fade" id="motifModal{{ a.id }}" tabindex="-1">
+                                                  <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                      <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                                        <h5 class="modal-title text-light">Justifier votre absence du <b>{{ a.date_absence }}</b></h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                      </div>
+                                                      <div class="modal-body">
+                                                        <div class="bg-secondary text-ligh" style="padding:10px; border-radius:10px">
+                                                          <p> Vous avez jusqu'au {{ a.date_limite|date:"d/m/Y h:m:s" }} pour justifier votre absence du {{ a.date_absence|date:"d/m/Y" }}</p>
+                                                        </div>
+                                                        <br>
+                                                        <!-- Vertical Form -->
+                                                        <form method="post" action="" id="formMotifAbsence-{{ a.id }}" class="row g-3">
+                                                          {% csrf_token %}
+                                                          <input type="text" name="id" value="{{ a.id }}" hidden="True" required="True">
+                                                          <input type="text" name="type_absence" value="Administrateur" hidden="True" required="True">
+                                                          <div class="col-12">
+                                                            <label for="motif" class="form-label">Motif * </label>
+                                                            <textarea class="form-control" name="motif" id="motif" style="height: 50px;"></textarea>
+                                                          </div>
+                                                          <div class="text-center">
+                                                            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                                                          </div>
+                                                        </form><!-- Vertical Form -->
+                                                      </div>
+                                                      <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div><!-- Fin de eval Modal-->
+                                            {% endif %}
+                                            </span>
+                                          </td>
+                                          <td class="white-space">{{ a.date_enregistrement|date:"d/m/Y h:m:s" }}</td>
+                                          {% if a.status_decision == 0 %}
+                                            <td><span class="badge rounded-pill bg-warning">En attente</span></td>
+                                          {% elif a.status_decision == 1 %}
+                                            <td><span class="badge rounded-pill bg-success">Recevable</span></td>
+                                          {% else %}
+                                            <td><span class="badge rounded-pill bg-danger">Non recevable</span></td>
+                                          {% endif %}
+                                        </tr>
+                                        {% endfor %}
+                                      </table> 
+                                    </div> 
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div><!-- End Accordion without outline borders -->
+                    {% endfor %}
+                  </div>
                 </div>
-                <!-- End Table with stripped rows -->
             </div>
           </div>
         </div>

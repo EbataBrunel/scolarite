@@ -24,57 +24,65 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Edition d'un cours en ligne</h5>
-              <!-- On inclut l'image de chargement -->
-              {% include 'global/_loading.html' %}
-              <!-- Vertical Form -->
-              <form method="post" action="" id="formUpdateCours" class="row g-3">
-                {% csrf_token %}
-                <div class="row">
-                  <div class="col-md-6">
-                    <input type="text" name="id" id="id" value="{{ cours.id }}" hidden="True" required="True">
-                    <div class="col-12 margin-bottom">
-                        <label for="salle_ens" class="form-label">Salle : </label>
-                        <select name="salle" id="salle_ens" class="form-select" aria-label="Default select example" required>
-                            <option value="{{ cours.salle.id }}">{{ cours.salle }}</option>
-                            {% for salle in salles %}
-                            <option value="{{ salle.id }}">{{ salle }}</option>
-                            {% endfor %}
-                        </select>
+              {% if contrat.status_signature %}
+                <!-- On inclut l'image de chargement -->
+                {% include 'global/_loading.html' %}
+                <!-- Vertical Form -->
+                <form method="post" action="" id="formUpdateCours" class="row g-3">
+                  {% csrf_token %}
+                  <div class="row">
+                    <div class="col-md-6">
+                      <input type="text" name="id" id="id" value="{{ cours.id }}" hidden="True" required="True">
+                      <div class="col-12 margin-bottom">
+                          <label for="salle_ens" class="form-label">Salle : </label>
+                          <select name="salle" id="salle_ens" class="form-select" aria-label="Default select example" required>
+                              <option value="{{ cours.salle.id }}">{{ cours.salle }}</option>
+                              {% for salle in salles %}
+                              <option value="{{ salle.id }}">{{ salle }}</option>
+                              {% endfor %}
+                          </select>
+                      </div>
+                      <div id="matiereview">
+                          <div class="col-12 margin-bottom">
+                              <label for="matiere" class="form-label">Matiere : </label>
+                              <select name="matiere" id="matiere" class="form-select" aria-label="Default select example" required>
+                                  <option value="{{ cours.matiere.id }}">{{ cours.matiere }}</option>
+                                  {% for matiere in matieres %}
+                                  <option value="{{ matiere.id }}">{{ matiere }}</option>
+                                  {% endfor %}
+                              </select>
+                          </div>
+                      </div>
+                      <div class="col-12 margin-bottom">
+                        <label for="title" class="form-label">Titre : </label>
+                        <input type="text" name="title" value="{{ cours.title }}" class="form-control" id="Note" required>
+                      </div>
                     </div>
-                    <div id="matiereview">
-                        <div class="col-12 margin-bottom">
-                            <label for="matiere" class="form-label">Matiere : </label>
-                            <select name="matiere" id="matiere" class="form-select" aria-label="Default select example" required>
-                                <option value="{{ cours.matiere.id }}">{{ cours.matiere }}</option>
-                                {% for matiere in matieres %}
-                                <option value="{{ matiere.id }}">{{ matiere }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-12 margin-bottom">
-                      <label for="title" class="form-label">Titre : </label>
-                      <input type="text" name="title" value="{{ cours.title }}" class="form-control" id="Note" required>
+                    <div class="col-md-6">
+                      <div class="col-12 margin-bottom">
+                          <label for="comment" class="form-label">Commentaire : </label>
+                          <textarea class="form-control" name="comment" id="comment" style="height: 120px;" required>{{ cours.comment }}</textarea>
+                      </div>
+                      <div class="form-group">
+                          <label for="file">Fichier *</label>
+                          <input type="file" name="file" id="file" class="form-control">
+                          <p>Actuellement : {{ cours.file }}</p>
+                      </div>
                     </div>
                   </div>
-                  <div class="col-md-6">
-                    <div class="col-12 margin-bottom">
-                        <label for="comment" class="form-label">Commentaire : </label>
-                        <textarea class="form-control" name="comment" id="comment" style="height: 120px;" required>{{ cours.comment }}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="file">Fichier *</label>
-                        <input type="file" name="file" id="file" class="form-control">
-                        <p>Actuellement : {{ cours.file }}</p>
-                    </div>
+                  <div class="text-center">
+                      <a href="{% url 'detail_coursligne' cours.salle.id|crypter_id cours.matiere.id|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                      <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Publier le cours </button>
                   </div>
+                </form><!-- Vertical Form -->
+              {% else %}
+              <div class="card">
+                <div class="card-body">
+                  <br>
+                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord signé le contrat, s'il n'a pas encore été fait, avant d'enregistrer un programme. <a href="{% url 'contrat/contrats_user' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Je signe le contrat</a></h4>
                 </div>
-                <div class="text-center">
-                    <a href="{% url 'detail_coursligne' cours.salle.id|crypter_id cours.matiere.id|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Publier le cours </button>
-                </div>
-              </form><!-- Vertical Form -->
-
+              </div>
+              {% endif %}
               <!-- Start message Modal -->
               <div class="modal fade" id="message" tabindex="-1">
                 <div class="modal-dialog modal-sm">

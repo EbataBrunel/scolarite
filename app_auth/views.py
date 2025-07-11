@@ -11,34 +11,60 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth import views as auth_views
-from django.urls import reverse_lazy
+from django.db.models import Count
 from django.db import transaction
 from django.contrib import messages
 from django.http import JsonResponse
+from django.urls import reverse_lazy
 
 # Importation des modules locaux
-from school.views import get_setting_sup_user, get_setting 
 from .tokens import account_activation_token
+from school.views import get_setting_sup_user, get_setting 
 from .utils import send_email_with_html_body
 from .decorator import*
 from .models import *
 from .forms import *
+from etablissement.models import Etablissement
 from anneeacademique.models import AnneeCademique
 from inscription.models import Inscription
 from enseignement.models import Enseigner
 from renumeration.models import Contrat, Renumeration
 from absence.models import Absence, AbsenceAdmin
 from emargement.models import Emargement
-from paiement.models import Payment, AutorisationPayment, AutorisationPaymentSalle 
+from paiement.models import Payment, AutorisationPayment, AutorisationPaymentSalle, ContratEtablissement 
 from depense.models import Depense
 from composition.models import Composer
 from school.models import Setting, SettingSupUser
 from scolarite.utils.crypto import chiffrer_param, dechiffrer_param
 
+permission_user = ["Promoteur", "Directeur Général", "Directeur des Etudes", "Gestionnaire", "Surveillant Général", "Enseignant"]
+permission_admin = ["Promoteur", "Directeur Général", "Directeur des Etudes", "Gestionnaire", "Surveillant Général"]
 permission_promoteur_DG = ['Promoteur', 'Directeur Général']
 permission_sup_user_promoteur = ['Promoteur', 'Directeur Général', 'Super user', 'Super admin']
 permission_sup_user = ["Super user", "Super admin"]
 permission_gestionnaire = ['Promoteur', 'Directeur Général', 'Gestionnaire']
+
+# Trier les noms des groups par ordre de chef
+def trier_group_name(tab_names_groups):
+    group_name = ""
+    if "Super user" in tab_names_groups:
+        group_name = "Super user"
+    elif "Super admin" in tab_names_groups:
+        group_name = "Super admin"
+    elif "Promoteur" in tab_names_groups:
+        group_name = "Promoteur"
+    elif "Directeur Général" in tab_names_groups:
+        group_name = "Directeur Général"
+    elif "Directeur des Etudes" in tab_names_groups:
+        group_name = "Directeur des Etudes"
+    elif "Gestionnaire" in tab_names_groups:
+        group_name = "Gestionnaire"
+    elif "Surveillant Général" in tab_names_groups:
+        group_name = "Surveillant Général"
+    else:
+        group_name = "Enseignant"
+        
+    return group_name
 
 @transaction.atomic
 def add_annee_setting(request):   
@@ -178,7 +204,7 @@ def register_supuser(request):
                         "setting":setting,
                     }
                     has_send = send_email_with_html_body(
-                        subjet = subject,
+                        subject = subject,
                         receivers = receivers,
                         template = template,
                         context = context
@@ -235,18 +261,25 @@ def success_account(request, id):
             return redirect("user/register_supuser")
 
 @transaction.atomic
-def register(request, etablissement_abreviation):
-    # Récuperer l'etablissement
-    etablissement = Etablissement.objects.filter(abreviation=etablissement_abreviation).first()
-    if etablissement is None:
+def register(request):
+    setting = get_setting_sup_user()
+    # Récuperer la dernière académique du groupe
+    anneeacademique_group = AnneeCademique.objects.filter(etablissement=None).order_by("-annee_debut").first()  
+    # Récuperer des années académiques
+    anneeacademiques = AnneeCademique.objects.filter(annee_debut=anneeacademique_group.annee_debut, annee_fin=anneeacademique_group.annee_fin).exclude(etablissement=None).order_by("etablissement")
+    # Récuperer les établissements aux quels on a signé le contrat
+    etablissements = []
+    for anneeacademique in anneeacademiques:
+        if ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique.etablissement).exists():
+            etablissements.append(anneeacademique.etablissement)
+    group = Group.objects.get(name="Enseignant")
+    if anneeacademique_group is None or group is None: 
         return redirect("settings/maintenance")
-    
-    anneeacademique = AnneeCademique.objects.filter(etablissement_id=etablissement.id).order_by("-id")[0]
-    setting = get_setting(anneeacademique.id)
     form = UserForm()
     if request.method == "POST":
         form = UserForm(request.POST)
         if form.is_valid():
+            etablissement_id = bleach.clean(request.POST["etablissement"].strip())
             email = form.cleaned_data.get("email")
             #On verifie si l'adresse e-mail correspond bien
             regexp = r"^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$"
@@ -259,22 +292,21 @@ def register(request, etablissement_abreviation):
                 else:
                     count0 = User.objects.all().count()
                     user = form.save() 
-                    # Associer l'utilisateur au groupe de l'établissement
-                    group = etablissement.groups.filter(name="Enseignant").first()
-                    #user.groups.add(group)
-                    group.user_set.add(user)
+                    # Récuperer l'établissement
+                    etablissement = Etablissement.objects.get(id=etablissement_id)
+                    # Associer l'utilisateur à l'établissement
+                    EtablissementUser.objects.create(
+                        group=group,
+                        etablissement=etablissement,
+                        user=user
+                    )
                     #On desactive l'accès du membre
                     user.is_active = False
                     user.save()
                     #On recupere nombre total des membres après la création du compte
                     count1 = User.objects.all().count()
-                    
-                    # Enregsitrer le profil
-                    profil = Profile(
-                        user=user
-                    )
-                    profil.save()
-                    
+                    #On recupere nombre total des membres après la création du compte
+                    count1 = User.objects.all().count()
                     #On envoie l'e-mail au membre pour activer son compte
                     subject = "Activation de compte"
                     template = "email/emailactivation.html"
@@ -289,20 +321,20 @@ def register(request, etablissement_abreviation):
                         "setting":setting,
                     }
                     has_send = send_email_with_html_body(
-                        subjet = subject,
+                        subject = subject,
                         receivers = receivers,
                         template = template,
                         context = context
                     )
                     
                     if count0 < count1 and has_send == True:
-                        return redirect("user/success-account-etablissement", chiffrer_param(str(user.id)), etablissement.abreviation)
+                        return redirect("user/success-account-etablissement", chiffrer_param(str(user.id)), chiffrer_param(str(etablissement.id)))
                     else:
                         messages.error(request, "Inscription a échouée.")
                         context = {
                             "form": form,
                             "setting": setting,
-                            "etablissement_abreviation": etablissement_abreviation
+                            "etablissements": etablissements
                         }
                         return render(request, "user/register.html", context) 
         else:
@@ -317,37 +349,41 @@ def register(request, etablissement_abreviation):
             context = {
                 "form": form,
                 "setting": setting,
-                "etablissement_abreviation": etablissement_abreviation
+                "etablissements": etablissements
             }
             return render(request, "user/register.html", context)
 
     context = {
         "form": form,
         "setting": setting,
-        "etablissement_abreviation": etablissement_abreviation
+        "etablissements": etablissements
     }
     return render(request, "user/register.html", context)
 
-def success_account_etablissement(request, id, abreviation_etablissement):
-    anneeacademique_id = request.session.get('anneeacademique_id')
-    setting = get_setting(anneeacademique_id)
+def success_account_etablissement(request, user_id, etablissement_id):
+    etab_id = int(dechiffrer_param(str(etablissement_id)))   
+    # Récuperer l'établissement
+    etablissement = Etablissement.objects.get(id=etab_id)
+    anneeacademique = AnneeCademique.objects.filter(etablissement_id=etablissement.id).order_by("-annee_debut").first()
+    setting = get_setting(anneeacademique.id)
     if setting is None:
         redirect("settings/maintenance")
     else:
         try:
-            user_id = int(dechiffrer_param(str(id)))
-            user = User.objects.get(id=user_id)
+            id = int(dechiffrer_param(str(user_id)))
+            user = User.objects.get(id=id)
         except:
             user = None
             
         if user:
             context = {
                 "user": user,
+                "etablissement": etablissement,
                 "setting": setting
             }
             return render(request, "user/success-account-etablissement.html", context)
         else:
-            return redirect("user/register", abreviation_etablissement)
+            return redirect("user/register")
     
 #Activation du compte
 def activate(request, uidb64, token):
@@ -361,46 +397,30 @@ def activate(request, uidb64, token):
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()
-        messages.success(request, "Activation effectuée avec succès. Vous pouvez alors vous connecter.")
-        return redirect("connection/login")
+        # Vérifier si l'utilisateur a un établissement 
+        if EtablissementUser.objects.filter(user=user).exists():
+            messages.success(request, "Activation effectuée avec succès. Vous pouvez alors vous connecter.")
+            return redirect("connection/account")
+        else:
+            messages.success(request, "Activation effectuée avec succès. Vous pouvez alors vous connecter.")
+            return redirect("connection/login")
     else:
          messages.error(request, "Le lien d'activation est invalide")
 
     return redirect("connection/login")
 
-# Trier les noms des groups par ordre de chef
-def trier_group_name(tab_names_groups):
-    group_name = ""
-    if "Super user" in tab_names_groups:
-        group_name = "Super user"
-    elif "Super admin" in tab_names_groups:
-        group_name = "Super admin"
-    elif "Promoteur" in tab_names_groups:
-        group_name = "Promoteur"
-    elif "Directeur Général" in tab_names_groups:
-        group_name = "Directeur Général"
-    elif "Directeur des Etudes" in tab_names_groups:
-        group_name = "Directeur des Etudes"
-    elif "Gestionnaire" in tab_names_groups:
-        group_name = "Gestionnaire"
-    elif "Surveillant Général" in tab_names_groups:
-        group_name = "Surveillant Général"
-    else:
-        group_name = "Enseignant"
-        
-    return group_name
-
 def login_user(request):
     #Destruction de toutes les sessions
     logout(request)
-    
+    request.session.clear()
+                
     nb_anneeacademiques = AnneeCademique.objects.filter(etablissement=None).count()
     if nb_anneeacademiques == 0: 
         return redirect("add_annee_setting")
     
     request.session.clear()
     setting = get_setting_sup_user()
-    anneeacademique = AnneeCademique.objects.filter(etablissement=None).order_by("-id")[0]
+    anneeacademique = AnneeCademique.objects.filter(etablissement=None).order_by("-id").first()
     if request.method == "POST":
         form = LoginForm(request.POST)
         # Verifier la validité du formulaire
@@ -423,7 +443,14 @@ def login_user(request):
                     for group in groups:
                         if group.name in ["Super user", "Super admin"]:
                             tab_names_groups.append(group.name)
-                        
+                            
+                    if len(tab_names_groups) == 0:
+                        context = {
+                            "form": form,
+                            "setting": setting
+                        }
+                        messages.error(request, "Vous n'avez pas de permission")
+                        return render(request, "connection/login.html", context)     
                     group_name = trier_group_name(tab_names_groups)
                     request.session["group_name"] = group_name
                     if user.is_active:
@@ -480,77 +507,92 @@ def logout_user(request):
                 del request.session[key]
         return redirect("connection/login")
     else:
-        etablissement_id = request.session.get('etablissement_id')
-        etablissement = Etablissement.objects.get(id=etablissement_id)    
         logout(request)
         for key in request.session.keys():
             del request.session[key]
-        return redirect("connection/account", etablissement.abreviation)
+        return redirect("connection/account")
             
             
-def account_user(request, etablissement_abreviation):
+def account_user(request):
     #Destruction de toutes les sessions
     logout(request)
     request.session.clear()
-    # Récuperer l'etablissement
-    etablissement = Etablissement.objects.filter(abreviation=etablissement_abreviation).first()
-    if etablissement is None:
-        return redirect("settings/maintenance")
-    else:
-        request.session["etablissement_id"] = etablissement.id
-        request.session["etablissement_abreviation"] = etablissement.abreviation
-        
-    nb_anneeacademiques = AnneeCademique.objects.filter(etablissement_id=etablissement.id).count()
-    if nb_anneeacademiques == 0: 
+    # Récuperer la dernière académique du groupe
+    anneeacademique_group = AnneeCademique.objects.filter(etablissement=None).order_by("-annee_debut").first()
+    if anneeacademique_group is None: 
         return redirect("settings/maintenance")
       
-    anneeacademique = AnneeCademique.objects.filter(etablissement_id=etablissement.id).order_by("-annee_debut")[0]
-    setting = get_setting(anneeacademique.id)
-    if setting is None:
-        return redirect("settings/maintenance")
-    
-    if AnneeCademique.objects.filter(etablissement_id=etablissement.id, status_access=False):
-        return redirect("settings/authorization_etablissement", chiffrer_param(str(etablissement.id)))
-
+    setting = get_setting_sup_user()   
+    # Récuperer des années académiques
+    anneeacademiques = AnneeCademique.objects.filter(annee_debut=anneeacademique_group.annee_debut, annee_fin=anneeacademique_group.annee_fin).exclude(etablissement=None).order_by("etablissement")
+    # Récuperer les établissements aux quels on a signé le contrat
+    etablissements = []
+    for anneeacademique in anneeacademiques:
+        if ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique.etablissement).exists():
+            etablissements.append(anneeacademique.etablissement)
+    request.session["form"] = True
     if request.method == "POST":
         form = LoginForm(request.POST)
         # Verifier la validité du formulaire
         if form.is_valid():
+            etablissement_id = bleach.clean(request.POST["etablissement"].strip())
             username = form.cleaned_data["username"]
             password = form.cleaned_data["password"]
             user = authenticate(username=username, password=password)
+            # Récuperer l'établissement
+            etablissement = Etablissement.objects.get(id=etablissement_id)
+            if AnneeCademique.objects.filter(etablissement=etablissement, status_access=False).order_by("-annee_debut").first():
+                request.session["interdiction"] = True
+                return redirect("settings/authorization_etablissement", chiffrer_param(str(etablissement_id)))
             if user is not None:
-                #Création des sessions
-                login(request, user)
-                request.session["anneeacademique_id"] = anneeacademique.id
-                request.session["annee_debut"] = anneeacademique.annee_debut
-                request.session["annee_fin"] = anneeacademique.annee_fin
-                request.session["separateur"] = anneeacademique.separateur
-                groups = etablissement.groups.filter(user=user).exclude(name__in=["Super user", "Super admin"])
-                # Récupérer le group principal
-                tab_names_groups = [] 
-                for group in groups:
-                    tab_names_groups.append(group.name)
-                
-                group_name = trier_group_name(tab_names_groups)
-                request.session["group_name"] = group_name
-                if user.is_active:
-                    if etablissement.groups.filter(user=user).first()  or etablissement.promoteur == user:
-                        return redirect("settings/db_cycle", chiffrer_param(str(etablissement.id)))
+                roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)
+                if roles.exists():
+                    #Création des sessions
+                    login(request, user)
+                    # Récuperer l'année académique de l'établissement
+                    anneeacademique = AnneeCademique.objects.filter(
+                        annee_debut=anneeacademique_group.annee_debut, 
+                        annee_fin=anneeacademique_group.annee_fin, 
+                        etablissement=etablissement).first()
+                    
+                    request.session["anneeacademique_id"] = anneeacademique.id
+                    request.session["annee_debut"] = anneeacademique.annee_debut
+                    request.session["annee_fin"] = anneeacademique.annee_fin
+                    request.session["separateur"] = anneeacademique.separateur
+                    
+                    request.session["etablissement_id"] = etablissement.id
+                    # Récupérer le group principal
+                    tab_names_groups = [] 
+                    for role in roles:
+                        tab_names_groups.append(role.group.name)
+                    
+                    group_name = trier_group_name(tab_names_groups)
+                    request.session["group_name"] = group_name
+                    if user.is_active:
+                        if roles.first()  or etablissement.promoteur == user:
+                            return redirect("settings/db_cycle", chiffrer_param(str(etablissement.id)))
+                        else:
+                            return redirect("settings/authorization")
                     else:
-                        return redirect("settings/authorization")
+                        context = {
+                            "form": form,
+                            "etablissements": etablissements,
+                            "setting": setting
+                        }
+                        messages.error(request, "Vous n'avez pas de permission")
+                        return render(request, "connection/account.html", context) 
                 else:
                     context = {
-                        "form": form,
-                        "etablissement_abreviation": etablissement_abreviation,
-                        "setting": setting
+                            "form": form,
+                            "etablissements": etablissements,
+                            "setting": setting
                     }
-                    messages.error(request, "Vous n'avez pas de permission")
-                    return render(request, "connection/account.html", context)                       
+                    messages.error(request, "Vous n'êtres pas membre de cet établissement, selectionnez correctement votre établissement")
+                    return render(request, "connection/account.html", context)                      
 
             context = {
                 "form": form,
-                "etablissement_abreviation": etablissement_abreviation,
+                "etablissements": etablissements,
                 "setting": setting
             }
             messages.error(request, "Erreur d'authentification")
@@ -561,119 +603,167 @@ def account_user(request, etablissement_abreviation):
             
             context = {
                 "form": form,
-                "etablissement_abreviation": etablissement_abreviation,
+                "etablissements": etablissements,
                 "setting": setting
             }
-            return render(request, "connection/account.html", context)
-    else:
-        form = LoginForm()
-        context = {
-            "form": form,
-            "etablissement_abreviation": etablissement_abreviation,
-            "setting": setting
-        }
-        return render(request, "connection/account.html", context)
+            return render(request, "connection/account.html", context)       
+
+    form = LoginForm()
+    context = {
+        "form": form,
+        "etablissements": etablissements,
+        "setting": setting
+    }
+    return render(request, "connection/account.html", context)
             
-def login_customer(request, etablissement_abreviation):
-    # Récuperer l'etablissement
-    etablissement = Etablissement.objects.filter(abreviation=etablissement_abreviation).first()
-    if etablissement is None:
-        return redirect("settings/maintenance")
-    else:
-        request.session["etablissement_id"] = etablissement.id
-        
-    nb_anneeacademiques = AnneeCademique.objects.filter(etablissement_id=etablissement.id).count()
-    if nb_anneeacademiques == 0: 
+def login_customer(request):
+    # Récuperer la dernière académique du groupe
+    anneeacademique_group = AnneeCademique.objects.filter(etablissement=None).order_by("-annee_debut").first()
+    if anneeacademique_group is None: 
         return redirect("settings/maintenance")
       
-    anneeacademique = AnneeCademique.objects.filter(etablissement_id=etablissement.id).order_by("-annee_debut")[0]
-    setting = get_setting(anneeacademique.id)
-    if setting is None:
-        return redirect("settings/maintenance")
-        
+    setting = get_setting_sup_user()   
+    # Récuperer des années académiques
+    anneeacademiques = AnneeCademique.objects.filter(annee_debut=anneeacademique_group.annee_debut, annee_fin=anneeacademique_group.annee_fin).exclude(etablissement=None).order_by("etablissement")
+    # Récuperer les établissements aux quels on a signé le contrat
+    etablissements = []
+    for anneeacademique in anneeacademiques:
+        if ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique.etablissement).exists():
+            etablissements.append(anneeacademique.etablissement)   
     if request.method == "POST":
+        etablissement_id = bleach.clean(request.POST["etablissement"].strip())
         username = request.POST["username"]
         password = request.POST["password"]
-
+        # Récuperer l'établissement
+        etablissement = Etablissement.objects.get(id=etablissement_id)
         query_parent = Parent.objects.filter(username=username, password=password, etablissement_id=etablissement.id)
         query_student = Student.objects.filter(username=username, password=password, etablissement_id=etablissement.id)
+        
+        # Récuperer l'année académique de l'établissement
+        anneeacademique = AnneeCademique.objects.filter(
+                        annee_debut=anneeacademique_group.annee_debut, 
+                        annee_fin=anneeacademique_group.annee_fin, 
+                        etablissement=etablissement).first()
+        # Récuperer l'établissement
+        etablissement = Etablissement.objects.get(id=etablissement_id)
+        if AnneeCademique.objects.filter(etablissement=etablissement, status_access=False).order_by("-annee_debut").first():
+            request.session["interdiction"] = False
+            return redirect("settings/authorization_etablissement", chiffrer_param(str(etablissement_id)))
         if query_student.exists() or query_parent.exists():
             if query_student.exists():
                 student = query_student.first()
                 #Verifier l'inscription de l'étudiant
-                inscription = Inscription.objects.filter(student_id=student.id, anneeacademique_id=anneeacademique.id)
-                if inscription.exists():
-                    request.session["anneeacademique_id"] = anneeacademique.id
-                    request.session["annee_debut"] = anneeacademique.annee_debut
-                    request.session["annee_fin"] = anneeacademique.annee_fin
-                    request.session["separateur"] = anneeacademique.separateur
-                    request.session["start_date"] = str(anneeacademique.start_date)
-                    request.session["end_date"] = str(anneeacademique.end_date)
-                    
-                    request.session["student_id"] = student.id
-                    request.session["lastname"] = student.lastname
-                    request.session["firstname"] = student.firstname
-                    request.session["photo"] = student.photo.url
-                    request.session["username"] = student.username
-                    
-                    return redirect("settings/home")
+                query_inscription = Inscription.objects.filter(student_id=student.id, anneeacademique_id=anneeacademique.id)
+                if query_inscription.exists():
+                    inscription = query_inscription.first()
+                    if inscription.status_access:
+                        if inscription.status_block:
+                            request.session["anneeacademique_id"] = anneeacademique.id
+                            request.session["annee_debut"] = anneeacademique.annee_debut
+                            request.session["annee_fin"] = anneeacademique.annee_fin
+                            request.session["separateur"] = anneeacademique.separateur
+                            request.session["start_date"] = str(anneeacademique.start_date)
+                            request.session["end_date"] = str(anneeacademique.end_date)
+                            
+                            request.session["student_id"] = student.id
+                            request.session["lastname"] = student.lastname
+                            request.session["firstname"] = student.firstname
+                            request.session["photo"] = inscription.photo.url
+                            request.session["username"] = student.username
+                            
+                            return redirect("settings/home")
+                        else:
+                            context = {
+                                "setting": setting,
+                                "etablissements": etablissements
+                            }
+                            messages.error(request, "Votre compte a été définitivement bloqué. Vous pouvez donc contacter la direction de l'école pour plus d'informations.")
+                            return render(request, "connection/connexion.html", context)
+                    else:
+                        context = {
+                            "setting": setting,
+                            "etablissements": etablissements
+                        }
+                        messages.error(request, "Votre compte a été provisoirement bloqué. Vous pouvez donc contacter la direction de l'école pour plus d'informations.")
+                        return render(request, "connection/connexion.html", context)
                 else:
                     context = {
-                        "setting": setting
+                        "setting": setting,
+                        "etablissements": etablissements
                     }
                     messages.error(request, f"Vous n'êtes pas inscris pour l'année scolaire {anneeacademique.annee_debut}{anneeacademique.separateur}{anneeacademique.annee_fin}")
                     return render(request, "connection/connexion.html", context)
             else:
                 parent = query_parent.first()
-                students = Student.objects.filter(parent_id=parent.id)
-                status = False # Statut pour deteterminer si au moins un enfant du parent estb inscris cette année
-                for student in students:
-                    #Verifier l'inscription de l'étudiant
-                    inscription = Inscription.objects.filter(student_id=student.id, anneeacademique_id=anneeacademique.id)
-                    if inscription.exists():
-                        status = True
-                        break
-                    
-                if status:
-                    request.session["anneeacademique_id"] = anneeacademique.id
-                    request.session["annee_debut"] = anneeacademique.annee_debut
-                    request.session["annee_fin"] = anneeacademique.annee_fin
-                    request.session["separateur"] = anneeacademique.separateur
-                    request.session["start_date"] = str(anneeacademique.start_date)
-                    request.session["end_date"] = str(anneeacademique.end_date)
-                    
-                    request.session["parent_id"] = parent.id
-                    request.session["lastname"] =  parent.lastname
-                    request.session["firstname"] =  parent.firstname
-                    request.session["username"] =  parent.username
-                    
-                    return redirect("settings/home")
+                if parent.status_access:
+                    students = Student.objects.filter(parent_id=parent.id)
+                    nombre_inscris = 0 # Deteterminer si au moins un enfant du parent estb inscris cette année
+                    nombre_compte_bloque = 0 # Determiner le nombre des enfants qui ont été bloqués
+                    for student in students:
+                        #Verifier l'inscription de l'étudiant
+                        query = Inscription.objects.filter(student_id=student.id, anneeacademique_id=anneeacademique.id)
+                        if query.exists():
+                            nombre_inscris += 1
+                            inscription = query.first()
+                            if inscription.status_block == False: # Verifier si le compte de l'étudiant a été bloqué.
+                                nombre_compte_bloque += 1                           
+                        
+                    if nombre_inscris > 0:
+                        if nombre_inscris != nombre_compte_bloque:
+                            request.session["anneeacademique_id"] = anneeacademique.id
+                            request.session["annee_debut"] = anneeacademique.annee_debut
+                            request.session["annee_fin"] = anneeacademique.annee_fin
+                            request.session["separateur"] = anneeacademique.separateur
+                            request.session["start_date"] = str(anneeacademique.start_date)
+                            request.session["end_date"] = str(anneeacademique.end_date)
+                            
+                            request.session["parent_id"] = parent.id
+                            request.session["lastname"] =  parent.lastname
+                            request.session["firstname"] =  parent.firstname
+                            request.session["username"] =  parent.username
+                            
+                            return redirect("settings/home")
+                        else:
+                            context = {
+                                "setting": setting,
+                                "etablissements": etablissements
+                            }
+                            messages.error(request, "Votre compte a été définitivement bloqué. Vous pouvez donc contacter la direction de l'école pour plus d'informations.")
+                            return render(request, "connection/connexion.html", context)
+                    else:
+                        context = {
+                            "setting": setting,
+                            "etablissements": etablissements
+                        }
+                        messages.error(request, f"Aucun de vos enfants est inscris pour l'année scolaire {anneeacademique.annee_debut}{anneeacademique.separateur}{anneeacademique.annee_fin}")
+                        return render(request, "connection/connexion.html", context)
                 else:
                     context = {
-                        "setting": setting
+                        "setting": setting,
+                        "etablissements": etablissements
                     }
-                    messages.error(request, f"Aucun de vos enfants est inscris pour l'année scolaire {anneeacademique.annee_debut}{anneeacademique.separateur}{anneeacademique.annee_fin}")
+                    messages.error(request, "Votre compte a été provisoirement bloqué. Vous pouvez donc contacter la direction de l'école pour plus d'informations.")
                     return render(request, "connection/connexion.html", context)
         else:
             context = {
-                "setting": setting
+                "setting": setting,
+                "etablissements": etablissements
             }
             messages.error(request, "Erreur d'authentification")
             return render(request, "connection/connexion.html", context)
     
     else:
         context = {
-            "setting": setting
+            "setting": setting,
+            "etablissements": etablissements
         }
         return render(request, "connection/connexion.html", context)
     
 
-def logout_customer(request):
-    etablissement_id = request.session.get('etablissement_id')
-    etablissement = Etablissement.objects.get(id=etablissement_id)    
+def logout_customer(request):    
     for key in list(request.session.keys()):  # Utiliser une copie des clés
         del request.session[key]
-    return redirect("connection/connexion", etablissement.abreviation)
+    return redirect("connection/connexion")
 
 @login_required(login_url='connection/login')
 @allowed_users(allowed_roles=permission_sup_user)
@@ -714,18 +804,17 @@ def promoteurs(request):
     setting = get_setting_sup_user()
     # Récuperer les administrateurs
     promoteurs = []
-    users = User.objects.all()
-    for user in users:
-        if user.groups.exists():
-            groups = user.groups.all()
-            for group in groups:
-                if group.name == "Promoteur":
-                    dic = {}
-                    dic["promoteur"] = user 
-                    etablissements = user.etablissements.all()  
-                    dic["etablissements"] = etablissements
-                    dic["nombre_etablissements"] = etablissements.count() # Nombre d'établissements   
-                    promoteurs.append(dic)
+    users = []
+    for role in EtablissementUser.objects.all():
+        if role.group.name == "Promoteur":
+            if role.user not in users:
+                dic = {}
+                dic["promoteur"] = role.user 
+                etablissements = role.user.etablissements.all()  
+                dic["etablissements"] = etablissements
+                dic["nombre_etablissements"] = etablissements.count() # Nombre d'établissements   
+                promoteurs.append(dic)
+                users.append(role.user)
         
     context = {
             "setting": setting,
@@ -740,56 +829,60 @@ def detail_promoteur(request, id):
     setting = get_setting_sup_user()
     user_id = int(dechiffrer_param(str(id)))
     promoteur = User.objects.get(id=user_id)
+    
+    etablissements = Etablissement.objects.filter(promoteur=promoteur)
     context = {
         "setting": setting,
-        "promoteur": promoteur
+        "promoteur": promoteur,
+        "etablissements": etablissements
     }
     return render(request, "user/detail_promoteur.html", context)
 
 @login_required(login_url='connection/login')
 @allowed_users(allowed_roles=permission_sup_user)
 def delete_promoteur(request, id):
-    """
-    anneeacademique_id = request.session.get('anneeacademique_id')
-    setting = get_setting(anneeacademique_id)
+    setting = get_setting_sup_user()
     if setting is None:
         return redirect("settings/maintenance")
     
     user = User.objects.get(id=id)
     nombre = {}
-    nombre["nombre_contrats"] = Contrat.objects.filter(user_id=user.id).count()
-    nombre["nombre_enseignements"] = Enseigner.objects.filter(enseignant_id=user.id).count()
-    nombre["nombre_renumerations"] = Renumeration.objects.filter(personnel_id=user.id).count()
-    nombre["nombre_absences_enseignants"] = Absence.objects.filter(enseignant_id=user.id).count()
-    nombre["nombre_emargements"] = Emargement.objects.filter(enseignant_id=user.id).count()
-    
-    nombre["nombre_contrats_admin"] = Contrat.objects.filter(admin_id=user.id).count()
-    nombre["nombre_renumerations_admin"] = Renumeration.objects.filter(type_renumerartion="Administrateur scolaire", user_id=user.id).count()
-    nombre["nombre_paiements"] = Payment.objects.filter(user_id=user.id).count()
-    nombre["nombre_autorisation_payements_students"] = AutorisationPayment.objects.filter(user_id=user.id).count()
-    nombre["nombre_autorisation_payements_salles"] = AutorisationPaymentSalle.objects.filter(user_id=user.id).count()
-    nombre["nombre_absences_admin"] = AbsenceAdmin.objects.filter(user_id=user.id).count()
-    nombre["nombre_compositions"] = Composer.objects.filter(user_id=user.id).count()
-    nombre["nombre_emargements_admin"] = Emargement.objects.filter(user_id=user.id).count()
-    nombre["nombre_depenses"] = Depense.objects.filter(user_id=user.id).count()
-    
+    nombre["nombre_etablissements"] = Etablissement.objects.filter(promoteur=user).count()
     nombre_total = 0
     for valeur in nombre.values():
         if valeur != 0:
             nombre_total += valeur
-    
-    groups = user.groups.all()    
+   
     context = {
         "setting": setting,
         "admin": user,
         "nombre_total": nombre_total,
         "nombre": nombre,
-        "groups": groups
-    }"""
-    context={}
+    }
     return render(request, "user/delete_promoteur.html", context)
 
 @login_required(login_url='connection/login')
+@allowed_users(allowed_roles=permission_sup_user)
+def del_promoteur(request, id):
+    try:
+        user_id = int(dechiffrer_param(str(id)))
+        user = User.objects.get(id=user_id)
+    except:
+        user = None
+    
+    if user:
+        # Nombre d'utilisateurs avant la suppression
+        count0 = User.objects.all().count()
+        user.delete()
+        # Nombre d'utilisateurs après la suppression
+        count1 = User.objects.all().count()
+        if count1 < count0: 
+            messages.success(request, "Elément supprimé avec succès.")
+        else:
+            messages.error(request, "La suppression a échouée.")
+    return redirect("user/promoteurs")
+
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def administrator(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -802,19 +895,17 @@ def administrator(request):
         etablissement = Etablissement.objects.get(id=etablissement_id)
         # Récuperer les administrateurs
         administrateurs = []
-        users = User.objects.all()
-                        
-        for user in users:
-            if etablissement.groups.filter(user=user).exists() or etablissement.promoteur == user:
-                groups = etablissement.groups.filter(user=user)
+        users = []
+        roles = EtablissementUser.objects.filter(etablissement=etablissement)                       
+        for role in roles:
+            if role.group.name in permission_admin:      
                 dic = {}
-                dic["user"] = user
-                dic["groups"] = groups
-                dic["nombre_groupes"] = etablissement.groups.filter(user=user).count() # Nombre de groupes de l'utilisateur
-                for group in groups:
-                    if group.name in ["Promoteur", "Directeur Général", "Directeur des Etudes", "Gestionnaire", "Surveillant Général"]:                       
-                        if dic not in administrateurs:
-                            administrateurs.append(dic)
+                dic["user"] = role.user
+                dic["roles"] = EtablissementUser.objects.filter(etablissement=etablissement, user=role.user)
+                dic["nombre_groupes"] = EtablissementUser.objects.filter(etablissement=etablissement, user=role.user).count() # Nombre de groupes de l'utilisateur
+                if role.user not in users:
+                    users.append(role.user)
+                    administrateurs.append(dic)
         
         context = {
                 "setting": setting,
@@ -823,7 +914,7 @@ def administrator(request):
         }
         return render(request, "user/admin.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def detail_admin(request, id):
     etablissement_id = request.session.get('etablissement_id')
@@ -837,15 +928,15 @@ def detail_admin(request, id):
         
         user_id = int(dechiffrer_param(str(id)))
         user = User.objects.get(id=user_id)
-        groups = etablissement.groups.filter(user=user)
+        roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)
         context = {
             "setting": setting,
             "user": user,
-            "groups": groups
+            "roles": roles
         }
         return render(request, "user/detail_admin.html", context)
     
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def delete_admin(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -863,7 +954,7 @@ def delete_admin(request, id):
     nombre["nombre_emargements"] = Emargement.objects.filter(enseignant_id=user.id).count()
     
     nombre["nombre_contrats_admin"] = Contrat.objects.filter(admin_id=user.id).count()
-    nombre["nombre_renumerations_admin"] = Renumeration.objects.filter(type_renumerartion="Administrateur scolaire", user_id=user.id).count()
+    nombre["nombre_renumerations_admin"] = Renumeration.objects.filter(type_renumeration="Administrateur scolaire", user_id=user.id).count()
     nombre["nombre_paiements"] = Payment.objects.filter(user_id=user.id).count()
     nombre["nombre_autorisation_payements_students"] = AutorisationPayment.objects.filter(user_id=user.id).count()
     nombre["nombre_autorisation_payements_salles"] = AutorisationPaymentSalle.objects.filter(user_id=user.id).count()
@@ -887,7 +978,7 @@ def delete_admin(request, id):
     }
     return render(request, "user/delete_admin.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def del_admin(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -913,7 +1004,7 @@ def del_admin(request, id):
             messages.error(request, "La suppression a échouée.")
     return redirect("user/admin")
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def teachers(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -924,27 +1015,26 @@ def teachers(request):
     else:
         # Récuperer l'établissement
         etablissement = Etablissement.objects.get(id=etablissement_id)
-        tabusers = []
-        users = User.objects.all()            
-        for user in users:
-            if etablissement.groups.filter(user=user).exists() or etablissement.promoteur == user:
-                groups = etablissement.groups.filter(user=user)
-                dic = {}
-                dic["user"] = user
-                dic["groups"] = groups
-                dic["nombre_groupes"] = etablissement.groups.filter(user=user).count() # Nombre de groupes de l'utilisateur
-                for group in groups:
-                    if group.name == "Enseignant":                       
-                        if dic not in tabusers:
-                            tabusers.append(dic)
+        roles = EtablissementUser.objects.filter(etablissement=etablissement)
+        enseignants = []
+        users = []            
+        for role in roles:
+            dic = {}
+            dic["user"] = role.user
+            dic["roles"] = EtablissementUser.objects.filter(user=role.user, etablissement=etablissement) 
+            dic["nombre_groupes"] = EtablissementUser.objects.filter(user=role.user, etablissement=etablissement).count() # Nombre de groupes de l'utilisateur
+            if role.group.name == "Enseignant":   
+                if role.user not in users:
+                    users.append(role.user)
+                    enseignants.append(dic)
         context = {
             "setting": setting,
-            "users": tabusers,
+            "enseignants": enseignants,
             "permission": permission_promoteur_DG
         }
         return render(request, "teacher/teachers.html", context)
     
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def detail_teacher(request, id):
     etablissement_id = request.session.get('etablissement_id')
@@ -958,15 +1048,15 @@ def detail_teacher(request, id):
         
         #Récuperer l'établissement 
         etablissement = Etablissement.objects.get(id=etablissement_id)
-        groups = etablissement.groups.filter(user=user)
+        roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)
         context = {
             "setting": setting,
             "user": user,
-            "groups": groups
+            "roles": roles
         }
         return render(request, "teacher/detail_teacher.html", context)
     
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def delete_teacher(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -979,12 +1069,12 @@ def delete_teacher(request, id):
     nombre = {}
     nombre["nombre_contrats"] = Contrat.objects.filter(user_id=user.id).count()
     nombre["nombre_enseignements"] = Enseigner.objects.filter(enseignant_id=user.id).count()
-    nombre["nombre_renumerations"] = Renumeration.objects.filter(personnel_id=user.id).count()
+    nombre["nombre_renumerations"] = Renumeration.objects.filter(user_id=user.id).count()
     nombre["nombre_absences_enseignants"] = Absence.objects.filter(enseignant_id=user.id).count()
     nombre["nombre_emargements"] = Emargement.objects.filter(enseignant_id=user.id).count()
     
     nombre["nombre_contrats_admin"] = Contrat.objects.filter(admin_id=user.id).count()
-    nombre["nombre_renumerations_admin"] = RenumerationAdmin.objects.filter(user_id=user.id).count()
+    nombre["nombre_renumerations_admin"] = Renumeration.objects.filter(user_id=user.id).count()
     nombre["nombre_paiements"] = Payment.objects.filter(user_id=user.id).count()
     nombre["nombre_autorisation_payements_students"] = AutorisationPayment.objects.filter(user_id=user.id).count()
     nombre["nombre_autorisation_payements_salles"] = AutorisationPaymentSalle.objects.filter(user_id=user.id).count()
@@ -1009,7 +1099,7 @@ def delete_teacher(request, id):
     return render(request, "teacher/delete_teacher.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def del_teacher(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1019,7 +1109,7 @@ def del_teacher(request, id):
     
     try:
         user_id = int(dechiffrer_param(str(id)))
-        user = User.objects.get(user_id)
+        user = User.objects.get(id=user_id)
     except:
         user = None
     
@@ -1031,9 +1121,12 @@ def del_teacher(request, id):
         count1 = User.objects.all().count()
         if count1 < count0: 
             messages.success(request, "Elément supprimé avec succès.")
+            return redirect("user/admin")
         else:
             messages.error(request, "La suppression a échouée.")
+            return redirect("user/admin")
     return redirect("user/admin")
+    
 
 @login_required(login_url='connection/login')
 def edit_photo(request):
@@ -1066,7 +1159,8 @@ def edit_photo(request):
     }
     return render(request,"user/profile.html",context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_user)
 @transaction.atomic
 def profile(request):
     etablissement_id = request.session.get('etablissement_id')
@@ -1076,7 +1170,7 @@ def profile(request):
         return redirect("settings/maintenance")
     
     user_id = request.user.id
-    user = User.objects.get(id = user_id)
+    user = User.objects.get(id=user_id)
     try:
         profile = Profile.objects.get(user=user)
     except Exception as e:
@@ -1345,12 +1439,12 @@ def profile(request):
 
     # Récuperer l'établissement
     etablissement = Etablissement.objects.get(id=etablissement_id)
-    groups = etablissement.groups.filter(user=user, etablissement=etablissement)
+    roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)
     context={
         "countries": countries,
         "user": user,
         "profile": profile,
-        "groups": groups,
+        "roles": roles,
         "setting": setting
     }
     return render(request, "user/profile.html", context)
@@ -1639,7 +1733,7 @@ def profile_supuser(request):
     }
     return render(request, "user/profile_supuser.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 @transaction.atomic
 def profile_sup_admin(request):
@@ -1919,17 +2013,18 @@ def profile_sup_admin(request):
 
     # Récuperer l'établissement
     etablissement = Etablissement.objects.get(id=etablissement_id)
-    groups = etablissement.groups.filter(user=user, etablissement=etablissement)
+    roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)
     context = {
         "countries": countries,
         "user": user,
         "profile": profile,
-        "groups": groups,
+        "roles": roles,
         "setting": setting
     }
     return render(request, "user/profile_sup_admin.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_user)
 def edit_profile_photo(request):
     if request.method == "POST":
         try:
@@ -1958,7 +2053,7 @@ def edit_profile_photo(request):
             messages.error(request, "Commencez par mettre à jour votre profil, et après vous pourrez ajouter une photo.")
             return redirect("user/profile")
         
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_sup_user_promoteur)            
 def permission(request, user_id):
     group_name = request.session.get('group_name')
@@ -1996,6 +2091,8 @@ def permission(request, user_id):
         }
         return render(request, "user/permission.html", context)
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_sup_user_promoteur)    
 def update_permission(request):
     if request.method == "POST":
         id = int(request.POST["id"])
@@ -2080,10 +2177,21 @@ class CustomPasswordChangeView(auth_views.PasswordChangeView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        anneeacademique = AnneeCademique.objects.all().order_by("-id")[0]
-        setting = get_setting(anneeacademique.id)
-        context["setting"] = setting
-        
+        print(self.request.session.get('group_name'))
+        if self.request.session.get('group_name') in ["Promoteur", "Directeur Général"]:
+            anneeacademique_id = self.request.session.get('anneeacademique_id')
+            setting = get_setting(anneeacademique_id)
+            context["setting"] = setting 
+            context["template"] = 'global/base_sup_admin.html'
+        elif self.request.session.get('group_name') in ["Super user", "Super admin"]:
+            setting = get_setting_sup_user()
+            context["setting"] = setting 
+            context["template"] = 'global/base_supuser.html'     
+        else:
+            anneeacademique_id = self.request.session.get('anneeacademique_id')
+            setting = get_setting(anneeacademique_id)
+            context["setting"] = setting 
+            context["template"] = 'global/base.html'      
         return context
 
 class CustomPasswordChangeDoneView(auth_views.PasswordChangeDoneView):
@@ -2091,10 +2199,21 @@ class CustomPasswordChangeDoneView(auth_views.PasswordChangeDoneView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        anneeacademique = AnneeCademique.objects.all().order_by("-id")[0]
-        setting = get_setting(anneeacademique.id)
-        context["setting"] = setting
-        
+        print(self.request.session.get('group_name'))
+        if self.request.session.get('group_name') in ["Promoteur", "Directeur Général"]:
+            anneeacademique_id = self.request.session.get('anneeacademique_id')
+            setting = get_setting(anneeacademique_id)
+            context["setting"] = setting 
+            context["template"] = 'global/base_sup_admin.html'
+        elif self.request.session.get('group_name') in ["Super user", "Super admin"]:
+            setting = get_setting_sup_user()
+            context["setting"] = setting 
+            context["template"] = 'global/base_supuser.html'     
+        else:
+            anneeacademique_id = self.request.session.get('anneeacademique_id')
+            setting = get_setting(anneeacademique_id)
+            context["setting"] = setting 
+            context["template"] = 'global/base.html'      
         return context
 
 class CustomPasswordResetView(auth_views.PasswordResetView):
@@ -2104,16 +2223,8 @@ class CustomPasswordResetView(auth_views.PasswordResetView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.session.get('etablissement_id'):
-            etablissement_id = self.request.session.get('etablissement_id')
-            
-            anneeacademique = AnneeCademique.objects.filter(etablissement_id=etablissement_id).order_by("-id")[0]
-            setting = get_setting(anneeacademique.id)
-            context["setting"] = setting
-        else:
-            anneeacademique = AnneeCademique.objects.filter(etablissement=None).order_by("-id")[0]
-            setting = get_setting_sup_user()
-            context["setting"] = setting
+        setting = get_setting_sup_user()
+        context["setting"] = setting
         return context
     
 class CustomPasswordResetDoneView(auth_views.PasswordResetDoneView):
@@ -2121,17 +2232,8 @@ class CustomPasswordResetDoneView(auth_views.PasswordResetDoneView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.session.get('etablissement_id'):
-            etablissement_id = self.request.session.get('etablissement_id')
-            
-            anneeacademique = AnneeCademique.objects.filter(etablissement_id=etablissement_id).order_by("-id")[0]
-            setting = get_setting(anneeacademique.id)
-            context["setting"] = setting
-        else:
-            anneeacademique = AnneeCademique.objects.filter(etablissement=None).order_by("-id")[0]
-            setting = get_setting_sup_user()
-            context["setting"] = setting
-        
+        setting = get_setting_sup_user()
+        context["setting"] = setting    
         return context
     
 class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
@@ -2139,17 +2241,8 @@ class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.session.get('etablissement_id'):
-            etablissement_id = self.request.session.get('etablissement_id')
-            
-            anneeacademique = AnneeCademique.objects.filter(etablissement_id=etablissement_id).order_by("-id")[0]
-            setting = get_setting(anneeacademique.id)
-            context["setting"] = setting
-        else:
-            anneeacademique = AnneeCademique.objects.filter(etablissement=None).order_by("-id")[0]
-            setting = get_setting_sup_user()
-            context["setting"] = setting
-        
+        setting = get_setting_sup_user()
+        context["setting"] = setting       
         return context
     
 class CustomPasswordResetCompleteView(auth_views.PasswordResetCompleteView):
@@ -2157,17 +2250,15 @@ class CustomPasswordResetCompleteView(auth_views.PasswordResetCompleteView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        anneeacademique = AnneeCademique.objects.all().order_by("-id")[0]
-        setting = get_setting(anneeacademique.id)
-        context["setting"] = setting
-        
+        setting = get_setting_sup_user()
+        context["setting"] = setting       
         return context
     
     
 # ===================================== Gestion de parents ===========================================
 
 # Gestion des parents
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def parents(request):
     etablissement_id = request.session.get('etablissement_id')
@@ -2176,14 +2267,16 @@ def parents(request):
     if setting is None:
         return redirect("setting/maintenance")
     
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     parents = Parent.objects.filter(etablissement_id=etablissement_id)
     context = {
         "setting": setting,
-        "parents": parents
+        "parents": parents,
+        "anneeacademique": anneeacademique
     }
     return render(request, "parent/parents.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def detail_parent(request,id):
     etablissement_id = request.session.get('etablissement_id')
@@ -2204,7 +2297,6 @@ def detail_parent(request,id):
     }
     return render(request, "parent/detail_parent.html", context)
 
-@login_required(login_url='connection/login')
 @unauthenticated_customer
 def profile_parent(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2239,7 +2331,7 @@ def profile_parent(request):
     }
     return render(request, "parent/profile_parent.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def add_parent(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2500,13 +2592,17 @@ def add_parent(request):
                 'Zambie',
                 'Zimbabwe'
     ]
-    context={
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
+    context = {
         "setting": setting,
-        "countries": countries
+        "countries": countries,
+        "contrat": contrat
     }
     return render(request, "parent/add_parent.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_parent(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2516,13 +2612,218 @@ def edit_parent(request,id):
     
     user_id = int(dechiffrer_param(str(id)))
     parent = Parent.objects.get(id=user_id)
+    
+    countries = [
+                'Afrique du Sud',
+                'Afghanistan',
+                'Albanie',
+                'Allemagne',
+                'Andorre',
+                'Angola',
+                'Antigua-et-Barbuda',
+                'Arabie Saoudite',
+                'Argentine',
+                'Arménie',
+                'Australie',
+                'Autriche',
+                'Azerbaïdjan',
+                'Bahamas',
+                'Bahreïn',
+                'Bangladesh',
+                'Barbade',
+                'Belgique',
+                'Belize',
+                'Bénin',
+                'Bhoutan',
+                'Biélorussie',
+                'Birmanie',
+                'Bolivie',
+                'Bosnie-Herzégovine',
+                'Botswana',
+                'Brésil',
+                'Brunei',
+                'Bulgarie',
+                'Burkina Faso',
+                'Burundi',
+                'Cambodge',
+                'Cameroun',
+                'Canada',
+                'Cap-Vert',
+                'Chili',
+                'Chine',
+                'Chypre',
+                'Colombie',
+                'Comores',
+                'Congo-Brazzaville',
+                'Corée du Nord',
+                'Corée du Sud',
+                'Costa Rica	San',
+                'Côte d’Ivoire',
+                'Croatie',
+                'Cuba',
+                'Danemark',
+                'Djibouti',
+                'Dominique',
+                'Égypte',
+                'Émirats arabes unis',
+                'Équateur',
+                'Érythrée',
+                'Espagne',
+                'Eswatini',
+                'Estonie',
+                'États-Unis',
+                'Éthiopie',
+                'Fidji',
+                'Finlande',
+                'France',
+                'Gabon',
+                'Gambie',
+                'Géorgie',
+                'Ghana',
+                'Grèce',
+                'Grenade',
+                'Guatemala',
+                'Guinée',
+                'Guinée équatoriale',
+                'Guinée-Bissau',
+                'Guyana',
+                'Haïti',
+                'Honduras',
+                'Hongrie',
+                'Îles Cook',
+                'Îles Marshall',
+                'Inde',
+                'Indonésie',
+                'Irak',
+                'Iran',
+                'Irlande',
+                'Islande',
+                'Israël',
+                'Italie',
+                'Jamaïque',
+                'Japon',
+                'Jordanie',
+                'Kazakhstan',
+                'Kenya',
+                'Kirghizistan',
+                'Kiribati',
+                'Koweït',
+                'Laos',
+                'Lesotho',
+                'Lettonie',
+                'Liban',
+                'Liberia',
+                'Libye',
+                'Liechtenstein',
+                'Lituanie',
+                'Luxembourg',
+                'Macédoine',
+                'Madagascar',
+                'Malaisie',
+                'Malawi',
+                'Maldives',
+                'Mali',
+                'Malte',
+                'Maroc',
+                'Maurice',
+                'Mauritanie',
+                'Mexique',
+                'Micronésie',
+                'Moldavie',
+                'Monaco',
+                'Mongolie',
+                'Monténégro',
+                'Mozambique',
+                'Namibie',
+                'Nauru',
+                'Népal',
+                'Nicaragua',
+                'Niger',
+                'Nigeria',
+                'Niue',
+                'Norvège',
+                'Nouvelle-Zélande',
+                'Oman',
+                'Ouganda',
+                'Ouzbékistan',
+                'Pakistan',
+                'Palaos',
+                'Palestine',
+                'Panama',
+                'Papouasie-Nouvelle-Guinée',
+                'Paraguay',
+                'Pays-Bas',
+                'Pérou',
+                'Philippines',
+                'Pologne',
+                'Portugal',
+                'Qatar',
+                'République centrafricaine',
+                'République démocratique du Congo',
+                'République Dominicaine',
+                'République tchèque',
+                'Roumanie',
+                'Royaume-Uni',
+                'Russie',
+                'Rwanda',
+                'Saint-Kitts-et-Nevis',
+                'Saint-Vincent-et-les-Grenadines',
+                'Sainte-Lucie',
+                'Saint-Marin',
+                'Salomon',
+                'Salvador',
+                'Samoa',
+                'São Tomé-et-Principe',
+                'Sénégal',
+                'Serbie',
+                'Seychelles',
+                'Sierra Leone',
+                'Singapour',
+                'Slovaquie',
+                'Slovénie',
+                'Somalie',
+                'Soudan',
+                'Soudan du Sud',
+                'Sri Lanka',
+                'Suède',
+                'Suisse',
+                'Suriname',
+                'Syrie',
+                'Tadjikistan',
+                'Tanzanie',
+                'Tchad',
+                'Thaïlande',
+                'Timor oriental',
+                'Togo',
+                'Tonga',
+                'Trinité-et-Tobago',
+                'Tunisie',
+                'Turkménistan',
+                'Turquie',
+                'Tuvalu',
+                'Ukraine',
+                'Uruguay',
+                'Vanuatu',
+                'Vatican',
+                'Venezuela',
+                'Viêt Nam',
+                'Yémen',
+                'Zambie',
+                'Zimbabwe'
+    ]
+    tabcountries = [ country for country in countries if country != parent.country]
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
     context = {
         "setting": setting,
-        "parent": parent
+        "parent": parent,
+        "countries": tabcountries,
+        "contrat": contrat
     }
     return render(request, "parent/edit_parent.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_pa(request):
     etablissement_id = request.session.get('etablissement_id')
@@ -2586,9 +2887,9 @@ def edit_pa(request):
                     "status": "success",
                     "message": "Parent modifié avec succès."})
 
-@login_required(login_url='connection/login')     
+@login_required(login_url='connection/account')     
 @allowed_users(allowed_roles=permission_gestionnaire)       
-def del_parent(request,id):
+def del_parent(request, id):
     try:
         user_id = int(dechiffrer_param(str(id)))
         parent = Parent.objects.get(id=user_id)
@@ -2599,7 +2900,7 @@ def del_parent(request,id):
         parent.delete()
     return redirect("parent/parents")
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def delete_parent(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2625,6 +2926,7 @@ def delete_parent(request, id):
     }
     return render(request, "parent/delete_parent.html", context)
 
+@unauthenticated_customer
 def update_password_parent(request):
     parent_id = request.session.get('parent_id')
     if request.method == "POST":
@@ -2653,7 +2955,7 @@ def update_password_parent(request):
 
 #======================================== Gestion des étudiants =========================================
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def students(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2663,13 +2965,15 @@ def students(request):
         return redirect("settings/maintenance")
     
     students = Student.objects.select_related("parent").filter(etablissement_id=etablissement_id).order_by("lastname")
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     context = {
         "setting": setting,
-        "students": students
+        "students": students,
+        "anneeacademique": anneeacademique
     }
     return render(request, "student/students.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def detail_student(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2703,8 +3007,7 @@ def profile_student(request):
         student.save()
         return redirect("student/profile_student")
         
-    inscription = Inscription.objects.filter(anneeacademique_id=anneeacademique_id, student_id=student_id).first()
-    
+    inscription = Inscription.objects.filter(anneeacademique_id=anneeacademique_id, student_id=student_id).first()   
     context = {
         "setting": setting,
         "student": student,
@@ -2713,7 +3016,7 @@ def profile_student(request):
     return render(request, "student/profile_student.html", context)
 
 
-@login_required(login_url='connection/login')   
+@login_required(login_url='connection/account')   
 @allowed_users(allowed_roles=permission_gestionnaire) 
 def add_student(request):
     etablissement_id = request.session.get('etablissement_id')
@@ -2727,12 +3030,9 @@ def add_student(request):
         lastname = bleach.clean(request.POST["lastname"].strip())
         address = bleach.clean(request.POST["address"].strip())
         datenais = request.POST["datenais"]
+        lieunais = bleach.clean(request.POST["lieunais"].strip())
         gender = request.POST["gender"]
         country = request.POST["country"]
-        photo = None
-        if request.POST.get('photo', True):
-            photo = request.FILES["photo"]
-            
         parent = request.POST["parent"]
         #Determination du mot de passe
         lastnames = lastname.split()
@@ -2758,10 +3058,10 @@ def add_student(request):
                 lastname=lastname,
                 address=address,
                 datenais=datenais,
+                lieunais=lieunais,
                 gender=gender,
                 country=country,
                 password=password,
-                photo=photo,
                 parent_id=parent)
             
             # Nombre d'étudiants avant l'ajout
@@ -2977,14 +3277,18 @@ def add_student(request):
                 'Zimbabwe'
     ]
     parents = Parent.objects.filter(etablissement_id=etablissement_id)
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
     context = {
         "setting": setting,
         "countries": countries,
-        "parents": parents
+        "parents": parents,
+        "contrat": contrat
     }
     return render(request, "student/add_student.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_student(request,id):
     etablissement_id = request.session.get('etablissement_id')
@@ -2996,14 +3300,218 @@ def edit_student(request,id):
     user_id = int(dechiffrer_param(str(id)))
     student = Student.objects.get(id=user_id)
     parents = Parent.objects.filter(etablissement_id=etablissement_id).exclude(id=student.parent.id)
+    countries = [
+                'Afrique du Sud',
+                'Afghanistan',
+                'Albanie',
+                'Allemagne',
+                'Andorre',
+                'Angola',
+                'Antigua-et-Barbuda',
+                'Arabie Saoudite',
+                'Argentine',
+                'Arménie',
+                'Australie',
+                'Autriche',
+                'Azerbaïdjan',
+                'Bahamas',
+                'Bahreïn',
+                'Bangladesh',
+                'Barbade',
+                'Belgique',
+                'Belize',
+                'Bénin',
+                'Bhoutan',
+                'Biélorussie',
+                'Birmanie',
+                'Bolivie',
+                'Bosnie-Herzégovine',
+                'Botswana',
+                'Brésil',
+                'Brunei',
+                'Bulgarie',
+                'Burkina Faso',
+                'Burundi',
+                'Cambodge',
+                'Cameroun',
+                'Canada',
+                'Cap-Vert',
+                'Chili',
+                'Chine',
+                'Chypre',
+                'Colombie',
+                'Comores',
+                'Congo-Brazzaville',
+                'Corée du Nord',
+                'Corée du Sud',
+                'Costa Rica	San',
+                'Côte d’Ivoire',
+                'Croatie',
+                'Cuba',
+                'Danemark',
+                'Djibouti',
+                'Dominique',
+                'Égypte',
+                'Émirats arabes unis',
+                'Équateur',
+                'Érythrée',
+                'Espagne',
+                'Eswatini',
+                'Estonie',
+                'États-Unis',
+                'Éthiopie',
+                'Fidji',
+                'Finlande',
+                'France',
+                'Gabon',
+                'Gambie',
+                'Géorgie',
+                'Ghana',
+                'Grèce',
+                'Grenade',
+                'Guatemala',
+                'Guinée',
+                'Guinée équatoriale',
+                'Guinée-Bissau',
+                'Guyana',
+                'Haïti',
+                'Honduras',
+                'Hongrie',
+                'Îles Cook',
+                'Îles Marshall',
+                'Inde',
+                'Indonésie',
+                'Irak',
+                'Iran',
+                'Irlande',
+                'Islande',
+                'Israël',
+                'Italie',
+                'Jamaïque',
+                'Japon',
+                'Jordanie',
+                'Kazakhstan',
+                'Kenya',
+                'Kirghizistan',
+                'Kiribati',
+                'Koweït',
+                'Laos',
+                'Lesotho',
+                'Lettonie',
+                'Liban',
+                'Liberia',
+                'Libye',
+                'Liechtenstein',
+                'Lituanie',
+                'Luxembourg',
+                'Macédoine',
+                'Madagascar',
+                'Malaisie',
+                'Malawi',
+                'Maldives',
+                'Mali',
+                'Malte',
+                'Maroc',
+                'Maurice',
+                'Mauritanie',
+                'Mexique',
+                'Micronésie',
+                'Moldavie',
+                'Monaco',
+                'Mongolie',
+                'Monténégro',
+                'Mozambique',
+                'Namibie',
+                'Nauru',
+                'Népal',
+                'Nicaragua',
+                'Niger',
+                'Nigeria',
+                'Niue',
+                'Norvège',
+                'Nouvelle-Zélande',
+                'Oman',
+                'Ouganda',
+                'Ouzbékistan',
+                'Pakistan',
+                'Palaos',
+                'Palestine',
+                'Panama',
+                'Papouasie-Nouvelle-Guinée',
+                'Paraguay',
+                'Pays-Bas',
+                'Pérou',
+                'Philippines',
+                'Pologne',
+                'Portugal',
+                'Qatar',
+                'République centrafricaine',
+                'République démocratique du Congo',
+                'République Dominicaine',
+                'République tchèque',
+                'Roumanie',
+                'Royaume-Uni',
+                'Russie',
+                'Rwanda',
+                'Saint-Kitts-et-Nevis',
+                'Saint-Vincent-et-les-Grenadines',
+                'Sainte-Lucie',
+                'Saint-Marin',
+                'Salomon',
+                'Salvador',
+                'Samoa',
+                'São Tomé-et-Principe',
+                'Sénégal',
+                'Serbie',
+                'Seychelles',
+                'Sierra Leone',
+                'Singapour',
+                'Slovaquie',
+                'Slovénie',
+                'Somalie',
+                'Soudan',
+                'Soudan du Sud',
+                'Sri Lanka',
+                'Suède',
+                'Suisse',
+                'Suriname',
+                'Syrie',
+                'Tadjikistan',
+                'Tanzanie',
+                'Tchad',
+                'Thaïlande',
+                'Timor oriental',
+                'Togo',
+                'Tonga',
+                'Trinité-et-Tobago',
+                'Tunisie',
+                'Turkménistan',
+                'Turquie',
+                'Tuvalu',
+                'Ukraine',
+                'Uruguay',
+                'Vanuatu',
+                'Vatican',
+                'Venezuela',
+                'Viêt Nam',
+                'Yémen',
+                'Zambie',
+                'Zimbabwe'
+    ]
+    tabcountries = [ country for country in countries if country != student.country]
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
     context = {
         "setting": setting,
         "student": student,
+        "countries": tabcountries,
+        "contrat": contrat,
         "parents": parents
     }
     return render(request, "student/edit_student.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_st(request):
     etablissement_id = request.session.get('etablissement_id')
@@ -3023,6 +3531,7 @@ def edit_st(request):
             lastname = bleach.clean(request.POST["lastname"].strip())
             address = bleach.clean(request.POST["address"].strip())
             datenais = request.POST["datenais"]
+            lieunais = bleach.clean(request.POST["lieunais"].strip())
             gender = request.POST["gender"]
             country = request.POST["country"]
             parent = request.POST["parent"]
@@ -3053,22 +3562,18 @@ def edit_st(request):
                 student.firstname = firstname
                 student.address = address
                 student.datenais = datenais
+                student.lieunais = lieunais
                 student.gender = gender
                 student.country = country
                 student.parent_id = parent
                 student.etablissement_id = etablissement_id
 
-                photo = None
-                if request.POST.get('photo', True):
-                    photo = request.FILES["photo"]
-                if photo is not None :
-                    student.photo = photo
                 student.save()
                 return JsonResponse({
                     "status": "success",
                     "message": "Etudiant modifié avec succès."})
 
-@login_required(login_url='connection/login')  
+@login_required(login_url='connection/account')  
 @allowed_users(allowed_roles=permission_gestionnaire)          
 def del_student(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -3084,9 +3589,9 @@ def del_student(request, id):
         
     if student:
         student.delete()
-    return redirect("students/students")
+    return redirect("student/students")
 
-
+@unauthenticated_customer
 def update_password(request):
     student_id = request.session.get('student_id')
     if request.method == "POST":
@@ -3168,10 +3673,7 @@ def edit_group(request,id):
     user_id = int(dechiffrer_param(str(id)))   
     groupe = Group.objects.get(id=user_id)
     groups_names = ["Super user", "Super admin"]
-    tabgroups = []
-    for name in groups_names:
-        if groupe.name != name:
-            tabgroups.append(name)
+    tabgroups = [name for name in groups_names if groupe.name != name]
          
     context = {
             "groupe":groupe,
@@ -3241,10 +3743,8 @@ def group_users(request):
     setting = get_setting_sup_user()
         
     groups = Group.objects.all()
-    tabGroup = []
-    for group in groups:
-        if group.name in ["Promoteur", "Directeur Général", "Directeur des Etudes", "Gestionnaire", "Surveillant Général", "Enseignant"]:
-            tabGroup.append(group)
+    roles = ["Promoteur", "Directeur Général", "Directeur des Etudes", "Gestionnaire", "Surveillant Général", "Enseignant"]
+    tabGroup = [group for group in groups if group.name in roles]
 
     context = {
             "groupes": tabGroup,
@@ -3287,10 +3787,7 @@ def edit_group_user(request, id):
     group_id = int(dechiffrer_param(str(id)))   
     groupe = Group.objects.get(id=group_id)
     groups_names = ["Promoteur", "Directeur Général", "Directeur des Etudes", "Gestionnaire", "Enseignant" , "Surveillant Général"]
-    tabgroups = []
-    for name in groups_names:
-        if groupe.name != name:
-            tabgroups.append(name)
+    tabgroups = [name for name in groups_names if groupe.name != name]
         
     context = {
             "groupe":groupe,
@@ -3330,10 +3827,7 @@ def admin_group(request, id):
     user = User.objects.get(id=user_id)
     groups = Group.objects.all()
     
-    tabGroup = []
-    for g in groups:
-        if g.name in permission_sup_user:
-            tabGroup.append(g)
+    tabGroup = [g for g in groups if g.name in permission_sup_user]
     
     groups_user = user.groups.all()    
     context = {
@@ -3383,136 +3877,211 @@ def del_user_to_group(request, id, name):
 
 @login_required(login_url='connection/login')
 @allowed_users(allowed_roles=permission_promoteur_DG)
-def group_etablissements(request):
+def roles(request):
     etablissement_id = request.session.get('etablissement_id')
-    anneeacdademique = request.session.get('anneeacademique_id')
-    setting = get_setting(anneeacdademique)
+    anneeacademique_id = request.session.get('anneeacademique_id')
+    setting = get_setting(anneeacademique_id)
     if setting is None:
         return redirect("settings/maintenance")
     
-    etablissement = Etablissement.objects.get(id=etablissement_id)    
-    groups = etablissement.groups.all()
-
+    roles_groups = (EtablissementUser.objects.values("group_id")
+              .filter(etablissement_id=etablissement_id)
+              .annotate(nombre_users=Count("user"))
+    )
+    roles = []
+    for rg in roles_groups:
+        dic = {}
+        group = Group.objects.get(id=rg["group_id"])
+        
+        dic["group"] = group
+        dic["roles"] = EtablissementUser.objects.filter(etablissement_id=etablissement_id, group_id=rg["group_id"])
+        dic["nombre_users"] = rg["nombre_users"]
+        roles.append(dic)
+    
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     context = {
-            "groups": groups,
-            "setting": setting
+        "roles": roles,
+        "anneeacademique": anneeacademique,
+        "setting": setting
     }
-    return render(request, "group/group_etablissements.html", context)
+    return render(request, "role/roles.html", context)
 
 @login_required(login_url='connection/login')
 @allowed_users(allowed_roles=permission_promoteur_DG)
-def add_group_etablissement(request):
+def add_role(request):
     etablissement_id = request.session.get('etablissement_id')
-    anneeacdademique = request.session.get('anneeacademique_id')
-    setting = get_setting(anneeacdademique)
+    anneeacademique_id = request.session.get('anneeacademique_id')
+    setting = get_setting(anneeacademique_id)
     if setting is None:
         return redirect("settings/maintenance")
     
     if request.method == "POST":
-        name = bleach.clean(request.POST["name"].strip())
-        group = Group.objects.get(name=name)
-        etablissement = Etablissement.objects.get(id=etablissement_id)
-        # Verifier l'existence du groupe
-        if group in etablissement.groups.all():
+        user_id = bleach.clean(request.POST["user"].strip())
+        group_id = bleach.clean(request.POST["group"].strip())
+        # Verifier l'existence du rôle
+        if EtablissementUser.objects.filter(user_id=user_id, group_id=group_id, etablissement_id=etablissement_id):
             return JsonResponse({
                     "status": "error",
                     "message": "Ce rôle existe déjà."})
         else:
-            # Associer le groupe à l'établissement
-            etablissement.groups.add(group)
-            etablissement.save()
-            return JsonResponse({
-                    "status": "success",
-                    "message": "Rôle enregistré avec succès."})
+            # Récuperer le groupe 
+            group = Group.objects.get(id=group_id)
+            if group.name == "Promoteur":
+                role = EtablissementUser(
+                    user_id=user_id, 
+                    group_id=group_id, 
+                    etablissement_id=etablissement_id
+                )
+                role.save()
+                
+                # Mettre à jour le promoteur de l'établissement
+                etablissement = Etablissement.objects.get(id=etablissement_id)
+                etablissement.promoteur_id = user_id
+                etablissement.save()
+                
+                return JsonResponse({
+                        "status": "success",
+                        "message": "Rôle enregistré avec succès."})
+            else:
+                role = EtablissementUser(
+                    user_id=user_id, 
+                    group_id=group_id, 
+                    etablissement_id=etablissement_id
+                )
+                role.save()
+                return JsonResponse({
+                        "status": "success",
+                        "message": "Rôle enregistré avec succès."})
             
-    groups =  Group.objects.exclude(name__in=["Super user", "Super admin"])             
+    groups =  Group.objects.exclude(name__in=["Super user", "Super admin"])
+    etablissementUsers = EtablissementUser.objects.filter(etablissement_id=etablissement_id).select_related("user")           
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                           
     context = {
             "setting": setting,
-            "groups": groups
+            "groups": groups,
+            "etablissementUsers": etablissementUsers,
+            "contrat": contrat
     }
-    return render(request, "group/add_group_etablissement.html", context)
+    return render(request, "role/add_role.html", context)
 
 @login_required(login_url='connection/login')
 @allowed_users(allowed_roles=permission_promoteur_DG)
-def edit_group_etablissement(request, id):
+def edit_role(request, id):
     etablissement_id = request.session.get('etablissement_id')
-    anneeacdademique = request.session.get('anneeacademique_id')
-    setting = get_setting(anneeacdademique)
+    anneeacademique_id = request.session.get('anneeacademique_id')
+    setting = get_setting(anneeacademique_id)
     if setting is None:
         return redirect("settings/maintenance")
      
-    group_id = int(dechiffrer_param(str(id)))   
-    group = Group.objects.get(id=group_id)
-    etablissement = Etablissement.objects.get(id=etablissement_id)
-    groups = etablissement.groups.all()
-    tabgroups = []
-    for gp in groups:
-        if gp != group:
-            tabgroups.append(gp)
-        
+    role_id = int(dechiffrer_param(str(id)))   
+    role = EtablissementUser.objects.get(id=role_id)
+    groups = Group.objects.exclude(id=role.group.id).exclude(name__in=["Super user", "Super admin"])
+    etablissementUsers = EtablissementUser.objects.filter(etablissement_id=etablissement_id).exclude(user_id=role.user.id)
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                                 
     context = {
-            "group": group,
-            "groups": tabgroups,
-            "setting": setting
+        "role": role,
+        "etablissementUsers": etablissementUsers,
+        "groups": groups,
+        "contrat": contrat,
+        "setting": setting
     }
-    return render(request, "group/edit_group_etablissement.html", context)
+    return render(request, "role/edit_role.html", context)
 
 @login_required(login_url='connection/login')
 @allowed_users(allowed_roles=permission_promoteur_DG)
-def edit_ge(request):
+@transaction.atomic
+def edit_ro(request):
     etablissement_id = request.session.get('etablissement_id')
     if request.method == "POST":
         id = request.POST["id"]
-        g = Group.objects.get(id=id)
-        name = bleach.clean(request.POST["name"].strip())
-        group = Group.objects.get(name=name)
-        etablissement = Etablissement.objects.get(id=etablissement_id)
-        groups = etablissement.groups.all()
-        tabGroup = []
-        for gp in groups:
-            if gp != g:
-                tabGroup.append(gp)
-                
-        # Verifier l'existence du groupe
-        if group in tabGroup:
-            return JsonResponse({
-                    "status": "error",
-                    "message": "Ce rôle existe déjà."})
-        else:
-            etablissement.groups.remove(g)
-            # Associer le groupe à l'établissement
-            etablissement.groups.add(group)
-            etablissement.save()
-            return JsonResponse({
-                    "status": "success",
-                    "message": "Rôle modifié avec succès."})
+        try:
+            role = EtablissementUser.objects.get(id=id)
+        except:
+            role = None
+
+        if role:
+            user_id = bleach.clean(request.POST["user"].strip())
+            group_id = bleach.clean(request.POST["group"].strip())
+            roles = EtablissementUser.objects.filter(etablissement_id=etablissement_id).exclude(id=id)
+            tabRoles = []
+            for r in roles:
+                dic = {}
+                dic["user_id"] = int(r.user.id)
+                dic["group_id"] = int(r.group.id)
+                tabRoles.append(dic)
+            
+            new_dic = {}
+            new_dic["user_id"] = int(user_id)
+            new_dic["group_id"] = int(group_id)    
+            # Verifier l'existence du rôle
+            if  new_dic in tabRoles:
+                return JsonResponse({
+                        "status": "error",
+                        "message": "Ce rôle existe déjà."})
+            else:
+                # Récuperer le groupe
+                group = Group.objects.get(id=group_id)
+                if group.name == "Promoteur":
+                    role.user_id = user_id
+                    role.group_id = group_id
+                    role.save()
+                    
+                    # Mettre à jour le promoteur de l'établissement
+                    etablissement = Etablissement.objects.get(id=etablissement_id)
+                    etablissement.promoteur_id = user_id
+                    etablissement.save()
+                    
+                    return JsonResponse({
+                            "status": "success",
+                            "message": "Rôle modifié avec succès."})
+                else:
+                    role.user_id = user_id
+                    role.group_id = group_id
+                    role.save()
+                    
+                    return JsonResponse({
+                            "status": "success",
+                            "message": "Rôle modifié avec succès."})
+        return JsonResponse({
+                "status": "error",
+                "message": "La mise à jour a échouée."})
+            
+def ajax_delete_role(request, id):
+    role = EtablissementUser.objects.get(id=id)
+    context = {
+        "role": role
+    }
+    return render(request, "ajax_delete_role.html", context)
 
 @login_required(login_url='connection/login')
 @allowed_users(allowed_roles=permission_promoteur_DG)
-def del_group_etablissement(request, id):
-    etablissement_id = request.session.get('etablissement_id')
+def del_role(request, id):
     try:
-        group_id = int(dechiffrer_param(str(id)))
-        # Récuperer le groupe
-        group = Group.objects.get(id=group_id)
-    
-        etablissement = Etablissement.objects.get(id=etablissement_id)
-        group_etablissement = etablissement.groups.filter(name=group.name).first()
-        
+        role_id = int(dechiffrer_param(str(id)))
+        role = EtablissementUser.objects.get(id=role_id)
     except:
-        group_etablissement = None
+        role = None
         
-    if group_etablissement:
-        # Nombre de groupes avant la suppression
-        count0 = etablissement.groups.all().count()
-        etablissement.groups.remove(group_etablissement)
-        # Nombre de groupes après la suppression
-        count1 = etablissement.groups.all().count()
+    if role:
+        # Nombre de rôles avant la suppression
+        count0 = EtablissementUser.objects.all().count()
+        role.delete()
+        # Nombre de rôles après la suppression
+        count1 = EtablissementUser.objects.all().count()
         if count1 < count0: 
             messages.success(request, "Elément supprimé avec succès.")
         else:
             messages.error(request, "La suppression a échouée.")
-    return redirect("group/group_etablissements") 
+    return redirect("cycles")
+
 
 
 @login_required(login_url='connection/login')
@@ -3529,14 +4098,14 @@ def group_etablissement_user(request, id):
     # Récuperer l'établissement
     etablissement = Etablissement.objects.get(id=etablissement_id)
     # Récuperer tous les groupes de l'établissement
-    groups_etablissement = etablissement.groups.all()
+    groups = Group.objects.exclude(name__in=["Super user", "Super admin"]) 
     # Récuperer les groupes de l'utilisateur
-    groups_user = etablissement.groups.filter(user=user).exclude(name__in=permission_sup_user)
+    roles_user = EtablissementUser.objects.filter(etablissement=etablissement, user=user)
         
     context = {
-        "groups": groups_etablissement,
+        "groups": groups,
         "user": user,
-        "groups_user": groups_user,
+        "roles_user": roles_user,
         "setting": setting
     }
     return render(request, "group/group_etablissement_user.html", context)
@@ -3548,52 +4117,54 @@ def add_group_etablissement_to_user(request):
     etablissement_id = request.session.get('etablissement_id')
     if request.method == "POST":
         id = request.POST["id"]
-        name = bleach.clean(request.POST["name"].strip())
+        group_id = bleach.clean(request.POST["group"].strip())
+        # Récuperer le groupe
+        group = Group.objects.get(id=group_id)
         # Récuperer l'utilisateur
         user = User.objects.get(id=id)
         # Récuperer le group l'établissement
         etablissement = Etablissement.objects.get(id=etablissement_id)
-        # Récuperer tous les groupes de l'établissement
-        #groups = etablissement.groups.all()
-        # Récuperer le groupe lié à l'établissement
-        group = etablissement.groups.filter(name=name).first()
-        if not group:
-            messages.error(request, "Le groupe spécifié n'existe pas pour cet établissement.")
+        # Vérifier l'existence du rôle
+        if EtablissementUser.objects.filter(etablissement=etablissement, group=group, user=user).exists():
+            messages.error(request, "Ce rôle existe déjà.")
             return redirect("group/group_etablissement_user", chiffrer_param(str(id)))
-        # Supprimer les groupes actuels de l'utilisateur
-        #user.groups.clear()
-        # Vérifie s'il y a un autre utilisateur que `user` dans le groupe
-        autres_utilisateurs = group.user_set.exclude(id=user.id)
-        if autres_utilisateurs.exists() and name in ["Promoteur", "Directeur Général"]:
-            messages.error(request, "Il y a déjà un autre utilisateur dans ce groupe.")
-            return redirect("group/group_etablissement_user", chiffrer_param(str(id)))
-        if etablissement.groups.filter(user=user, name=name).exists():
-            messages.error(request, "L'utilisateur est déjà dans ce groupe.")
+        
+        status = False # Verifier si l'établissement a déjà un promoteur, un directeur général ou un directeur des études 
+        if group.name == "Promoteur":
+            roles = EtablissementUser.objects.filter(etablissement=etablissement)
+            for role in roles:
+                if role.group == group.name:
+                    status = True
+                    break
+        if status:            
+            messages.error(request, "L'établissement a déjà un promoteur.")
             return redirect("group/group_etablissement_user", chiffrer_param(str(id)))
         else:
             # Ajouter le nouveau groupe à l'utilisateur
-            #user.groups.add(group)
-            group.user_set.add(user)
-            messages.success(request, "Utilisateur associé au groupe avec succès.")
+            count0 = EtablissementUser.objects.all().count()
+            EtablissementUser.objects.create(etablissement=etablissement, group=group, user=user)
+            count1 = EtablissementUser.objects.all().count()
+            if count0 < count1:
+                messages.success(request, "Utilisateur associé au groupe avec succès.")
+            else:
+                messages.success(request, "L'association a échouee.")
             return redirect("group/group_etablissement_user", chiffrer_param(str(id)))
-            
+        
 @login_required(login_url='connection/login')
 @allowed_users(allowed_roles=permission_promoteur_DG)
-def del_group_etablissement_to_user(request, id, name):
+def del_group_etablissement_to_user(request, id):
     etablissement_id = request.session.get('etablissement_id')
     # Récuperer l'établissement
     etablissement = Etablissement.objects.get(id=etablissement_id)
-    user_id = int(dechiffrer_param(str(id)))
-    group_name = dechiffrer_param(name)
-    user = User.objects.get(id=user_id)
+    role_id = int(dechiffrer_param(str(id)))
+    role = EtablissementUser.objects.get(id=role_id)
     
-    if etablissement.groups.filter(user=user).count() > 1:   
-        g = etablissement.groups.filter(user=user, name=group_name).first()
-        g.user_set.remove(user)
-        messages.success(request, "Groupe suprimé avec succès.")  
+    if EtablissementUser.objects.filter(user=role.user, etablissement=etablissement).count() > 1:   
+        role.delete()
+        messages.success(request, "Rôle suprimé avec succès.")  
     else:
-        messages.success(request, "Ce groupe ne peut pas être supprimé.")  
-    return redirect("group/group_etablissement_user", id)
+        messages.error(request, "Ce rôle ne peut pas être supprimé.")  
+    return redirect("group/group_etablissement_user", chiffrer_param(str(role.user.id)))
 
 
 

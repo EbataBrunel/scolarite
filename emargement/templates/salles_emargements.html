@@ -32,19 +32,80 @@
                             <tr>
                                 <th>Id</th>
                                 <th>Salles</th>
-                                <th>NombreMatières</th>
+                                <th class="white-space">Nb matières / Emargements</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for emargement in emargements %}
+                            {% for e in emargements %}
                             <tr>
-                                <td>{{ emargement.salle.id }}</td>
-                                <td>{{ emargement.salle }}</td>
-                                <td><span class="badge rounded-pill bg-secondary">{{ emargement.nb_matieres }}</span></td>
+                                <td>{{ e.salle.id }}</td>
+                                <td class="white-space">{{ e.salle }}</td>
+                                {% if e.salle.cycle.libelle == "Collège" or e.salle.cycle.libelle == "Lycée" %}
+                                <td><span class="badge rounded-pill bg-secondary">{{ e.nb_matieres }}</span></td>
                                 <td>
-                                  <a href="{% url 'matieres_emargements' enseignant.id|crypter_id emargement.salle.id|crypter_id  %}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye "></i></a>
+                                  <a href="{% url 'matieres_emargements' enseignant.id|crypter_id e.salle.id|crypter_id  %}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye "></i></a>
                                 </td>
+                                {% else %}
+                                <td><span class="badge rounded-pill bg-secondary">{{ e.nb_emargements }}</span></td>
+                                <td>
+                                  <a class="btn btn-info btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ e.salle.id }}" title="Détail"><i class="bi bi-eye"></i></a>
+                                  <!-- debut detail modal -->
+                                  <div class="modal fade" id="detailModal{{ e.salle.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                          <div class="modal-content">
+                                              <div class="modal-header bg-info">
+                                                  <h5 class="modal-title" id="exampleModalLabel"><b class="text-center"> Liste des émargements </b></h5>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <br>
+                                                    <h5><b>{{ e.salle }}</b></h5>
+                                                    <hr>
+                                                    <div class="table-responsive">
+                                                      <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Id</th>
+                                                                <th>Horaire</th>
+                                                                <th>Jour</th>
+                                                                <th>Date</th>
+                                                                {% if anneeacademique.status_cloture %}
+                                                                <th>Actions</th>
+                                                                {% endif %}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                          {% for emargement in e.emargements %}
+                                                          <tr>
+                                                              <td>{{ emargement.id }}</td>
+                                                              <td>{{ emargement.jour }}</td>
+                                                              <td>{{ emargement.heure_debut }}-{{ emargement.heure_fin }}</td>
+                                                              <td>{{ emargement.date_emargement|date:"d/m/Y" }}</td>
+                                                              {% if anneeacademique.status_cloture %}
+                                                              <td style="width:5px; min-width:5px; max-width:5px; white-space: nowrap;">
+                                                                <a class="btn btn-danger btn-sm delete-evenement" id="{{ emargement.id }}"><i class="bi bi-trash"></i></a>
+                                                                <a href="{% url 'edit_emargement' emargement.id|crypter_id %}" title="Modifier" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                                                              </td>
+                                                              {% endif %}
+                                                          </tr>
+                                                          {% endfor %}
+                                                        </tbody>
+                                                      </table>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <!-- end modal detail -->
+                                </td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>

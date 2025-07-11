@@ -2,6 +2,7 @@ from django.shortcuts import redirect
 from django.http import HttpResponse
 from etablissement.models import Etablissement
 from django.contrib.auth.models import Group
+from app_auth.models import EtablissementUser
 
 def unauthenticated_user(views_func):
     def wrapper_func(request, *args, **kwargs):
@@ -28,14 +29,15 @@ def allowed_users(allowed_roles=[]):
             if etablissement_id:
                 etablissement = Etablissement.objects.get(id=etablissement_id)            
                 user = request.user
-                if etablissement.groups.filter(user=user).exists():
-                    list_groups = etablissement.groups.filter(user=user)
-                    for group in list_groups:
-                        groups.append(group)
+                if EtablissementUser.objects.filter(user=user, etablissement=etablissement).exists():
+                    roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)
+                    for role in roles:
+                        groups.append(role.group)
                 else:
-                    list_groups = etablissement.groups.all()
-                    for group in list_groups:
-                        groups.append(group)
+                    roles = EtablissementUser.objects.filter(etablissement=etablissement)
+                    for role in roles:
+                        if role.group not in groups:
+                            groups.append(role.group)
                         
                     g = Group.objects.get(name="Super user")
                     groups.append(g)

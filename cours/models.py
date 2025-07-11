@@ -37,3 +37,9 @@ class CommentCours(models.Model):
     def is_teacher(self):
         """Vérifie si l'auteur est un enseignant."""
         return self.author_content_type.model == 'user'
+    
+class ReadCours(models.Model):
+    anneeacademique = models.ForeignKey(AnneeCademique, on_delete=models.CASCADE, null=False)
+    cours = models.ForeignKey(Cours, on_delete=models.CASCADE, null=False)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=False)
+    reading_status = models.IntegerField(null=False, default=0)

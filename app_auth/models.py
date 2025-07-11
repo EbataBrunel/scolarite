@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from etablissement.models import Etablissement
 
 class Profile(models.Model):
@@ -215,6 +215,17 @@ class Profile(models.Model):
         ('Zimbabwe','Zimbabwe')
     ]
     country = models.CharField(max_length=100, null=True, choices=LIST_COUNTRY)
+    
+class EtablissementUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    etablissement = models.ForeignKey(Etablissement, on_delete=models.CASCADE)
+ 
+    class Meta:
+        unique_together = ('user', 'group', 'etablissement')  # Évite les doublons
+
+    def __str__(self):
+        return f"{self.user.username} - {self.group.name} - {self.etablissement.name}"
 
 class Parent(models.Model):
     etablissement = models.ForeignKey(Etablissement, on_delete=models.CASCADE, null=True, default=None, related_name="parents")
@@ -439,8 +450,8 @@ class Student(models.Model):
     firstname = models.CharField(max_length=100, null=True)
     lastname = models.CharField(max_length=100, null=True) 
     datenais = models.DateField(null=True)
+    lieunais = models.CharField(max_length=100, null=False) 
     address = models.TextField()
-    photo = models.ImageField(upload_to="img", null=True, blank=True)
     SEX = [
         ('Masculin','Masculin'),
         ('Feminin','Feminin')

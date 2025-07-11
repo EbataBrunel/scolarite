@@ -1,0 +1,117 @@
+{% extends 'global/base_supuser.html' %}
+{% block title %} {{ setting.appname }} | Paiments mensuels des établissement {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Inscriptions</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Paiements mensuels</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Liste des paiements mensuels</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table datatable">
+                        <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th class="white-space">Nombre établissements</th>
+                                <th class="white-space">Montant ({{ setting.devise }})</th>
+                                <th class="white-space">Montant encaissé</th>
+                                <th class="white-space">Montant restant</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in payments %}
+                            <tr>
+                                <td>{{ p.month }}</td>
+                                <td class="white-space"><span class="badge rounded-pill bg-secondary">{{ p.nombre_etablissements }}</span></td>
+                                <td class="white-space text-success"><b>{{ p.montant_total|floatformat:2 }}</b></td>
+                                <td class="white-space text-warning"><b>{{ p.montant_encaisse|floatformat:2 }}</b></td>
+                                <td class="white-space text-danger"><b>{{ p.montant_restant|floatformat:2 }}</b></td>
+                                <td>
+                                  <a class="btn btn-info btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ p.month }}" title="Détail"><i class="bi bi-eye"></i></a>
+                                  <!-- debut detail modal -->
+                                  <div class="modal fade" id="detailModal{{ p.month }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                          <div class="modal-content">
+                                              <div class="modal-header bg-info">
+                                                  <h5 class="modal-title" id="exampleModalLabel"><b class="text-center"> Liste des établissements </b></h5>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <h5 class="card-title">{{ p.month }}</h5>
+                                                    <hr>
+                                                    <div class="table-responsive">
+                                                      <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                              <th>Etablissement</th>
+                                                              <th class="white-space">Nombre élèves</th>
+                                                              <th class="white-space">Montant élève</th>
+                                                              <th class="white-space">Montant ({{ setting.devise }})</th>
+                                                              <th>Statut</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                          {% for e in p.etablissements %}
+                                                          <tr>
+                                                            <td class="white-space">{{ e.etablissement }}</td>
+                                                            <td>{{ e.nombre_students }}</td>
+                                                            <td>{{ e.montant_student|floatformat:2 }}</td>
+                                                            <td class="text-success">{{ e.montant|floatformat:2 }}</td>
+                                                            {% if e.status == "Payé" %}
+                                                            <td><span class="badge rounded-pill bg-success"> Payé </span></td>
+                                                            {% else %}
+                                                            <td><span class="badge rounded-pill bg-danger"> Impayé </span></td>
+                                                            {% endif %}
+                                                          </tr>
+                                                          {% endfor %}
+                                                          <tr>
+                                                            <td colspan="3" class="text-center"><b>Total ({{ setting.devise }})</b></td>
+                                                            <td class="text-success"><b>{{ p.montant_total|floatformat:2 }}</b></td>
+                                                          </tr>
+                                                        </tbody>
+                                                      </table>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <!-- end modal detail -->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -91,17 +91,19 @@
 <body>
   <div class="bulletin">
     <div class="header">
+      {% if base64_image %}
       <img src="data:image/png;base64,{{ base64_image }}" alt="Logo" class="logo">
+      {% endif %}
       <div class="header-center">
         <h2>ECHEANCIER DE REGLEMENT</h2>
         <p>Année scolaire: {{ anneeacademique.annee_debut }} {{ anneeacademique.separateur }} {{ anneeacademique.annee_fin }}</p>
-        <p>Complexe scolaire {{ setting.appname }}, 75008 PARIS - Tél: {{ setting.phone }} - Email: {{ setting.email }}</p>
+        <p>Complexe scolaire {{ setting.appname }}, {{ setting.address }} - Tél: {{ setting.phone }} - Email: {{ setting.email }}</p>
       </div>
     </div>
 
     <div class="info">
-      <div><strong>Nom :</strong> {{ inscription.student.lastname|title }}</div>
-      <div><strong>Prénom :</strong> {{ inscription.student.firstname|title }}</div>
+      <div><strong>Noms :</strong> {{ inscription.student.lastname|title }}</div>
+      <div><strong>Prénoms :</strong> {{ inscription.student.firstname|title }}</div>
     </div>
 
     <table>
@@ -111,7 +113,7 @@
           <th class="item-table-center bg-secondary">Dates</th>
           <th class="item-table-center bg-secondary">Statut</th>
           <th class="item-table-center bg-secondary">Mode de paiement</th>
-          <th class="item-table-center bg-secondary">Montant</th>
+          <th class="item-table-center bg-secondary">Montant ({{ setting.devise }})</th>
         </tr>
       </thead>
       <tbody>
@@ -120,7 +122,7 @@
             <td>{{ inscription.dateins|date:"d/m/Y" }}</p>
             <td>Payé</td>
             <td>En espèce</td>
-            <td>{{ inscription.amount|floatformat:2 }} {{ setting.devise }}</td>
+            <td>{{ inscription.amount|floatformat:2 }}</td>
           </tr>
         {% for paiement in paiements %}
         <tr>
@@ -128,7 +130,7 @@
           <td>{{ paiement.datepaye|date:"d/m/Y" }}</p>
           <td>Payé</td>
           <td>En espèce</td>
-          <td>{{ paiement.amount|floatformat:2 }} {{ setting.devise }}</td>
+          <td>{{ paiement.amount|floatformat:2 }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -142,11 +144,11 @@
     </table>
 
     <div class="footer">
-      <div>Fais à Brazzaville, le {{ date_actuelle|date:"d/m/Y" }}</div>
+      <div>Fais à {{ anneeacademique.etablissement.ville|title }}, le {{ date_actuelle|date:"d/m/Y" }}</div>
     </div>
 
     <div class="summary">
-      Excellent trimestre pour Brunel. Au delà de ses très bons résultats homogènes, Rafael fait preuve d'une maturité et d'une autonomie de travail à la hauteur de sa réussite académique. Bravo !
+      Ce reçu est généré automatiquement et n’a pas besoin de signature.
     </div>
   </div>
 </body>

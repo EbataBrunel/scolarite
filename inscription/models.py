@@ -4,7 +4,6 @@ from salle.models import Salle
 from app_auth.models import Student
 from anneeacademique.models import AnneeCademique
 from etablissement.models import Etablissement
-from simple_history.models import HistoricalRecords
 
 class Inscription(models.Model):
     MP = [
@@ -24,5 +23,7 @@ class Inscription(models.Model):
     status_block = models.BooleanField(default=True, null=False) # Bloquer les activités sur le compte de l'étudiant
     date_block = models.DateTimeField(null=True, blank=True, auto_now_add=True)
     responsable = models.ForeignKey(User, on_delete=models.CASCADE, null=True, default=None, related_name="user_bloquer_compte")
+    photo = models.ImageField(upload_to="img", null=True, blank=True)
+    
     def __str__(self):
         return f"{self.student.lastname} {self.student.firstname }"

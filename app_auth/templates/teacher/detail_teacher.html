@@ -111,18 +111,12 @@
                   <div class="col-lg-3 col-md-4 label">Groupes</div>
                   <div class="col-lg-9 col-md-8">
                     <ul>
-                    {% for group in groups %}
-                      <li>{{ group.name }}</li>
+                    {% for role in roles %}
+                      <li>{{ role.group.name }}</li>
                     {% endfor %}
                     </ul>
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-lg-3 col-md-4 label">Etablissement</div>
-                  <div class="col-lg-9 col-md-8">{{ user.profile.etablissement }}</div>
-                </div>
-
-
               </div>
 
               <div class="tab-pane fade profile-edit pt-3" id="profile-edit">

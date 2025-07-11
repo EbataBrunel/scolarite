@@ -51,12 +51,12 @@
             <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
 
               <div class="d-flex justify-content-center py-4">
-                <a href="" class="logo d-flex align-items-center w-auto">
+                <a href="#" class="logo d-flex align-items-center w-auto" style="text-decoration:none">
                   {% if setting %}
                     {% if setting.logo %}
                     <img src="{{ setting.logo.url }}" width="{{ setting.width_logo }}" height="{{ setting.height_logo }}" style="border-radius:100px" alt="Logo">
                     {% else %}
-                    <span class="d-none d-lg-block">{{ parametre.appname }}</span>
+                    <span class="d-none d-lg-block text-warning" style="font-size:20px"><b>{{ setting.appname }}</b></span>
                     {% endif %}
                   {% endif %}
                 </a>
@@ -82,6 +82,15 @@
                   {% endif %}
                   <form method="post" action="" class="row g-3 needs-validation" novalidate>
                     {% csrf_token %}
+                    <div class="col-12">
+                        <select name="etablissement" id="etablissement" class="form-select" aria-label="Default select example" required>
+                            <option value="">-- Selectionnez un établissement --</option>
+                            {% for etablissement in etablissements %}
+                            <option value="{{ etablissement.id }}">{{ etablissement }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <hr>
                     <div class="col-12">
                       <label for="id_username" class="form-label">Nom utilisateur *</label>
                       <div class="input-group has-validation">
@@ -110,10 +119,9 @@
                       {% endif %}
                     </div>
                     <div class="col-12">
-                      <p class="small mb-0 text-center"><a href="{% url 'reset_password' %}" style="text-decoration: None">Mot de passe oublié ?</a> | <a href="{% url 'user/register' etablissement_abreviation %}" style="text-decoration: None">Créer un compte </a></p>
+                      <p class="small mb-0 text-center"><a href="{% url 'reset_password' %}" style="text-decoration: None">Mot de passe oublié ?</a> | <a href="{% url 'user/register' %}" style="text-decoration: None">Créer un compte </a></p>
                     </div>
                   </form>
-
                 </div>
               </div>
             </div>

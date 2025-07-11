@@ -29,11 +29,96 @@
                       {% if l.absences %}
                         <h4 style="border-bottom: 2px solid gray"><i class="bi bi-gem"></i> Séance du {{ l.date_emargement }} </h4>
                         {% for absence in l.absences %}
+                          {% if absence.emargement.matiere %}
                             <h5><b>Matière</b></h5>
                             <p>{{ absence.emargement.matiere }}</p>
                             <h5><b>Horaire</b></h5>
                             <p>{{ absence.emargement.heure_debut }} - {{ absence.emargement.heure_fin }}</p>
-                            <hr>
+                          {% else %}
+                            <h5><b>Horaire</b></h5>
+                            <p>{{ absence.emargement.heure_debut }} - {{ absence.emargement.heure_fin }}</p>
+                          {% endif %}
+
+                          {% if absence.status_decision == 0 %}
+                            <a href="#"  data-bs-toggle="modal" data-bs-target="#decisionModal{{ absence.id }}" title="Détail"><span id="status-decision{{ absence.id }}"><span class="badge rounded-pill bg-warning">En attente</span></span></a>
+                            <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="decisionModal{{ absence.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                              <div class="modal-header bg-warning">
+                                                <h5 class="modal-title">Décision</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <h3 class="card-title"><b>Motif : </b>{{ absence.motif }}</h3>
+                                                    <p class="content-status-decision{{ absence.id }}">
+                                                      <a href="#" data-id="{{ absence.id }}" data-status="1" class="btn btn-success btn-sm decision-absence-student">Redevable</a>
+                                                      <a href="#" data-id="{{ absence.id }}" data-status="2" class="btn btn-danger btn-sm decision-absence-student">Non redevable</a>
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                      </div><!-- Fin de delete Modal-->
+                            {% elif absence.status_decision == 1 %}
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#decisionModal{{ absence.id }}" title="Détail"><span id="status-decision{{ absence.id }}"><span class="badge rounded-pill bg-success"> Recevable </span></span></a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="decisionModal{{ absence.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                              <div class="modal-header bg-warning">
+                                                <h5 class="modal-title">Décision</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <h3 class="card-title"><b>Motif : </b>{{ absence.motif }}</h3>
+                                                    <p class="content-status-decision{{ absence.id }}">
+                                                      <a href="#" data-id="{{ absence.id }}" data-status="2" class="btn btn-danger btn-sm decision-absence-student">Non redevable</a>
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                      </div><!-- Fin de delete Modal-->
+                            {% else %}
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#decisionModal{{ absence.id }}" title="Détail"><span id="status-decision{{ absence.id }}"><span class="badge rounded-pill bg-danger"> Non recevable </span></span></a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="decisionModal{{ absence.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                              <div class="modal-header bg-warning">
+                                                <h5 class="modal-title">Décision</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                <div class="card">
+                                                  <div class="card-body">
+                                                    <h3 class="card-title"><b>Motif : </b>{{ absence.motif }}</h3>
+                                                    <p class="content-status-decision{{ absence.id }}">
+                                                      <a href="#" data-id="{{ absence.id }}" data-status="1" class="btn btn-success btn-sm decision-absence-student"> Redevable </a>
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                      </div><!-- Fin de delete Modal-->
+                              {% endif %}
                         {% endfor %}
                       {% endif %}
                     {% endfor %}

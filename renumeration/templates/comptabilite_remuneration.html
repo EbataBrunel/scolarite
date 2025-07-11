@@ -1,0 +1,103 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Comptabilité {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Comptabilité</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Comptabilisation des rémunérations</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Comptabilisation des rémunérations</h5>
+                <!-- Table with stripped rows -->
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="{{ setting.theme }} {{ setting.text_color }}">Personnels</th>
+                                <th class="text-center {{ setting.theme }} {{ setting.text_color }} white-space">Nombre personnels</th>
+                                {% for month in months %}
+                                <th class="text-center {{ setting.theme }} {{ setting.text_color }} white-space">{{ month }} ({{ setting.devise }})</th>
+                                {% endfor %}
+                                <th class="text-center {{ setting.theme }} {{ setting.text_color }}  white-space">Total ({{ setting.devise }})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contrat in contrats %}
+                            <tr>
+                                <td>{{ contrat.type_contrat }}</td>
+                                <td class="text-center"><span class="badge rounded-pill bg-secondary">{{ contrat.nombre_personnels }}</span></td>
+                                {% for resume in contrat.resumes %}
+                                  {% if resume.nombre_personnel_paye == 0 and resume.nombre_personnels_impaye == 0 and resume.montant_paye == 0 and resume.montant_impaye == 0 %}
+                                    <td></td>
+                                  {% else %}
+                                    <td class="text-center">
+                                      {{ resume.nombre_personnels_paye }}/<span class="text-success"><b>{{ resume.montant_paye|floatformat:2 }}</b></span><br>
+                                      {{ resume.nombre_personnels_impaye }}/<span class="text-danger"><b>{{ resume.montant_impaye|floatformat:2 }}</b></span>
+                                    </td>
+                                  {% endif %}
+                                {% endfor %}
+                                <td class="text-center text-success">
+                                  <b>{{ contrat.total_paye|floatformat:2 }}<br>
+                                    <span class="text-danger">{{ contrat.total_impaye|floatformat:2 }}</span>
+                                  </b>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <th class="text-center {{ setting.theme }} {{ setting.text_color }} white-space">Total ({{ setting.devise }})</th>
+                                <td class="text-center {{ setting.theme }} {{ setting.text_color }}"><span class="badge rounded-pill bg-secondary">{{ total_personnel }}</span></td>
+                                {% for t in total_paye_impaye %}
+                                  {% if t.nombre_personnels_paye == 0 and t.nombre_personnels_impaye == 0 and t.montant_paye and t.montant_impaye %}
+                                  <td class="text-center {{ setting.theme }} {{ setting.text_color }}"></td>
+                                  {% else %}
+                                  <td class="text-center {{ setting.theme }} {{ setting.text_color }}">
+                                      {{ t.nombre_personnels_paye }}/<span class="text-light"><b>{{ t.montant_paye|floatformat:2 }}</b></span><br>
+                                      {{ t.nombre_personnels_impaye }}/<span class="text-warning"><b>{{ t.montant_impaye|floatformat:2 }}</b></span>
+                                  </td>
+                                  {% endif %}
+                                {% endfor %}
+                                <th class="text-center {{ setting.theme }} {{ setting.text_color }}">
+                                  {{ total_paye|floatformat:2 }}<br>
+                                  <span class="text-warning">{{ total_impaye|floatformat:2 }}</span>
+                                </th>
+                            <tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table with stripped rows -->
+                <br>
+                <h3>Note : </h3>
+                <hr>
+                <div class="row">
+                  <div class="col-md-2">
+                    <p>x/y <br>w/z</p>
+                  </div>
+                  <div class="col-md-10">
+                    <b>x :</b> Nombre du personnel remunéré<br>
+                    <b>y :</b> Somme totale des rémunérations versées au personnel<br>
+                    <b>w :</b> Nombre du personnel non rémunéré<br>
+                    <b>z :</b> Somme totale des rémunérations non versées au personnel
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'global/base_sup_admin.html' %}
+{% block title %} {{ setting.appname }} | Ajout d'un rôle {% endblock %}
+{% block content %}
+{% load static %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Rôles</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/db' %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'role/roles' %}" >Rôles</a></li>
+          <li class="breadcrumb-item active">Ajout</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+      <div class="row">
+
+        <div class="col-lg-6 col-lg-offset-3">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Enregistrer un rôle</h5>
+              <!-- On inclut l'image de chargement -->
+              {% include 'global/_loading.html' %}
+              {% if contrat.status_signature %}
+              <!-- Vertical Form -->
+              <form method="post" action="" id="formRole" class="row g-3">
+                {% csrf_token %}
+                <div class="col-12">
+                  <label for="user" class="form-label">Utilisateur : </label>
+                  <select name="user" id="user" class="form-select" aria-label="Default select example" required>
+                      <option value="">-- Selectionnez --</option>
+                      {% for etablissementUser in etablissementUsers %}
+                      <option value="{{ etablissementUser.user.id }}">{{ etablissementUser.user.last_name|title }} {{ etablissementUser.user.first_name }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="group" class="form-label">Groupe : </label>
+                  <select name="group" id="group" class="form-select" aria-label="Default select example" required>
+                      <option value="">-- Selectionnez --</option>
+                      {% for group in groups %}
+                      <option value="{{ group.id }}">{{ group.name }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+                <div class="text-center">
+                  <a href="{% url 'role/roles' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                  <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                </div>
+              </form><!-- Vertical Form -->
+              {% else %}
+              <div class="card">
+                <div class="card-body">
+                  <br>
+                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord signé le contrat, s'il n'a pas encore été fait, avant d'enregistrer un cycle. <a href="{% url 'contrat_etablissement/mes_contrats_promoteur' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Je signe le contrat</a></h4>
+                </div>
+              </div>
+              {% endif %}
+              <!-- Start message Modal -->
+              <div class="modal fade" id="message" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Information</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" class="badge bg-dark">x</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="content-message"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

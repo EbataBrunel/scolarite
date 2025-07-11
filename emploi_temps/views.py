@@ -10,21 +10,22 @@ from django.db.models import Min
 from django.contrib import messages 
 # Importation locaux
 from .models import *
-from programme.models import Programme
 from inscription.models import Inscription
 from enseignement.models import Enseigner
-from app_auth.models import Student, Profile
+from app_auth.models import Student
 from etablissement.models import Etablissement
+from renumeration.models import Contrat
+from app_auth.models import EtablissementUser
 from school.views import get_setting
 from app_auth.decorator import unauthenticated_customer, allowed_users
 from scolarite.utils.crypto import dechiffrer_param
 
-permission_directeur_etudes = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Super user']
-permission_directeur_etudes_enseignant = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Enseignant', 'Super user',]
-permission_enseignant = ['Enseignant', 'Super user']
+permission_directeur_etudes = ['Promoteur', 'Directeur Général', 'Directeur des Etudes']
+permission_directeur_etudes_enseignant = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Enseignant']
+permission_enseignant = ['Enseignant']
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes_enseignant)
 def emploitemps(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -34,7 +35,7 @@ def emploitemps(request):
 
     classe_id = request.session.get('classe_id')
     tabSalles = []
-    if request.user.is_superuser:   
+    if request.session.get('group_name') in permission_directeur_etudes:   
         salles_enseignements = (Enseigner.objects.values("salle_id")
                          .filter(anneeacademique_id=anneeacademique_id)    
                          .annotate(nb_salles=Count("salle_id")))
@@ -78,10 +79,10 @@ def emploitemps_parent(request):
         if query.exists():
             # Récuperer l'inscription
             inscription = query.first()
-            dic = {}
-            dic["inscription"] = inscription
-            tabinscription.append(dic)
-    
+            if inscription.status_access and inscription.status_block:
+                dic = {}
+                dic["inscription"] = inscription
+                tabinscription.append(dic)
     context = {
         "inscriptions": tabinscription,
         "setting": setting
@@ -136,7 +137,7 @@ def emploitemps_student(request):
         
     return render(request, "emploitemps_student.html", context=context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def add_emploitemps(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -149,7 +150,13 @@ def add_emploitemps(request):
     if request.method == "POST":
 
         salle_id = request.POST["salle"]
-        matiere_id = request.POST["matiere"]
+        # Récuperer la salle
+        salle = Salle.objects.get(id=salle_id)
+        matiere = None
+        if salle.cycle.libelle in ["Collège", "Lycée"]:
+            matiere_id = request.POST["matiere"]
+            matiere = Matiere.objects.get(id=matiere_id)
+        
         enseignant_id = request.POST["enseignant"]
         jour = request.POST["jour"]
         heure_debut = request.POST["heure_debut"]
@@ -159,7 +166,7 @@ def add_emploitemps(request):
            
         query = EmploiTemps.objects.filter(
             salle_id=salle_id, 
-            matiere_id=matiere_id, 
+            matiere=matiere, 
             anneeacademique_id=anneeacademique_id,
             jour=jour, 
             heure_debut=heure_debut, 
@@ -176,7 +183,7 @@ def add_emploitemps(request):
         else:
             emploitemps = EmploiTemps(
                 salle_id=salle_id, 
-                matiere_id=matiere_id, 
+                matiere=matiere, 
                 anneeacademique_id=anneeacademique_id,
                 enseignant_id=enseignant_id,
                 jour=jour,
@@ -200,15 +207,18 @@ def add_emploitemps(request):
 
     jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
     salles = Salle.objects.filter(classe_id=classe_id)
-
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
     context = {
         "setting": setting,
         "salles": salles,
-        "jours": jours
+        "jours": jours,
+        "contrat": contrat
     }
     return render(request, "add_emploitemps.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def edit_emploitemps(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -222,41 +232,46 @@ def edit_emploitemps(request, id):
     emploitemps = EmploiTemps.objects.get(id=emploitemps_id)
         
     salles = Salle.objects.filter(classe_id=classe_id).exclude(id=emploitemps.salle.id)
-    enseignements = Enseigner.objects.filter(enseignant_id=emploitemps.enseignant.id, salle_id=emploitemps.salle.id).exclude(id=emploitemps.matiere.id)
     matieres = []
-    for enseignement in enseignements:
-        matieres.append(enseignement.matiere)
+    if emploitemps.salle.cycle.libelle in ["Collège", "Lycée"]:
+        enseignements = Enseigner.objects.filter(enseignant_id=emploitemps.enseignant.id, salle_id=emploitemps.salle.id).exclude(id=emploitemps.matiere.id)
+        for enseignement in enseignements:
+            matieres.append(enseignement.matiere)
         
     jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
-    tabJours = []
-    for jour in jours:
-        if jour != emploitemps.jour:
-            tabJours.append(jour)
+    tabJours = [jour for jour in jours if jour != emploitemps.jour]
 
     # Récuperer l'établissement
     etablissement = Etablissement.objects.get(id=etablissement_id)
-    enseignants = []
-                   
-    users = User.objects.all()                
-    for user in users:
-        if emploitemps.enseignant != user:
-            groups = etablissement.groups.filter(user=user)
-            for group in groups:
-                if group.name == "Enseignant":
-                    enseignants.append(user)
-                    break
-           
+    enseignants = []                  
+    enseignements = Enseigner.objects.filter(salle_id=emploitemps.salle.id, anneeacademique_id=anneeacademique_id)                
+    for enseignement in enseignements:
+        if emploitemps.enseignant != enseignement.enseignant:
+            for role in EtablissementUser.objects.filter(user=enseignement.enseignant, etablissement=etablissement):
+                if role.group.name == "Enseignant":
+                    if emploitemps.salle.cycle in ["Collège", "Lycée"]:
+                        if Contrat.objects.filter(user_id=enseignement.enseignant.id, type_contrat="Enseignant du cycle secondaire", anneeacademique_id=anneeacademique_id).exists():
+                            enseignants.append(enseignement.enseignant)
+                            break
+                    else:
+                        if Contrat.objects.filter(user_id=enseignement.enseignant.id, type_contrat="Enseignant du cycle fondamental", anneeacademique_id=anneeacademique_id).exists():
+                            enseignants.append(enseignement.enseignant)
+                            break
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()       
     context = {
         "setting": setting,
         "emploitemps": emploitemps,
         "salles": salles,
         "matieres": matieres,
         "enseignants": enseignants,
-        "jours": tabJours
+        "jours": tabJours,
+        "contrat": contrat
     }
     return render(request, "edit_emploitemps.html", context)
    
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def edit_emp(request):
    
@@ -271,7 +286,12 @@ def edit_emp(request):
             return JsonResponse({'status':1})
         else: 
             salle_id = request.POST["salle"]
-            matiere_id = request.POST["matiere"]
+            # Récuperer la salle
+            salle = Salle.objects.get(id=salle_id)
+            matiere_id = None
+            if salle.cycle.libelle in ["Collège", "Lycée"]:
+                matiere_id = request.POST["matiere"]
+            
             enseignant_id = request.POST["enseignant"]
             jour = request.POST["jour"]
             heure_debut = request.POST["heure_debut"]
@@ -286,18 +306,18 @@ def edit_emp(request):
             for emp in list_emploitemps:   
                 dic = {}
                 dic["salle_id"] = emp.salle.id
-                dic["matiere_id"] = emp.matiere.id
+                if salle.cycle.libelle in ["Collège", "Lycée"]:
+                    dic["matiere_id"] = emp.matiere.id                   
                 dic["enseignant_id"] = emp.enseignant.id
                 dic["jour"] = emp.jour
                 dic["heure_debut"] = emp.heure_debut
                 dic["heure_fin"] = emp.heure_fin
                 tabEmploitemps.append(dic)
                 
-            
-                
             new_dic = {}
             new_dic["salle_id"] = int(salle_id)
-            new_dic["matiere_id"] = int(matiere_id)
+            if salle.cycle.libelle in ["Collège", "Lycée"]:
+                new_dic["matiere_id"] = int(matiere_id)
             new_dic["enseignant_id"] = int(enseignant_id)
             new_dic["jour"] = jour
             new_dic["heure_debut"] = heure_debut
@@ -313,17 +333,22 @@ def edit_emp(request):
                         "message": "Cet emploi du temps existe déjà."})
             else:
                 emploitemps.salle_id = salle_id
-                emploitemps.matiere_id = matiere_id
+                if salle.cycle.libelle in ["Collège", "Lycée"]:
+                    emploitemps.matiere_id = matiere_id
+                else:
+                    emploitemps.matiere = None
                 emploitemps.enseignant_id = enseignant_id
                 emploitemps.jour = jour
                 emploitemps.heure_debut = heure_debut
                 emploitemps.heure_fin = heure_fin
                 emploitemps.save()
+                
+                print(emploitemps.matiere_id)
                 return JsonResponse({
                         "status": "success",
                         "message": "Emploi du temps enregistrée avec succès."})
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def del_emploitemps(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -356,10 +381,18 @@ class get_enseignant_salle_emploi(View):
         enseignements = Enseigner.objects.filter(salle_id=id, anneeacademique_id=anneeacademique_id)
         enseignants = []
         for enseignement in enseignements:
-            if enseignement.enseignant not in enseignants:
-                enseignants.append(enseignement.enseignant)
+            # Récuperer la salle
+            salle = Salle.objects.get(id=id)
+            if salle.cycle.libelle in ["Collège", "Lycée"]:
+                if enseignement.enseignant not in enseignants:
+                    if Contrat.objects.filter(user_id=enseignement.enseignant.id, type_contrat="Enseignant du cycle secondaire", anneeacademique_id=anneeacademique_id).exists():
+                        enseignants.append(enseignement.enseignant)
+            else:
+                if enseignement.enseignant not in enseignants:
+                    if Contrat.objects.filter(user_id=enseignement.enseignant.id, type_contrat="Enseignant du cycle fondamental", anneeacademique_id=anneeacademique_id).exists():
+                        enseignants.append(enseignement.enseignant)
 
-        context={
+        context = {
             "enseignants": enseignants
         }
         return render(request, "ajax_enseignant.html", context)
@@ -372,8 +405,11 @@ class get_matiere_enseignant_salle_emploi(View):
         for enseignement in enseignements:
             matieres.append(enseignement.matiere)
 
+        # Récuperer le salle
+        salle = Salle.objects.get(id=id)
         context = {
-            "matieres": matieres
+            "matieres": matieres,
+            "salle": salle
         }
         return render(request, "ajax_matiere_enseignant.html", context)
 

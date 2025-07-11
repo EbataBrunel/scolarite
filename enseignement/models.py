@@ -16,10 +16,10 @@ class Enseigner(models.Model):
     matiere = models.ForeignKey(Matiere, on_delete=models.CASCADE, null=False)
     anneeacademique = models.ForeignKey(AnneeCademique, on_delete=models.CASCADE, null=False)
     volumehoraire = models.IntegerField(default=1)
-    cout_heure = models.DecimalField(max_digits=10, decimal_places=2, default=10.00, null=True)
+    cout_heure = models.DecimalField(max_digits=10, decimal_places=2, default=10.00, null=True, blank=True)
     trimestre = models.CharField(max_length=20, choices=TRIM, null=True)
-    eval = models.BooleanField(default=False, null=True)
-    date_eval = models.DateTimeField(blank=True, auto_now_add=True, null=True)
+    eval = models.BooleanField(default=False, null=True) # Donner le droit d'evaluer un enseignant
+    date_eval = models.DateTimeField(blank=True, auto_now_add=True, null=True) # Date limite de l'évaluation
     
     
 class EvaluationEnseignant(models.Model):

@@ -83,7 +83,7 @@
                                                         <p><b>Description : </b> {{ dp.depense.description }}</p>
                                                         <p><b>Montant : </b> {{ dp.depense.amount }}{{ setting.devise }}</p>
                                                         <p><b>Date de dépense: </b>{{ dp.depense.date_depense|date:"d/m/Y" }}</p> 
-                                                        {% if anneeacademique.status_clotures %}
+                                                        {% if anneeacademique.status_cloture %}
                                                         <p>
                                                           <a class="btn btn-danger btn-sm delete_depense" id="{{ dp.depense.id }}"><i class="bi bi-trash"></i> Supprimer </a>
                                                           <a href="{% url 'edit_depense' dp.depense.id|crypter_id %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Modifier </a>
@@ -183,7 +183,7 @@
                   <div class="modal-dialog modal-dialog-centered modal-sm">
                     <div class="modal-content">
                       <div class="modal-header bg-danger text-light">
-                        <h5 class="modal-title">Suppression</h5>
+                        <h5 class="modal-title">Avertissement</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                           <span aria-hidden="true" class="badge bg-dark">x</span>
                         </button>

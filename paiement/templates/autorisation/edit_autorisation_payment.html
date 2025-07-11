@@ -32,7 +32,7 @@
                 {% csrf_token %}
                     <div class="col-12">
                         <input type="text" name="id" value="{{ autorisation.id }}" hidden="True" required="True">
-                        <label for="salle_paye" class="form-label">Salle : </label>
+                        <label for="salle_paye" class="form-label">Salle : *</label>
                         <select name="salle" id="salle_paye" class="form-select" aria-label="Default select example">
                             <option value="{{ autorisation.salle.id}}">{{ autorisation.salle }}</option>
                             {% for salle in salles %}
@@ -43,7 +43,7 @@
 
                     <div id="studentview">
                       <div class="col-12">
-                          <label for="student" class="form-label">Elève : </label>
+                          <label for="student" class="form-label">Elève : *</label>
                           <select name="student" id="student" class="form-select" aria-label="Default select example" required>
                               <option value="{{ autorisation.student.id }}">{{ autorisation.student }}</option>
                               {% for student in students %}
@@ -54,7 +54,7 @@
                     </div>
 
                     <div class="col-12">
-                      <label for="month" class="form-label">Mois : </label>
+                      <label for="month" class="form-label">Mois : *</label>
                       <select name="month" id="month" class="form-select" aria-label="Default select example">
                           <option value="{{ autorisation.month }}">{{ autorisation.month }}</option>
                           {% for month in months %}
@@ -63,7 +63,7 @@
                       </select>
                     </div>
                     <div class="col-12">
-                        <label for="justification" class="form-label">justification : </label>
+                        <label for="justification" class="form-label">justification : *</label>
                         <textarea class="form-control" name="justification" id="justification" style="height: 50px;">{{ autorisation.justification }}</textarea>
                     </div>
                 <div class="text-center">

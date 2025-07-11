@@ -16,7 +16,7 @@ from datetime import datetime
 # Importation des modules locaux
 from .models import Setting, SettingSupUser
 from app_auth.decorator import unauthenticated_customer, allowed_users
-from app_auth.models import Student, Profile
+from app_auth.models import Student, EtablissementUser
 from classe.models import Classe
 from anneeacademique.models import AnneeCademique
 from inscription.models import Inscription
@@ -27,15 +27,16 @@ from calendrier.models import Trimestre, EvenementScolaire
 from absence.models import AbsenceAdmin, Absence
 from salle.models import Salle
 from emargement.models import Emargement
-from paiement.models import Payment, Notification, PaymentEtablissement
+from paiement.models import Payment, Notification, PaymentEtablissement, ContratEtablissement
 from absence.models import Absencestudent
 from composition.models import Composer
-from renumeration.models import Renumeration
+from renumeration.models import Renumeration, Contrat
 from contact.models import Contact, Message
 from depense.models import Depense
 from cycle.models import Cycle
 from etablissement.models import Etablissement
 from inscription.models import Inscription
+from cours.models import Cours, ReadCours
 from scolarite.utils.crypto import dechiffrer_param, chiffrer_param
 
 permission_utilisateur = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Gestionnaire', 'Enseignant', 'Surveillant Général', 'Super user', 'Super admin']
@@ -67,6 +68,34 @@ def format_mois(month):
     elif month == "10":
         return "Octobre"
     elif month == "11":
+        return "Novembre"
+    else:
+        return "Décembre"
+    
+# Récuperer le mois dans une date
+def get_month_year(annee):
+    month = annee.strftime("%m")
+    if month == '01':
+        return "Janvier"
+    elif month == '02':
+        return "Février"
+    elif month == '03':
+        return "Mars"
+    elif month == '04':
+        return "Avril"
+    elif month == '05':
+        return "Mai"
+    elif month == '06':
+        return "Juin"
+    elif month == '07':
+        return "Juillet"
+    elif month == '08':
+        return "Août"
+    elif month == '09':
+        return "Septembre"
+    elif month == '10':
+        return "Octobre"
+    elif month == '11':
         return "Novembre"
     else:
         return "Décembre"
@@ -188,9 +217,23 @@ def maintenance(request):
 
 def authorization_etablissement(request, id):
     etablissement_id = int(dechiffrer_param(id))
+    setting = get_setting_sup_user()
     etablissement = Etablissement.objects.get(id=etablissement_id)
-    context = { "etablissement": etablissement }
+    context = { 
+               "etablissement": etablissement, 
+               "setting": setting 
+    }
     return render(request, "settings/authorization_etablissement.html", context)
+
+def authorization_etablissement_student(request, id):
+    etablissement_id = int(dechiffrer_param(id))
+    setting = get_setting_sup_user()
+    etablissement = Etablissement.objects.get(id=etablissement_id)
+    context = { 
+               "etablissement": etablissement, 
+               "setting": setting 
+    }
+    return render(request, "settings/authorization_etablissement_student.html", context)
 
 def authorization(request):
     context = { }
@@ -209,7 +252,7 @@ def session_annee(request, etablissement_id):
     id = chiffrer_param(str(etablissement_id))
     return redirect("settings/db_cycle", id)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_utilisateur)
 def db_cycle(request, etablissement_id):    
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -218,7 +261,7 @@ def db_cycle(request, etablissement_id):
     if setting is None:
         return redirect("settings/maintenance")
     
-    id = int(dechiffrer_param(etablissement_id))
+    id = int(dechiffrer_param(str(etablissement_id)))
     cycles = Cycle.objects.filter(etablissement_id=id, anneeacademique_id=anneeacademique_id)
     tabcycles = []
     for cycle in cycles:
@@ -235,12 +278,13 @@ def db_cycle(request, etablissement_id):
     
     user = request.user
     if group_name in ["Super user"]:
-        groups = etablissement.groups.all()
+        roles = EtablissementUser.objects.filter(etablissement=etablissement)
         # Supprimer le nom du group principal pour eviter des doublons
         tabgroups = []
-        for group in groups:
-            tabgroups.append(group) 
-        tabgroups += ["Super user"]       
+        for role in roles:
+            if role.group not in tabgroups:
+                tabgroups.append(role.group) 
+              
         context = {
             "cycles": tabcycles,
             "anneeacademique": anneeacademique,
@@ -252,13 +296,13 @@ def db_cycle(request, etablissement_id):
         }
         return render(request, "settings/db_cycle.html", context)
     else:
-        groups = etablissement.groups.filter(user=user).exclude(name__in=permission_super_user)  
+        roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)  
         # Supprimer le nom du group principal pour eviter des doublons
         tabgroups = []
-        for group in groups:
-            if group.name != group_name:
+        for role in roles:
+            if role.group.name != group_name and role.group not in tabgroups:
                 if group_name in permission_utilisateur:
-                    tabgroups.append(group) 
+                    tabgroups.append(role.group) 
                     
         if request.session.get('group_name_old'):
             gp = Group.objects.filter(name=request.session.get('group_name_old')).first()
@@ -275,7 +319,7 @@ def db_cycle(request, etablissement_id):
         }
         return render(request, "settings/db_cycle.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_utilisateur)
 def db_classe(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -283,7 +327,7 @@ def db_classe(request, id):
     if setting is None:
         return redirect("settings/maintenance")
     
-    cycle_id = int(dechiffrer_param(id)) 
+    cycle_id = int(dechiffrer_param(str(id))) 
     cycle = Cycle.objects.get(id=cycle_id)
     request.session["cycle_id"] = cycle.id
     request.session["cycle_lib"] = cycle.libelle
@@ -296,11 +340,12 @@ def db_classe(request, id):
     
     return render(request, "settings/db_classe.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_utilisateur)
 def dashboard(request, id):
     etablissement_id = request.session.get('etablissement_id')
     anneeacademique_id = request.session.get('anneeacademique_id')
+    group_name = request.session.get('group_name')
     user_id = request.user.id
     setting = get_setting(anneeacademique_id)
     if setting is None:
@@ -323,26 +368,22 @@ def dashboard(request, id):
     etablissement = Etablissement.objects.get(id=etablissement_id)  
     # Determiner le nombre d'administrateurs
     nb_amin = 0
-    users = User.objects.all()
-    tabUsers = []
-    for user in users:
-        if etablissement.groups.filter(user=user).exists():
-            tabUsers.append(user)
-    for user in tabUsers:
-        groups = etablissement.groups.all()
-        for group in groups:
-            if group.name in permission_admin:
+    roles = EtablissementUser.objects.filter(etablissement=etablissement)
+    admin = []        
+    for role in roles:
+        if role.group.name in permission_admin:
+            if role.user not in admin:
+                admin.append(role.user)
                 nb_amin += 1
-                break
     
     # Determiner le nombre d'enseignants
     nb_teachers = 0
-    for user in tabUsers:
-        groups = etablissement.groups.all()
-        for group in groups:
-            if group.name == "Enseignant":
+    enseignants = []
+    for role in roles:
+        if role.group.name == "Enseignant":
+            if role.user not in enseignants:
+                enseignants.append(role.user)
                 nb_teachers += 1
-                break
             
     # Determiner le nombre d'étudiants inscris cette année
     inscriptions = Inscription.objects.filter(anneeacademique_id=anneeacademique_id)
@@ -394,6 +435,32 @@ def dashboard(request, id):
         dic["nombre_students"] = Inscription.objects.filter(anneeacademique_id=anneeacademique.id).count()
         inscriptions.append(dic) 
     
+    status_contrat = False
+    # Vérifie si l'administrateur ou l'enseignant a signé son contrat 
+    if group_name in ["Promoteur", "Directeur des Etudes"] and Contrat.objects.filter(user=request.user, anneeacademique=annee_cible, status_signature=False).exists():
+        status_contrat = True  
+        
+    # Compter les motifs d'absences des enseignants que le DG n'a pas encore pris la decision
+    nombre_absences_enseignants = 0
+    for absence in Absence.objects.filter(status_decision=0, anneeacademique_id=anneeacademique_id).exclude(motif=""):
+        month = get_month_year(absence.date_absence) # Récuperer le mois de l'absence 
+        if not Renumeration.objects.filter(user_id=absence.user.id, month=month, anneeacademique_id=anneeacademique_id).exclude(type_renumeration="Administrateur scolaire").exists():
+            nombre_absences_enseignants += 1
+            
+    # Compter les motifs d'absences des admin que le DG n'a pas encore pris la decision
+    nombre_absences_admin = 0
+    for absence in AbsenceAdmin.objects.filter(status_decision=0, anneeacademique_id=anneeacademique_id).exclude(motif=""):
+        month = get_month_year(absence.date_absence) # Récuperer le mois de l'absence 
+        if not Renumeration.objects.filter(user_id=absence.user.id, month=month, type_renumeration="Administrateur scolaire", anneeacademique_id=anneeacademique_id).exists():
+            nombre_absences_admin += 1
+            
+    # Compter les motifs d'absences des admin que le DG n'a pas encore pris la decision
+    nombre_absences_student = 0
+    for absence in Absencestudent.objects.filter(status_decision=0).exclude(motif=""):
+        if absence.emargement.anneeacademique.id == anneeacademique_id:
+            nombre_absences_student += 1
+             
+    classe_id = chiffrer_param(str(request.session.get('classe_id')))   
     context = {
         "setting": setting,
         "activity": activity,
@@ -406,12 +473,17 @@ def dashboard(request, id):
         "absences_enseignants": absences_enseignants,
         "nombre_contacts": nombre_contacts,
         "nombre_messages": nombre_messages,
-        "inscriptions": inscriptions
+        "inscriptions": inscriptions,
+        "status_contrat": status_contrat,
+        "nombre_absences_enseignants":nombre_absences_enseignants,
+        "nombre_absences_admin": nombre_absences_admin,
+        "nombre_absences_student": nombre_absences_student,
+        "classe_id": classe_id
         
     }
     return render(request, "settings/dashboard.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG_enseignant_supuser)
 def db(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -463,89 +535,79 @@ def db(request):
         salle = Salle.objects.get(id=salle_id)
         dic["salle"] = salle
         
-        matieres_emargements = (Emargement.objects.values("matiere_id")
-                   .filter(enseignant_id=enseignant_id, salle_id=salle_id, month=month, anneeacademique_id=anneeacademique_id)
-                   .annotate(nb_emargements=Count("matiere_id")))
+        if salle.cycle.libelle in ["Collège", "Lycée"]:
         
-        matieres = []
-        total_matiere_delta = timedelta(0)
-        for me in matieres_emargements:
-            dic_matiere = {}
-            matiere_id = me["matiere_id"]   
+            matieres_emargements = (Emargement.objects.values("matiere_id")
+                    .filter(enseignant_id=enseignant_id, salle_id=salle_id, month=month, anneeacademique_id=anneeacademique_id)
+                    .annotate(nb_emargements=Count("matiere_id")))
             
-            # Recupérer le cout par heure de cette matière
-            enseignement = Enseigner.objects.filter(
-                enseignant_id=enseignant_id, 
-                salle_id=salle_id, 
-                matiere_id=matiere_id, 
-                anneeacademique_id=anneeacademique_id).first()
-            dic_matiere["cout_heure"] = enseignement.cout_heure
-            
-            somme_cout_heure += enseignement.cout_heure
-            
-            emargements = Emargement.objects.filter(enseignant_id=enseignant_id, month=month, salle_id=salle_id, matiere_id=matiere_id, anneeacademique_id=anneeacademique_id)
-            # Initialisation avec une durée nulle
-            total_delta = timedelta(0)
-            list_emargements = []
-            for em in emargements:
-                dic_em = {}
-                dic_em["emargement"] = em
-                # Convertir les objets time en timedelta
-                start_delta = timedelta(hours=em.heure_debut.hour, minutes=em.heure_debut.minute)
-                end_delta = timedelta(hours=em.heure_fin.hour, minutes=em.heure_fin.minute)
-                # Calculer la somme des deux
-                total_delta +=  end_delta - start_delta
-                    
-                dic_em["hour"] = format_temps(total_delta)
+            matieres = []
+            total_matiere_delta = timedelta(0)
+            for me in matieres_emargements:
+                dic_matiere = {}
+                matiere_id = me["matiere_id"]   
                 
-                list_emargements.append(dic_em)     
+                # Recupérer le cout par heure de cette matière
+                enseignement = Enseigner.objects.filter(
+                    enseignant_id=enseignant_id, 
+                    salle_id=salle_id, 
+                    matiere_id=matiere_id, 
+                    anneeacademique_id=anneeacademique_id).first()
+                dic_matiere["cout_heure"] = enseignement.cout_heure
+                
+                somme_cout_heure += enseignement.cout_heure
+                
+                emargements = Emargement.objects.filter(enseignant_id=enseignant_id, month=month, salle_id=salle_id, matiere_id=matiere_id, anneeacademique_id=anneeacademique_id)
+                # Initialisation avec une durée nulle
+                total_delta = timedelta(0)
+                list_emargements = []
+                for em in emargements:
+                    dic_em = {}
+                    dic_em["emargement"] = em
+                    # Convertir les objets time en timedelta
+                    start_delta = timedelta(hours=em.heure_debut.hour, minutes=em.heure_debut.minute)
+                    end_delta = timedelta(hours=em.heure_fin.hour, minutes=em.heure_fin.minute)
+                    # Calculer la somme des deux
+                    total_delta +=  end_delta - start_delta
+                        
+                    dic_em["hour"] = format_temps(total_delta)
+                    
+                    list_emargements.append(dic_em)     
+                
+                dic_matiere["emargements"] = list_emargements        
+                
+                dic_matiere["total_time"] = format_temps(total_delta)
+                
+                # Calculer le montant à payer pour cette matière
+                dic_matiere["montant_total_matiere"] = calcul_montant(enseignement.cout_heure, format_temps(total_delta))
+                
+                total_matiere_delta += total_delta
+                
+                matieres.append(dic_matiere)
             
-            dic_matiere["emargements"] = list_emargements        
+            dic["total_matiere_time"] = format_temps(total_matiere_delta)
+            dic["matieres"] = matieres
             
-            dic_matiere["total_time"] = format_temps(total_delta)
+            montant_total = calcul_montant(somme_cout_heure, format_temps(total_matiere_delta))
+            dic["montant_total_salle"] = montant_total
+            tabEmargements.append(dic)
+            total_salle_delta += total_matiere_delta
             
-            # Calculer le montant à payer pour cette matière
-            dic_matiere["montant_total_matiere"] = calcul_montant(enseignement.cout_heure, format_temps(total_delta))
-            
-            total_matiere_delta += total_delta
-            
-            matieres.append(dic_matiere)
-        
-        dic["total_matiere_time"] = format_temps(total_matiere_delta)
-        dic["matieres"] = matieres
-        
-        montant_total = calcul_montant(somme_cout_heure, format_temps(total_matiere_delta))
-        dic["montant_total_salle"] = montant_total
-        tabEmargements.append(dic)
-        total_salle_delta += total_matiere_delta
-        
-        montant_payer += montant_total
+            montant_payer += montant_total
     
     
     # Récuperer les administrateurs
     administrateurs = []
     nombre_admin = 0
-    users = User.objects.all()
-    tabUsers = []
-    for user in users:
-        try:
-            profile = Profile.objects.get(user=user)
-        except Exception as e:
-            profile = None
-        if profile or etablissement.promoteur == user:
-            if etablissement.groups.filter(user=user).first() or etablissement.promoteur == user:
-                tabUsers.append(user)
-    for user in tabUsers:
-        if etablissement.groups.filter(user=user).exists():
-            groups = etablissement.groups.filter(user=user)
-            for group in groups:
-                if group.name in ["Promoteur", "Directeur Général", "Directeur des Etudes", "Gestionnaire", "Surveillant Général"]:
-                    dic = {}
-                    dic["administrateur"] = user
-                    dic["nombre_groupes"] = etablissement.groups.filter(user=user).exclude(name__in=["Super user", "Super admin"]).count() # Nombre de groupes de l'utilisateur
-                    if dic not in administrateurs:
-                        nombre_admin += 1
-                        administrateurs.append(dic)
+    for role in EtablissementUser.objects.filter(etablissement=etablissement):
+        if role.group.name != "Enseignant":
+            
+            dic = {}
+            dic["administrateur"] = role.user
+            dic["nombre_groupes"] = EtablissementUser.objects.filter(user=role.user, etablissement=etablissement).count() # Nombre de groupes de l'utilisateur
+            if dic not in administrateurs:
+                nombre_admin += 1
+                administrateurs.append(dic)
     
     # Nombre total d'étudiants inscris cette année
     nombre_total_student_inscris = Inscription.objects.filter(anneeacademique_id=anneeacademique_id).count()
@@ -553,17 +615,14 @@ def db(request):
     # Calucler le nombre total d'élèves inscris dans les salles de l'enseignant
     enseignants = []
     nombre_enseignants = 0
-    for user in tabUsers:
-        if etablissement.groups.filter(user=user).exists():
-            groups = etablissement.groups.filter(user=user)
-            for group in groups:
-                if group.name == "Enseignant":
-                    dic = {}
-                    dic["enseignant"] = user
-                    dic["nombre_groupes"] = etablissement.groups.filter(user=user).exclude(name__in=["Super user", "Super admin"]).count() # Nombre de groupes de l'utilisateur
-                    nombre_enseignants += 1
-                    
-                    enseignants.append(dic) 
+    for role in EtablissementUser.objects.filter(etablissement=etablissement):
+        if role.group.name == "Enseignant":
+            dic = {}
+            dic["enseignant"] = role.user
+            dic["nombre_groupes"] = EtablissementUser.objects.filter(user=role.user, etablissement=etablissement).count() # Nombre de groupes de l'utilisateur
+            if dic not in enseignants:
+                nombre_enseignants += 1
+                enseignants.append(dic)
         
     # Nombre de nouvelles payes de l'enseignant
     nombre_renumerations = Renumeration.objects.filter(user_id=enseignant_id, anneeacademique_id=anneeacademique_id, status=False).count()
@@ -676,6 +735,19 @@ def db(request):
         inscriptions.append(dic)
     
     group_name = request.session.get('group_name')
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)    
+    # Récuperer l'année académique du groupe 
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    status_contrat = False
+    # Verifier si le promoteur a signé le contrat de l'établissement
+    if group_name == "Promoteur" and ContratEtablissement.objects.filter(etablissement_id=etablissement_id, anneeacademique_id=anneeacademique_group.id, status_signature=False).exists():
+        status_contrat = True
+        
+    # Vérifie si l'administrateur ou l'enseignant a signé son contrat 
+    if group_name in ["Enseignant", "Surveillant Général"] and Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique_etablissement, status_signature=False).exists():
+        status_contrat = True   
+    
     template = ''
     if group_name in permission_promoteur_DG_Supuser:
         template = 'global/base_sup_admin.html'
@@ -704,6 +776,7 @@ def db(request):
         "nombre_messages": nombre_messages,
         "caisses": caisses,
         "inscriptions": inscriptions,
+        "status_contrat": status_contrat,
         "template": template
     }
     
@@ -736,15 +809,13 @@ def db_supuser(request):
                         tabUsers.append(user)
                         super_admin.append(dic)
         else:
-            news_users.append(user)
+            if EtablissementUser.objects.filter(user=user).exists(): continue
+            else: news_users.append(user)
                             
     promoteurs = []
-    for user in users:
-        if user.groups.exists():
-            groups = user.groups.all()
-            for group in groups:
-                if group.name == "Promoteur":
-                    promoteurs.append(user)
+    for role in EtablissementUser.objects.all():
+        if role.group.name == "Promoteur" and role.user not in promoteurs:
+            promoteurs.append(role.user)
 
     nombre_promoteurs = len(promoteurs)   
     total_etablissements = 0
@@ -757,8 +828,9 @@ def db_supuser(request):
             total_etablissements += 1
             dic = {}
             dic["etablissement"] = etablissement
-            dic["nombre_eleves"] = etablissement.inscriptions.filter(anneeacademique_id=anneeacademeique_etablissement.id).count()
-            
+            dic["nombre_students"] = etablissement.inscriptions.filter(anneeacademique_id=anneeacademeique_etablissement.id).count()
+            dic["nombre_students_actif"] = etablissement.inscriptions.filter(anneeacademique_id=anneeacademeique_etablissement.id, status_block=True).count()
+            dic["nombre_students_block"] = etablissement.inscriptions.filter(anneeacademique_id=anneeacademeique_etablissement.id, status_block=False).count()
             tabEtablissements.append(dic)    
     
     # Somme totale par mois
@@ -789,6 +861,9 @@ def db_supuser(request):
         dic["somme_totale_an"] = somme_totale_an
         tabAnneeacademique.append(dic)
         
+    # Nouveaux paiements effectués par les promoteurs
+    nombre_payments = PaymentEtablissement.objects.filter(anneeacademique_id=anneeacademique_id, status=False).count()
+        
     context = {
         "setting": setting,
         "promoteurs": promoteurs,
@@ -800,7 +875,8 @@ def db_supuser(request):
         "etablissements": tabEtablissements,
         "total_etablissements": total_etablissements,
         "payments": payments,
-        "anneeacademiques": tabAnneeacademique
+        "anneeacademiques": tabAnneeacademique,
+        "nombre_payments": nombre_payments
     }
     
     return render(request, "settings/db_supuser.html", context)
@@ -876,7 +952,17 @@ def home(request):
     # Nombre de nouveau contacts
     nombre_contacts_students = Contact.objects.filter(student_id=student_id, sending_status=True, reading_status=0, anneeacademique_id=anneeacademique_id).count() 
     # Nombre de notification des parents
-    nombre_notifications_parents = Notification.objects.filter(parent_id=parent_id, anneeacademique_id=anneeacademique_id, status=False).count()      
+    nombre_notifications_parents = Notification.objects.filter(parent_id=parent_id, anneeacademique_id=anneeacademique_id, status=False).count() 
+    nombre_cours = 0
+    if student_id:
+        # Récuperer la salle de l'étudiant
+        inscription = Inscription.objects.filter(student_id=student_id, anneeacademique_id=anneeacademique_id).first()
+        # Nombre de nouvelles publications des cours en ligne par l'enseignant  
+        cours = Cours.objects.filter(anneeacademique_id=anneeacademique_id, salle_id=inscription.salle.id)    
+        for cour in cours:
+            if ReadCours.objects.filter(cours_id=cour.id, student_id=student_id).exists(): continue
+            else: nombre_cours += 1
+            
     context = {
         "setting": setting,
         "nombre_nouveaux_payments": nombre_nouveaux_payments,
@@ -889,7 +975,8 @@ def home(request):
         "gestions": gestions,
         "total_gestion_etudes": total_gestion_etudes,
         "nombre_contacts_students": nombre_contacts_students,
-        "nombre_notifications_parents": nombre_notifications_parents
+        "nombre_notifications_parents": nombre_notifications_parents,
+        "nombre_cours": nombre_cours
     }
     return render(request, "settings/home.html", context=context)
 
@@ -1031,7 +1118,7 @@ def resources_admin_parent(request):
     }
     return render(request, "settings/resources_admin_parent.html", context=context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_utilisateur)
 def resources_admin_user(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1133,6 +1220,8 @@ def resources_admin_user(request):
     }
     return render(request, "settings/resources_admin_user.html", context=context)
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_utilisateur)
 def need_help(request): 
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -1144,6 +1233,8 @@ def need_help(request):
     }
     return render(request, "settings/help.html", context)
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_utilisateur)
 def need_help_sup_admin(request): 
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -1155,6 +1246,7 @@ def need_help_sup_admin(request):
     }
     return render(request, "settings/help_sup_admin.html", context)
 
+@unauthenticated_customer
 def need_help_customer(request): 
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -1214,7 +1306,8 @@ def index(request):
     else:
         return redirect("connection/login")
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG_Supuser)
 def setting(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -1321,7 +1414,7 @@ def setting_supuser(request):
     }
     return render(request, "settings/setting_supuser.html",context)
     
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG_Supuser)
 def setting_sup_admin(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1446,12 +1539,12 @@ class ajaxyear(View):
             tabcycles.append(dic)
         
         if group_name in permission_super_user:
-            groups = etablissement.groups.all()   
+            roles = EtablissementUser.objects.filter(etablissement=etablissement)  
             # Supprimer le nom du group principal pour eviter des doublons
             tabgroups = []
-            for group in groups:
-                if group.name != group_name:
-                        tabgroups.append(group)  
+            for role in roles:
+                if role.group not in tabgroups and role.group.name != group_name:
+                    tabgroups.append(role.group)  
             tabgroups.append(Group.objects.get(name="Super user"))        
             context = {
                 "cycles": tabcycles,
@@ -1463,12 +1556,12 @@ class ajaxyear(View):
             }
             return render(request, "ajaxyear.html", context)
         else:
-            groups = etablissement.groups.filter(user=user)    
+            roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)    
             # Supprimer le nom du group principal pour eviter des doublons
             tabgroups = []
-            for group in groups:
-                if group.name != group_name:
-                        tabgroups.append(group)
+            for role in roles:
+                if role.group.name != group_name:
+                    tabgroups.append(role.group)
                         
             if request.session.get('group_name_old'):
                 gp = Group.objects.filter(name=request.session.get('group_name_old')).first()
@@ -1545,9 +1638,9 @@ class fetchgroup_etablissement_user(View):
         etablissement_id = request.session.get('etablissement_id')
         etablissement = Etablissement.objects.get(id=etablissement_id)
         user = User.objects.get(id=id)
-        groups = etablissement.groups.filter(user=user).exclude(name__in=["Super user", "Super admin"])
+        roles = EtablissementUser.objects.filter(etablissement=etablissement, user=user)
         context = {
-            "groupes": groups,
+            "roles": roles,
             "user": user
         }
         return render(request, "fetchgroup_etablissement_user.html", context)
@@ -1565,17 +1658,17 @@ class ajax_group_name(View):
         etablissement = Etablissement.objects.get(id=etablissement_id)
         tabgroups = []
         if group_name in permission_super_user:
-            groups = etablissement.groups.all()        
+            roles = EtablissementUser.objects.filter(etablissement=etablissement)   
             # Supprimer le nom du group principal pour eviter des doublons
-            for group in groups:
-                if group.name != group_name:
-                    tabgroups.append(group) 
+            for role in roles:
+                if role.group not in tabgroups and role.group.name != group_name:
+                    tabgroups.append(role.group) 
         else:
-            groups = etablissement.groups.filter(user=user)       
+            roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)       
             # Supprimer le nom du group principal pour eviter des doublons
-            for group in groups:
-                if group.name != group_name:
-                    tabgroups.append(group) 
+            for role in roles:
+                if role.group.name != group_name:
+                    tabgroups.append(role.group) 
                     
             if request.session.get('group_name_old'):
                 gp = Group.objects.filter(name=request.session.get('group_name_old')).first()
@@ -1660,6 +1753,8 @@ def ajax_content_salle_etablissement(request, id):
         salle = Salle.objects.get(id=sg["salle_id"])
         dic["salle"] = salle
         dic["nombre_students"] = Inscription.objects.filter(salle_id=salle.id, anneeacademique_id=anneeacademique_etablissement.id).count()
+        dic["nombre_students_actif"] = Inscription.objects.filter(salle_id=salle.id, anneeacademique_id=anneeacademique_etablissement.id, status_block=True).count()
+        dic["nombre_students_block"] = Inscription.objects.filter(salle_id=salle.id, anneeacademique_id=anneeacademique_etablissement.id, status_block=False).count()
         salles.append(dic)
         
     context = {
@@ -1703,19 +1798,57 @@ def ajax_modal_block_student_etablissement(request, id):
         })
 
 def ajax_block_student_etablissement(request, id):
+    user = request.user
     inscription = Inscription.objects.get(id=id)
-    
     if inscription.status_block:
         inscription.status_block = False
+        inscription.responsable = user
         inscription.save()
+        
+        # Nombre d'étudiants actifs et bloqués dans l'établissement de l'etudiant
+        nombre_students_actif_etablissement = Inscription.objects.filter(etablissement=inscription.etablissement, anneeacademique=inscription.anneeacademique, status_block=True).count()
+        nombre_students_block_etablissement = Inscription.objects.filter(etablissement=inscription.etablissement, anneeacademique=inscription.anneeacademique, status_block=False).count()
+        # Nombre d'étudiants actifs et bloqués dans la salle de l'étudiant
+        nombre_students_actif_salle = Inscription.objects.filter(salle=inscription.salle, anneeacademique=inscription.anneeacademique, status_block=True).count()
+        nombre_students_block_salle = Inscription.objects.filter(salle=inscription.salle, anneeacademique=inscription.anneeacademique, status_block=False).count()
+        
         return JsonResponse({
-            "status": inscription.status_block
+            "status": inscription.status_block,
+            "id": {
+                "etablissement_id": inscription.etablissement.id,
+                "salle_id": inscription.salle.id
+            },
+            "nombre": {
+                "nombre_students_actif_etablissement": nombre_students_actif_etablissement,
+                "nombre_students_block_etablissement": nombre_students_block_etablissement,
+                "nombre_students_actif_salle": nombre_students_actif_salle,
+                "nombre_students_block_salle": nombre_students_block_salle
+            }
         })
     else:
         inscription.status_block = True
+        inscription.responsable = user
         inscription.save()
+        
+        # Nombre d'étudiants actifs et bloqués dans l'établissement de l'etudiant
+        nombre_students_actif_etablissement = Inscription.objects.filter(etablissement=inscription.etablissement, anneeacademique=inscription.anneeacademique, status_block=True).count()
+        nombre_students_block_etablissement = Inscription.objects.filter(etablissement=inscription.etablissement, anneeacademique=inscription.anneeacademique, status_block=False).count()
+        # Nombre d'étudiants actifs et bloqués dans la salle de l'étudiant
+        nombre_students_actif_salle = Inscription.objects.filter(salle=inscription.salle, anneeacademique=inscription.anneeacademique, status_block=True).count()
+        nombre_students_block_salle = Inscription.objects.filter(salle=inscription.salle, anneeacademique=inscription.anneeacademique, status_block=False).count()
+        
         return JsonResponse({
-            "status": inscription.status_block
+            "status": inscription.status_block,
+            "id": {
+                "etablissement_id": inscription.etablissement.id,
+                "salle_id": inscription.salle.id
+            },
+            "nombre": {
+                "nombre_students_actif_etablissement": nombre_students_actif_etablissement,
+                "nombre_students_block_etablissement": nombre_students_block_etablissement,
+                "nombre_students_actif_salle": nombre_students_actif_salle,
+                "nombre_students_block_salle": nombre_students_block_salle
+            }
         })
     
 
@@ -1728,6 +1861,8 @@ def send_sms(to, msg):
     )
     return message.sid  # tu peux logguer ou afficher l'ID si besoin
 
+@login_required(login_url='connection/login')
+@allowed_users(allowed_roles=permission_super_user)
 def del_new_user(request, id):
     user_id = int(dechiffrer_param(str(id)))
     try:
@@ -1771,6 +1906,82 @@ def add_new_user_to_group(request):
         user.groups.add(group)
         #messages.success(request, "Admin associé au groupe avec succès.")
         return redirect("settings/db_supuser")
+    
+def alert_signature_contrat(request):
+    etablissement_id = request.session.get('etablissement_id')
+    anneeacademique_id = request.session.get('anneeacademique_id')
+    if request.session.get('group_name') in ["Promoteur", "Directeur Général"]:
+        setting = get_setting_sup_user()
+        try:
+            # Récuperer l'établissement
+            etablissement = Etablissement.objects.get(id=etablissement_id)
+            # Récuperer l'année académique de l'établissement
+            anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+            # Récuperer l'année académique du groupe
+            anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+            # Récuperer le contrat 
+            contrat = ContratEtablissement.objects.filter(etablissement=etablissement, anneeacademique=anneeacademique_group, status_signature=False).first()
+        except:
+            contrat = None
+            
+        context = {
+            "setting": setting,
+            "contrat": contrat
+        }
+        return render(request, "alert_signature_contrat.html", context)
+    else:
+        setting = get_setting(anneeacademique_id)
+        try:
+            # Récuperer l'année académique de l'établissement
+            anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+            # Récuperer le contrat 
+            contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique, status_signature=False).first()
+        except:
+            contrat = None
+            
+        context = {
+            "setting": setting,
+            "contrat": contrat
+        }
+        return render(request, "alert_signature_contrat.html", context)
+    
+def alert_signature_contrat_de(request, id):
+    etablissement_id = request.session.get('etablissement_id')
+    anneeacademique_id = request.session.get('anneeacademique_id')
+    if request.session.get('group_name') in ["Promoteur", "Directeur Général"]:
+        setting = get_setting_sup_user()
+        try:
+            # Récuperer l'établissement
+            etablissement = Etablissement.objects.get(id=etablissement_id)
+            # Récuperer l'année académique de l'établissement
+            anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+            # Récuperer l'année académique du groupe
+            anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+            # Récuperer le contrat 
+            contrat = ContratEtablissement.objects.filter(etablissement=etablissement, anneeacademique=anneeacademique_group, status_signature=False).first()
+        except:
+            contrat = None
+            
+        context = {
+            "setting": setting,
+            "contrat": contrat
+        }
+        return render(request, "alert_signature_contrat.html", context)
+    else:
+        setting = get_setting(anneeacademique_id)
+        try:
+            # Récuperer l'année académique de l'établissement
+            anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+            # Récuperer le contrat 
+            contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique, status_signature=False).first()
+        except:
+            contrat = None
+            
+        context = {
+            "setting": setting,
+            "contrat": contrat
+        }
+        return render(request, "alert_signature_contrat.html", context)
 
 def send_message(request):
     to = '+330755873258'  # numéro du destinataire

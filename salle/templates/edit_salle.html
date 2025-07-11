@@ -24,6 +24,7 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Edition d'une salle</h5>
+              {% if contrat.status_signature %}
               <!-- On inclut l'image de chargement -->
               {% include 'global/_loading.html' %}
               <!-- Vertical Form -->
@@ -31,7 +32,7 @@
                 {% csrf_token %}
                 <input type="text" name="id" value="{{ salle.id }}" hidden="True" required="True">
                 <div class="col-12">
-                  <label for="cycle" class="form-label">Cycle : </label>
+                  <label for="cycle" class="form-label">Cycle : *</label>
                   <select name="cycle" id="cycle" class="form-select" aria-label="Default select example" required>
                       <option value="{{ salle.classe.cycle.id }}">{{ salle.classe.cycle.libelle }}</option>
                       {% for cycle in cycles %}
@@ -42,7 +43,7 @@
                 <div id="classe_serie_view">
                   {% if salle.classe.cycle.libelle == "Lycée" %}
                     <div class="col-12">
-                      <label for="classe" class="form-label">Classe : </label>
+                      <label for="classe" class="form-label">Classe : *</label>
                       <select name="classe" id="classe" class="form-select" aria-label="Default select example" required>
                         <option value="{{ salle.classe.id }}">{{ salle.classe.libelle }}</option>
                           {% for classe in classes %}
@@ -51,7 +52,7 @@
                       </select>
                     </div>
                     <div class="col-12">
-                        <label for="Serie" class="form-label">Série : </label>
+                        <label for="Serie" class="form-label">Série : *</label>
                         <select name="serie" id="Serie" class="form-select" aria-label="Default select example" required>
                             <option value="{{ salle.serie.id }}">{{ salle.serie.name }}</option>
                             {% for serie in series %}
@@ -61,7 +62,7 @@
                     </div>
                   {% else %}
                     <div class="col-12">
-                      <label for="classe" class="form-label">Classe : </label>
+                      <label for="classe" class="form-label">Classe : *</label>
                       <select name="classe" id="classe" class="form-select" aria-label="Default select example" required>
                         <option value="{{ salle.classe.id }}">{{ salle.classe.libelle }}</option>
                           {% for classe in classes %}
@@ -72,7 +73,7 @@
                   {% endif %}
                 </div>
                 <div class="col-12">
-                    <label for="Number" class="form-label">Numéro : </label>
+                    <label for="Number" class="form-label">Numéro : *</label>
                     <select name="number" id="Number" class="form-select" aria-label="Default select example">
                         <option value="{{ salle.number }}">{{ salle.number }}</option>
                         {% for number in numbers %}
@@ -81,15 +82,15 @@
                     </select>
                 </div>
                 <div class="col-12">
-                    <label for="Max_student" class="form-label">Max des élèves : </label>
+                    <label for="Max_student" class="form-label">Max des élèves : *</label>
                     <input type="number" name="max_student" value="{{ salle.max_student }}" class="form-control" id="Max_student" required>
                 </div>
                   <div class="col-12">
-                    <label for="price" class="form-label">Frais mensuel ({{ setting.devise }}): </label>
+                    <label for="price" class="form-label">Frais mensuel ({{ setting.devise }}): *</label>
                     <input type="text" name="price" value="{{ salle.price }}" class="form-control" id="price" required>
                   </div>
                   <div class="col-12">
-                    <label for="price_inscription" class="form-label">Frais inscription ({{ setting.devise }}): </label>
+                    <label for="price_inscription" class="form-label">Frais inscription ({{ setting.devise }}): *</label>
                     <input type="text" name="price_inscription" value="{{ salle.price_inscription }}" class="form-control" id="price_inscription" required>
                   </div>
                 <div class="text-center">
@@ -97,7 +98,14 @@
                   <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
                 </div>
               </form><!-- Vertical Form -->
-
+              {% else %}
+              <div class="card">
+                <div class="card-body">
+                  <br>
+                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord signé le contrat, s'il n'a pas encore été fait, avant d'enregistrer un cycle. <a href="{% url 'contrat_etablissement/mes_contrats_promoteur' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Je signe le contrat</a></h4>
+                </div>
+              </div>
+              {% endif %}
               <!-- Start message Modal -->
               <div class="modal fade" id="message" tabindex="-1">
                 <div class="modal-dialog modal-sm">

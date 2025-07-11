@@ -16,7 +16,7 @@ class Composer(models.Model):
     note = models.DecimalField(max_digits=10, decimal_places=2, default=00.00, null=True)
     numerocontrole = models.CharField(max_length=20, null=True, default="")
     status = models.BooleanField(default=False, null=True) # Statut de lecture de l'étudiant
-    status_parent = models.CharField(max_length=10, null=True) # Statut de lecture du parent
+    status_parent = models.IntegerField(default=0, null=False) # Statut de lecture du parent
     
 class Deliberation(models.Model):
     salle = models.ForeignKey(Salle, on_delete=models.CASCADE, null=False)

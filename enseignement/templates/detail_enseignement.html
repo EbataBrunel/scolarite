@@ -51,7 +51,6 @@
                     {% endif %}
                 </div>
                 {% endif %}
-                <br>
                 {% if messages %}
                   {% for message in messages %}
                   <div class="row">
@@ -70,10 +69,10 @@
                     <table class="table datatable">
                         <thead>
                             <tr>
-                                <th>Matières</th>
-                                <th>VolHoraire(h)</th>
-                                <th>CoutHeure({{ setting.devise }})</th>
-                                <th>Enseignants</th>
+                                <th>Matière</th>
+                                <th class="white-space">VolHoraire (h)</th>
+                                <th class="white-space">Cout heure ({{ setting.devise }})</th>
+                                <th>Enseignant</th>
                                 <th>Evaluation</th>
                                 <th>DécisionEval</th>
                                 {% if anneeacademique.status_cloture %}
@@ -98,12 +97,16 @@
                                 <td><a href="{% url 'droit_eval' e.enseignement.id|crypter_id %}" class="btn btn-secondary btn-sm">{{ e.status }}</a></td>
                                 {% endif %}
                                 {% if e.enseignement.eval %}
-                                  {% if e.moyenne == "Admis(e)" %}
-                                    <td><span class="badge rounded-pill bg-success">{{ e.moyenne }}</span></td>
-                                  {% elif e.moyenne == "Ajourné(e)" %}
-                                    <td><span class="badge rounded-pill bg-danger">{{ e.moyenne }}</span></td>
+                                  {% if e.status == "Terminée" %}
+                                    {% if e.moyenne == "Admis(e)" %}
+                                      <td><span class="badge rounded-pill bg-success">{{ e.moyenne }}</span></td>
+                                    {% elif e.moyenne == "Ajourné(e)" %}
+                                      <td><span class="badge rounded-pill bg-danger">{{ e.moyenne }}</span></td>
+                                    {% else %}
+                                      <td><span class="badge rounded-pill bg-primary">{{ e.moyenne }}</span></td>
+                                    {% endif %}
                                   {% else %}
-                                    <td><span class="badge rounded-pill bg-primary">{{ e.moyenne }}</span></td>
+                                  <td></td>
                                   {% endif %}
                                 {% else %}
                                 <td></td>

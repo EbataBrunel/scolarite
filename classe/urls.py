@@ -8,5 +8,6 @@ urlpatterns=[
     path("edit_class/<str:id>", edit_class, name="edit_class"),
     path("edit_cl", edit_cl, name="edit_cl"),
     path("del_class/<str:id>", del_class, name="del_class"),
-    path("delete_classe/<str:id>", delete_classe, name="delete_classe")
+    path("delete_classe/<str:id>", delete_classe, name="delete_classe"),
+    path("add_class/ajax_name_classe/<int:id>", ajax_name_classe, name="ajax_name_classe")
 ]

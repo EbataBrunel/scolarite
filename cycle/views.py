@@ -8,6 +8,7 @@ from django.contrib import messages
 # Importation des modules locaux
 from .models import*
 from classe.models import Classe
+from paiement.models import ContratEtablissement
 from school.views import get_setting
 from app_auth.decorator import allowed_users
 from scolarite.utils.crypto import dechiffrer_param
@@ -15,7 +16,7 @@ from scolarite.utils.crypto import dechiffrer_param
 permission_promoteur_DG = ['Promoteur', 'Directeur Général']
 permission_admin = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Gestionnaire']
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def cycles(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -32,7 +33,7 @@ def cycles(request):
     }
     return render(request, "cycles.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def cycles_admin(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -47,7 +48,7 @@ def cycles_admin(request):
     }
     return render(request, "cycles_admin.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def add_cycle(request):
     etablissement_id = request.session.get('etablissement_id')
@@ -90,14 +91,20 @@ def add_cycle(request):
                 return JsonResponse({
                     "status": "error",
                     "message": "L'insertion a échouée."})
-    libelles = ['Prescolaire', 'Primaire', 'Collège', 'Lycée']       
+    libelles = ['Prescolaire', 'Primaire', 'Collège', 'Lycée']   
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()    
     context = {
         "setting": setting,
-        "libelles": libelles
+        "libelles": libelles,
+        "contrat": contrat
     }
     return render(request, "add_cycle.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_cycle(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -108,19 +115,22 @@ def edit_cycle(request,id):
     cycle_id = int(dechiffrer_param(str(id)))
     cycle = Cycle.objects.get(id=cycle_id)
     libelles = ['Prescolaire', 'Primaire', 'Collège', 'Lycée']  
-    tabLibelles = []
-    for libelle in libelles:
-        if libelle != cycle.libelle:
-               tabLibelles.append(libelle)
-                    
+    tabLibelles = [libelle for libelle in libelles if libelle != cycle.libelle]
+    
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                    
     context = {
         "setting": setting,
         "cycle": cycle,
-        "libelles": tabLibelles
+        "libelles": tabLibelles,
+        "contrat": contrat
     }
     return render(request, "edit_cycle.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_cy(request):
     etablissement_id = request.session.get('etablissement_id')
@@ -132,7 +142,7 @@ def edit_cy(request):
         except:
             cycle = None
 
-        if cycle == None:
+        if cycle is None:
             return JsonResponse({
                     "status": "error",
                     "message": "Identifiant inexistant."})
@@ -163,7 +173,7 @@ def edit_cy(request):
                     "status": "success",
                     "message": "Cycle modifié avec succès."})
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def del_cycle(request,id):
     try:
@@ -185,7 +195,7 @@ def del_cycle(request,id):
     return redirect("cycles")
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def delete_cycle(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')

@@ -1,0 +1,8 @@
+<div class="col-12">
+    <label for="start_date" class="form-label">Date de fin : </label>
+    <input type="date" name="start_date" value="{{ anneeacademique.start_date|date:"Y-m-d" }}"  class="form-control" id="start_date" required readonly>
+</div>
+<div class="col-12">
+    <label for="end_date" class="form-label">Date du début : </label>
+    <input type="date" name="end_date" value="{{ anneeacademique.end_date|date:"Y-m-d" }}" class="form-control" id="end_date" required readonly>
+</div>

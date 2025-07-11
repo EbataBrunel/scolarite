@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>{{ setting.appname }} | Créer un compte promoteur</title>
+  <title>{{ setting.appname }} | Créer un compte super admin</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -85,7 +85,7 @@
                     {% if setting.logo %}
                     <img src="{{ setting.logo.url }}" width="{{ setting.width_logo }}" height="{{ setting.height_logo }}" style="border-radius:100px" alt="Logo">
                     {% else %}
-                    <span class="d-none d-lg-block">{{ setting.appname }}</span>
+                    <span class="d-none d-lg-block text-warning"><b>{{ setting.appname }}</b></span>
                     {% endif %}
                   {% endif %}
                 </a>
@@ -96,7 +96,7 @@
                 <div class="card-body">
 
                   <div class="pt-4 pb-2">
-                    <h5 class="card-title text-center pb-0 fs-4">Créer un compte promoteur</h5>
+                    <h5 class="card-title text-center pb-0 fs-4">Créer un compte sup admin</h5>
                     <p class="text-center small">Retenez bien votre <i>Nom utilisateur</i>, vous allez l'utiliser plus tard pour se connecter sur votre compte.</p>
                     {% if messages %}
                       {% for message in messages %}

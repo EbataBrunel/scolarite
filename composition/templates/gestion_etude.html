@@ -53,22 +53,68 @@
                             <div class="table-responsive">
                                 <table class="table">
                                     <tr>
-                                        <th class="bg-primary">Matières</th>
-                                        <th class="bg-primary">Séances</th>
-                                        <th class="bg-primary">Dates</th>
                                         <th class="bg-primary">Crénaux</th>
-                                        <th class="bg-primary">Statut d'absences</th>
+                                        <th class="bg-primary">Matière</th>
+                                        <th class="bg-primary">Séance</th>
+                                        <th class="bg-primary">Date</th>
+                                        <th class="bg-primary">Motif</th>
+                                        <th class="bg-primary white-space">Statut absence</th>
                                     </tr>
                                     {% for absence in absences %}
                                     <tr>
-                                        <td>{{ absence.emargement.matiere }}</td>
+                                        <td class="white-space">{{ absence.emargement.heure_debut }}-{{ absence.emargement.heure_debut }}</td>
+                                        <td class="white-space">{{ absence.emargement.matiere }}</td>
                                         <td>{{ absence.emargement.seance }}</td>
-                                        <td>{{ absence.emargement.date_emargement|date:"d/m/Y" }}</td>
-                                        <td>{{ absence.emargement.heure_debut }}-{{ absence.emargement.heure_debut }}</td>
-                                        {% if absence.motif %}
-                                        <td><span class="badge rounded-pill bg-success">Justifiée</span></td>
+                                        <td class="white-space">{{ absence.emargement.date_emargement|date:"d/m/Y" }}</td>
+                                        <td>
+                                            <span id="content-motif{{ absence.id }}">
+                                            {% if absence.motif %}
+                                              <span>{{ absence.motif }}</span>
+                                            {% elif absence.date_limite <= timezone.now %}
+                                              <span></span>
+                                            {% else %}
+                                                <a href="#"  data-bs-toggle="modal" data-bs-target="#motifModal{{ absence.id }}" title="Motif" class="btn btn-primary btn-sm"> Justifier </a>
+                                                <!-- Start de delete Modal -->
+                                                <div class="modal fade" id="motifModal{{ absence.id }}" tabindex="-1">
+                                                  <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                      <div class="modal-header bg-primary">
+                                                        <h5 class="modal-title text-light">Justifier votre absence du <b>{{ absence.emargement.date_emargement }}</b></h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                      </div>
+                                                      <div class="modal-body">
+                                                        <div class="bg-primary text-ligh" style="padding:10px; border-radius:10px">
+                                                          <p> Vous avez jusqu'au {{ absence.date_limite|date:"d/m/Y h:m:s" }} pour justifier votre absence du {{ absence.emargement.date_emargement|date:"d/m/Y" }}</p>
+                                                        </div>
+                                                        <br>
+                                                        <!-- Vertical Form -->
+                                                        <form method="post" action="" id="formMotifAbsenceStudent-{{ absence.id }}" class="row g-3">
+                                                          {% csrf_token %}
+                                                          <input type="text" name="id" value="{{ absence.id }}" hidden="True" required="True">
+                                                          <div class="col-12">
+                                                            <label for="motif" class="form-label">Motif * </label>
+                                                            <textarea class="form-control" name="motif" id="motif" style="height: 50px;"></textarea>
+                                                          </div>
+                                                          <div class="text-center">
+                                                            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                                                          </div>
+                                                        </form><!-- Vertical Form -->
+                                                      </div>
+                                                      <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div><!-- Fin de eval Modal-->
+                                            {% endif %}
+                                            </span>
+                                        </td>
+                                        {% if absence.status_decision == 0 %}
+                                            <td><span class="badge rounded-pill bg-warning">En attente</span></td>
+                                        {% elif absence.status_decision == 1 %}
+                                            <td><span class="badge rounded-pill bg-success">Recevable</span></td>
                                         {% else %}
-                                        <td><span class="badge rounded-pill bg-warning">Non récevable</span></td>
+                                            <td><span class="badge rounded-pill bg-danger">Non recevable</span></td>
                                         {% endif %}
                                     </tr>
                                     {% endfor %}
@@ -475,7 +521,7 @@
                                         {% for c in compositions %}
                                             {% if c.deliberation %}
                                                 {% if c.deliberation.status %}
-                                                <h3><a href="{% url 'bulletin_etudiant' student_id|crypter_id c.trimestre|crypter_id %}" class="btn btn-outline-primary btn-sm"><span class="text-danger"><i class="bi bi-file-earmark-pdf"></i></span> Télécharger le bulettin du <b>{{ c.trimestre }}</b></a></h3>
+                                                <h3><a href="{% url 'bulletin_etudiant_customer' student_id|crypter_id c.trimestre|crypter_id %}" class="btn btn-outline-primary btn-sm"><span class="text-danger"><i class="bi bi-file-earmark-pdf"></i></span> Télécharger le bulettin du <b>{{ c.trimestre }}</b></a></h3>
                                                 {% endif %}
                                             {% endif %}
                                         {% endfor %}

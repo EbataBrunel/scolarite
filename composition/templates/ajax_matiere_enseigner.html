@@ -1,6 +1,6 @@
 {% if cycle.libelle == "Lycée" and trimestre == "Trimestre 3" %}
 <div class="col-12 margin-bottom">
-    <label for="remplacer_trimestre" class="form-label">Remplaçant du trimestre 3 : </label>
+    <label for="remplacer_trimestre" class="form-label">Remplaçant du trimestre 3 : *</label>
     <select name="remplacer_trimestre" id="remplacer_trimestre" class="form-select" aria-label="Default select example" required>
         <option value="">-- Selectionnez --</option>
         <option value="Baccalauréat teste">Baccalauréat teste </option>
@@ -10,7 +10,7 @@
 {% endif %}
 {% if cycle.libelle == "Collège" and trimestre == "Trimestre 3" %}
 <div class="col-12 margin-bottom">
-    <label for="remplacer_trimestre" class="form-label">Remplaçant du trimestre 3 : </label>
+    <label for="remplacer_trimestre" class="form-label">Remplaçant du trimestre 3 : *</label>
     <select name="remplacer_trimestre" id="remplacer_trimestre" class="form-select" aria-label="Default select example" required>
         <option value="">-- Selectionnez --</option>
         <option value="Baccalauréat teste">BEPC teste </option>
@@ -20,7 +20,7 @@
 {% endif %}
 {% if cycle.libelle == "Primaire" and trimestre == "Trimestre 3" %}
 <div class="col-12 margin-bottom">
-    <label for="remplacer_trimestre" class="form-label">Remplaçant du trimestre 3 : </label>
+    <label for="remplacer_trimestre" class="form-label">Remplaçant du trimestre 3 : *</label>
     <select name="remplacer_trimestre" id="remplacer_trimestre" class="form-select" aria-label="Default select example" required>
         <option value="">-- Selectionnez --</option>
         <option value="Baccalauréat teste">CEPE teste </option>
@@ -32,7 +32,7 @@
 
 {% if matieres %}
 <div class="col-12 margin-bottom">
-    <label for="matiere" class="form-label">Matière : </label>
+    <label for="matiere" class="form-label">Matière : *</label>
     <select name="matiere" id="matiere" class="form-select" aria-label="Default select example" required>
         <option value="">-- Selectionnez --</option>
         {% for matiere in matieres %}
@@ -42,7 +42,7 @@
 </div>
 {% else %}
 <div class="col-12 margin-bottom">
-    <label for="matiere" class="form-label">Matière : </label>
+    <label for="matiere" class="form-label">Matière : *</label>
     <select name="matiere" id="matiere" class="form-select" aria-label="Default select example" required>
         <option value="">Aucune donnée n'a été enregistrée</option>
     </select>

@@ -1,5 +1,4 @@
 from django.contrib import admin
-from absence.models import Absence, Absencestudent
+from emargement.models import Emargement
 
-admin.site.register(Absence)
-admin.site.register(Absencestudent)
+admin.site.register(Emargement)

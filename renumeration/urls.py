@@ -2,18 +2,20 @@ from django.urls import path
 from .views import*
 #from django.contrib.auth import views as auth_views
 
-urlpatterns=[
-    path("renumerations", renumerations, name="renumerations"),
-    path("personnel_renum", personnel_renumeration, name="personnel_renum"),
-    path("ajax_pers_renum/<str:month>", get_personnel_renumeration, name="ajax_pers_renum"),
-    path("ajax_teacher_renum/<str:month>", get_teacher_renumeration, name="ajax_teacher_renum"),
-    path("recap_emargement/<str:enseignant_id>/<str:month>", recap_emargement, name="recap_emargement"),
-    path("add_renumeration/<str:enseignant_id>/<str:month>", add_renumeration, name="add_renumeration"),
+urlpatterns = [
+    path("remun_enseignant/remunerations_enseignants", remunerations_enseignants, name="remun_enseignant/remunerations_enseignants"),
+    path("remun_enseignant/resume_remu_enseignant_seondaire", resume_remu_enseignant_seondaire, name="remun_enseignant/resume_remu_enseignant_seondaire"),
+    path("remun_enseignant/ajax_detail_teacher_emargement/<int:enseignant_id>/<str:month>/<str:type_contrat>", ajax_detail_teacher_emargement, name="ajax_detail_teacher_emargement"),
+    path("comptabilite_remuneration", comptabilite_remuneration, name="comptabilite_remuneration"),
+    path("ajax_comptabilite_remuneration/<str:month>", ajax_comptabilite_remuneration, name="ajax_comptabilite_remuneration"),
+    path("remun_enseignant/add_remun_teacher/<str:enseignant_id>/<str:month>/<str:type_contrat>", add_remun_teacher, name="remun_enseignant/add_remun_teacher"),
     path("add_renum", add_renum, name="add_renum"),
-    path("edit_renum/<str:id>", edit_renum, name="edit_renum"),
+    path("remun_enseignant/edit_remun_teacher/<str:id>", edit_remun_teacher, name="remun_enseignant/edit_remun_teacher"),
     path("edit_re", edit_re, name="edit_re"),
     path("del_renum/<str:id>", del_renum, name="del_renum"),
-    path("ajax_delete_renum/<int:id>", ajax_delete_renum, name="ajax_delete_renum"),
+    path("remun_enseignant/ajax_delete_renum/<int:id>", ajax_delete_renum, name="ajax_delete_renum"),
+    
+    path("remun_enseignant/resume_remu_enseignant_fondamental", resume_remu_enseignant_fondamental, name="remun_enseignant/resume_remu_enseignant_fondamental"),
     path("mes_renumerations", mes_renumerations, name="mes_renumerations"),
     
     
@@ -23,7 +25,7 @@ urlpatterns=[
     path("edit_ct", edit_ct, name="edit_ct"),
     path("del_contrat/<str:id>", del_contrat, name="del_contrat"),
     path("contrat/contrats_user", contrats_user, name="contrat/contrats_user"),
-    path("signer_contrat/<int:contrat_id>", signer_contrat, name="signer_contrat"),
+    path("contrat/signer_contrat/<int:contrat_id>", signer_contrat, name="signer_contrat"),
     path("contrat/ajax_delete_contrat/<int:id>", ajax_delete_contrat, name="ajax_delete_contrat"),
     
     path("renum/renum_admin", renum_admin, name="renum/renum_admin"),

@@ -8,5 +8,5 @@ urlpatterns=[
     path("edit_etablissement/<str:id>", edit_etablissement, name="edit_etablissement"),
     path("edit_et", edit_et, name="edit_et"),
     path("del_etablissement/<str:id>", del_etablissement, name="del_etablissement"),
-    path("delete_etablissement/<str:id>", delete_etablissement, name="delete_etablissement")
+    path("delete_etablissement/<str:id>", delete_etablissement, name="delete_etablissement"),
 ]

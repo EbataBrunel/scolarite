@@ -1,5 +1,5 @@
 {% extends 'global/base.html' %}
-{% block title %} {{ setting.appname }} | Aperçu global{% endblock %}
+{% block title %} {{ setting.appname }} | Bilan global des recettes{% endblock %}
 {% block content %}
 {% load static %}
 {% load crypto_filters %}
@@ -7,11 +7,11 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Aperçu global</h1>
+      <h1>Statistiques</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
-          <li class="breadcrumb-item active">Aperçu global</li>
+          <li class="breadcrumb-item active">Bilan global des recette</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -72,7 +72,7 @@
                     <div class="col-md-12">
                         <div class="card">
                           <div class="card-body">
-                            <h5 class="card-title">Récette totale (en {{ setting.devise }})</h5>
+                            <h5 class="card-title">Recette totale (en {{ setting.devise }})</h5>
               
                             <!-- Radial Bar Chart -->
                             <div id="radialBarChart"></div>
@@ -130,7 +130,7 @@
                     <div class="col-md-12">
                         <div class="card">
                           <div class="card-body">
-                            <h5 class="card-title">Comparaison des récettes par année scolaire</h5>
+                            <h5 class="card-title">Comparaison des recettes par année scolaire</h5>
               
                             <!-- Column Chart -->
                             <div id="columnChart"></div>

@@ -64,6 +64,13 @@
                       {% endfor %}
                   </select>
                 </div>
+                <div class="col-12">
+                  <label for="Photo" class="form-label">Photo : </label>
+                  <input type="file" name="photo" class="form-control" id="Photo">
+                  {% if inscription.photo %}
+                    <span><img  width="100px" height="100px" src="{{ inscription.photo.url }}" alt="..." /></span>
+                  {% endif %}
+                </div>
                 <div class="text-center">
                   <a href="{% url 'detail_inscription' inscription.salle.id|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
                   <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>

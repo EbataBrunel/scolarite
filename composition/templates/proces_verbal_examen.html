@@ -91,9 +91,11 @@
 <body>
   <div class="bulletin">
     <div class="header">
+      {% if base64_image %}
       <img src="data:image/png;base64,{{ base64_image }}" alt="Logo" class="logo">
+      {% endif %}
       <div class="header-center">
-        <h2>PROCES VERBAL DU {{ trimestre }}</h2>
+        <h2>PROCES VERBAL DU {{ trimestre|upper }}</h2>
         <p>Classe : {{ salle }}<p>
         <p>Année scolaire : {{ anneeacademique.annee_debut }} {{ anneeacademique.separateur }} {{ anneeacademique.annee_fin }}</p>
         <p>Complexe scolaire {{ setting.appname }}, 75008 PARIS - Tél: {{ setting.phone }} - Email: {{ setting.email }}</p>
@@ -148,7 +150,7 @@
     </div>
 
     <div class="footer">
-      <div>Fais à Brazzaville, le {{ date_actuelle|date:"d/m/Y" }}</div>
+      <div>Fais à {{ anneeacademique.etablissement.ville|title }}, le {{ date_actuelle|date:"d/m/Y" }}</div>
     </div>
 
   </div>

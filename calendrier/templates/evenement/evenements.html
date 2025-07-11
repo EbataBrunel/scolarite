@@ -86,7 +86,7 @@
                                                                 <th>DateDébut</th>
                                                                 <th>DateFin</th>
                                                                 <th>Description</th>
-                                                                {% if anneeacademique.status_cloture %}
+                                                                {% if anneeacademique.status_cloture and contrat.status_signature %}
                                                                 <th>Actions</th>
                                                                 {% endif %}
                                                             </tr>

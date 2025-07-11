@@ -22,6 +22,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Mes cours en lignes </h5>
+                    {% if anneeacademique.status_cloture %}
                     <div align="right">
                       {% if setting.theme == "bg-default" %}
                       <a href="{% url 'add_cours' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Mettre un cours en ligne</a>
@@ -29,6 +30,7 @@
                       <a href="{% url 'add_cours' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Mettre un cours en ligne</a>
                       {% endif %}
                     </div>
+                    {% endif %}
                     <br>
                     <div class="row">
                     {% for c in cours %}

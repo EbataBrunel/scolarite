@@ -7,14 +7,14 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Count, Avg
 from django.views import View
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from django.utils.timezone import make_aware
 from decimal import Decimal
-from datetime import datetime, timezone
 from django.contrib import messages
 # Importation des modules locaux
 from .models import*
 from school.views import get_setting
+from app_auth.models import EtablissementUser
 from programme.models import Programme
 from inscription.models import Inscription
 from renumeration.models import Contrat
@@ -25,7 +25,7 @@ from scolarite.utils.crypto import dechiffrer_param
 permission_directeur_etudes = ['Promoteur', 'Directeur Général', 'Directeur des Etudes']
 permission_enseignant = ['Enseignant']
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def enseignements(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -60,7 +60,7 @@ def enseignements(request):
     }
     return render(request, "enseignements.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def trim_enseignement(request, salle_id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -75,16 +75,18 @@ def trim_enseignement(request, salle_id):
 
     salle = Salle.objects.get(id=id)
     anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique)
     context = {
         "setting": setting,
         "enseignements": enseignements,
         "salle": salle,
-        "anneeacademique": anneeacademique
+        "anneeacademique": anneeacademique,
+        "contrat": contrat
     }
     return render(request, "trim_enseignement.html", context)
    
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def detail_enseignement(request, salle_id, trimestre):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -128,17 +130,19 @@ def detail_enseignement(request, salle_id, trimestre):
             
         tabEnseignements.append(dic)
     anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique)
     context = {
         "setting": setting,
         "enseignements": tabEnseignements,
         "salle": salle,
         "trimestre": trim,
-        "anneeacademique": anneeacademique
+        "anneeacademique": anneeacademique,
+        "contrat": contrat
     }
     return render(request, "detail_enseignement.html", context)
     
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def add_enseignement(request):
     etablissement_id = request.session.get('etablissement_id')
@@ -154,22 +158,25 @@ def add_enseignement(request):
         matiere_id = request.POST["matiere"]
         enseignant_id = request.POST["enseignant"]
         volumehoraire = bleach.clean(request.POST["volumehoraire"].strip())
-        cout_heure = bleach.clean(request.POST["cout_heure"].strip())
+        cout_heure = 0
+        if request.session.get('cycle_lib') in ["Collège", "Lycée"]:
+            cout_heure = bleach.clean(request.POST["cout_heure"].strip())
+             # Nettoyer la valeur (supprimer les espaces et remplacer la virgule par un point)
+            cout_heure = re.sub(r'\xa0', '', cout_heure)  # Supprime les espaces insécables
+            cout_heure = cout_heure.replace(" ", "").replace(",", ".")
+
+            try:
+                cout_heure = Decimal(cout_heure)  # Convertir en Decimal
+            except:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Le coût doit être un nombre valide."})
+
         trimestre = bleach.clean(request.POST["trimestre"].strip())
         
         # Récuperer la délibération pour verifier si ses activités ont été cloturées ou pas
         anneescolaire = AnneeCademique.objects.filter(status_cloture=False, id=anneeacademique_id)
-        # Nettoyer la valeur (supprimer les espaces et remplacer la virgule par un point)
-        cout_heure = re.sub(r'\xa0', '', cout_heure)  # Supprime les espaces insécables
-        cout_heure = cout_heure.replace(" ", "").replace(",", ".")
-
-        try:
-            cout_heure = Decimal(cout_heure)  # Convertir en Decimal
-        except:
-            return JsonResponse({
-                "status": "error",
-                "message": "Le coût doit être un nombre valide."})
-
+       
         query = Enseigner.objects.filter(salle_id=salle_id, matiere_id=matiere_id, anneeacademique_id=anneeacademique_id, trimestre=trimestre)
         if anneescolaire.exists(): # Verifier si on a déjà cloturé les opérations de cette année
                 return JsonResponse({
@@ -206,6 +213,8 @@ def add_enseignement(request):
 
     salles = Salle.objects.filter(classe_id=classe_id, anneeacademique_id=anneeacademique_id)
     trimestres = ["Trimestre 1", "Trimestre 2", "Trimestre 3"]
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     #Récuperer les utilisateurs
     users_contrats = (Contrat.objects.values("user_id")
                       .filter(anneeacademique_id=anneeacademique_id)
@@ -217,21 +226,24 @@ def add_enseignement(request):
     for uc in users_contrats:
         user = User.objects.get(id=uc["user_id"])
         # Recuperer les groupes de l'utilisateurs
-        groups = etablissement.groups.filter(user=user)
-        for group in groups:
-            if group.name == "Enseignant":
+        roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)
+        for role in roles:
+            query = Contrat.objects.filter(user=user, anneeacademique=anneeacademique)
+            if role.group.name == "Enseignant" and query.exists() and query.first().status_signature:
                 users.append(user)
                 break            
-                    
+    
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()                
     context = {
         "setting": setting,
         "salles": salles,
         "enseignants": users,
-        "trimestres": trimestres
+        "trimestres": trimestres,
+        "contrat": contrat
     }
     return render(request, "add_enseignement.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def edit_enseignement(request,id):
     etablissement_id = request.session.get('etablissement_id')
@@ -247,16 +259,14 @@ def edit_enseignement(request,id):
     salles = Salle.objects.filter(classe_id=classe_id, anneeacademique_id=anneeacademique_id).exclude(id=enseignement.salle.id)
     # Recuperer toutes matières programmées pour une classe
     programmes = Programme.objects.filter(salle_id=enseignement.salle.id)
-    matieres = []
-    for programme in programmes:
-        matieres.append(programme.matiere)
+    matieres = [programme.matiere for programme in programmes]
+    
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
         
     trimestres = ["Trimestre 1", "Trimestre 2", "Trimestre 3"]
-    tabTrimestre = []
-    for trimestre in trimestres:
-        if enseignement.trimestre != trimestre:
-            tabTrimestre.append(trimestre)
-            
+    tabTrimestre = [trimestre for trimestre in trimestres if enseignement.trimestre != trimestre]
+    
     users_contrats = (Contrat.objects.values("user_id")
                       .filter(anneeacademique_id=anneeacademique_id)
                       .annotate(nb_contrats=Count("user_id")))
@@ -268,24 +278,27 @@ def edit_enseignement(request,id):
         user = User.objects.get(id=uc["user_id"])
         if user.id != enseignement.enseignant.id:
             # Recuperer les groupes de l'utilisateur
-            groups = etablissement.groups.filter(user=user)
-            for group in groups:
-                if group.name in "Enseignant":
+            roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)
+            for role in roles:
+                query = Contrat.objects.filter(user=user, anneeacademique=anneeacademique)
+                if role.group.name == "Enseignant" and query.exists() and query.first().status_signature:
                     users.append(user)
                     break
-
+    
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
     context = {
         "setting": setting,
         "enseignement": enseignement,
         "salles": salles,
         "matieres": matieres,
         "enseignants": users,
-        "trimestres": tabTrimestre
+        "trimestres": tabTrimestre,
+        "contrat": contrat
     }
     return render(request, "edit_enseignement.html", context)
 
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def edit_en(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -304,22 +317,24 @@ def edit_en(request):
             salle_id = request.POST["salle"]
             matiere_id = request.POST["matiere"]
             volumehoraire = bleach.clean(request.POST["volumehoraire"].strip())
-            cout_heure = bleach.clean(request.POST["cout_heure"].strip())
             enseignant_id = request.POST["enseignant"]
             trimestre = request.POST["trimestre"]
             
             # Récuperer la délibération pour verifier si ses activités ont été cloturées ou pas
             anneescolaire = AnneeCademique.objects.filter(status_cloture=False, id=anneeacademique_id)
-            # Nettoyer la valeur (supprimer les espaces et remplacer la virgule par un point)
-            cout_heure = re.sub(r'\xa0', '', cout_heure)  # Supprime les espaces insécables
-            cout_heure = cout_heure.replace(" ", "").replace(",", ".")
+            cout_heure = 0
+            if request.session.get('cycle_lib') in ["Collège", "Lycée"]:
+                cout_heure = bleach.clean(request.POST["cout_heure"].strip())
+                # Nettoyer la valeur (supprimer les espaces et remplacer la virgule par un point)
+                cout_heure = re.sub(r'\xa0', '', cout_heure)  # Supprime les espaces insécables
+                cout_heure = cout_heure.replace(" ", "").replace(",", ".")
 
-            try:
-                cout_heure = Decimal(cout_heure)  # Convertir en Decimal
-            except:
-                return JsonResponse({
-                    "status": "error",
-                    "message": "Le coût doit être un nombre valide."})
+                try:
+                    cout_heure = Decimal(cout_heure)  # Convertir en Decimal
+                except:
+                    return JsonResponse({
+                        "status": "error",
+                        "message": "Le coût doit être un nombre valide."})
                 
             # Verifier l'existence de l'enseignement
             enseignements = Enseigner.objects.filter(anneeacademique_id=anneeacademique_id).exclude(id=id)
@@ -357,32 +372,38 @@ def edit_en(request):
                     "message": "Enseignement modifié avec succès."})
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def del_enseignement(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
-    if setting is None:
-        return redirect("settings/maintenance")
-    
-    try:
-        enseignement_id = int(dechiffrer_param(str(id)))
-        enseignement = Enseigner.objects.get(id=enseignement_id)
-    except:
-        enseignement = None
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
+    if contrat and contrat.status_signature:
+        if setting is None:
+            return redirect("settings/maintenance")
         
-    if enseignement:
-        # Nombre d'enseignements avant la suppression
-        count0 = Enseigner.objects.all().count()
-        enseignement.delete()
-        # Nombre d'enseignements après la suppression
-        count1 = Enseigner.objects.all().count()
-        if count1 < count0: 
-            messages.success(request, "Elément supprimé avec succès.")
-        else:
-            messages.error(request, "La suppression a échouée.")
-    return redirect("detail_enseignement", enseignement.salle.id)
-   
+        try:
+            enseignement_id = int(dechiffrer_param(str(id)))
+            enseignement = Enseigner.objects.get(id=enseignement_id)
+        except:
+            enseignement = None
+            
+        if enseignement:
+            # Nombre d'enseignements avant la suppression
+            count0 = Enseigner.objects.all().count()
+            enseignement.delete()
+            # Nombre d'enseignements après la suppression
+            count1 = Enseigner.objects.all().count()
+            if count1 < count0: 
+                messages.success(request, "Elément supprimé avec succès.")
+            else:
+                messages.error(request, "La suppression a échouée.")
+        return redirect("detail_enseignement", enseignement.salle.id)
+    else:
+        messages.error(request, "Veuillez signer votre contrat avant de procéder à la suppression d’un programme.")
+        return redirect("detail_enseignement", enseignement.salle.id)
     
 class get_matiere_programmer_salle(View):
     def get(self, request, id, *args, **kwargs):
@@ -398,7 +419,7 @@ class get_matiere_programmer_salle(View):
         return render(request, "ajax_matiere.html", context)
     
     
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def droit_eval(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -465,7 +486,7 @@ def droit_eval(request, id):
     }
     return render(request, "droit_eval.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_directeur_etudes)
 def droit_evaluation(request, id):
     enseignement = Enseigner.objects.get(id=id)    

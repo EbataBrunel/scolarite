@@ -28,12 +28,15 @@ from depense.models import Depense
 from anneeacademique.models import AnneeCademique
 from inscription.models import Inscription
 from etablissement.models import Etablissement
-from app_auth.models import Profile
+from app_auth.models import EtablissementUser
+from emploi_temps.models import EmploiTemps
 from school.views import get_setting
 from app_auth.decorator import allowed_users
+from school.methods import periode_annee_scolaire, month_contrat_user, heure_par_jour_et_moyenne, nombre_absence_enseignant, salaire_enseignant_cycle_fondament_avec_absence
 from scolarite.utils.crypto import dechiffrer_param
 
 permission_gestionnaire = ['Promoteur', 'Directeur Général', 'Gestionnaire']
+permission_Promoteur_DG_DE = ['Promoteur', 'Directeur Général', 'Gestionnaire']
 permission_gestionnaire_enseignant = ['Promoteur', 'Directeur Général', 'Gestionnaire', 'Enseignant']
 permission_enseignant = ['Enseignant']
 permission_admin = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Gestionnaire', 'Surveillant Général']
@@ -87,41 +90,417 @@ def somme_totale_caisse(anneeacademique_id):
 
     return total
 
-@login_required(login_url='connection/login')  
+# Récuperer le mois et l'année de la période scolaire
+def month_year_periode_annee_scolaire_remuneration(anneeacademique_id):
+    try:
+        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    except ObjectDoesNotExist:
+        return []  # Retourne une liste vide si l'année académique n'existe pas
+
+    start_date = anneeacademique.start_date
+    end_date = anneeacademique.end_date
+
+    # Génération des mois dans l'intervalle
+    months = []
+    current_date = start_date.replace(day=1)  # S'assurer de commencer au début du mois
+
+    while current_date <= end_date:
+        dic = {} 
+        dic["month"] = current_date.strftime("%m")
+        dic["year"] = current_date.strftime("%Y")
+        months.append(dic)
+        # Passer au mois suivant
+        next_month = current_date.month % 12 + 1
+        next_year = current_date.year + (1 if current_date.month == 12 else 0)
+        current_date = current_date.replace(month=next_month, year=next_year)
+
+    month_format = []
+    for month in months:
+        if month["month"] == '01':
+            dic = {}
+            dic["month"] = "Janvier"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        elif month["month"] == '02':
+            dic = {}
+            dic["month"] = "Février"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        elif month["month"] == '03':
+            dic = {}
+            dic["month"] = "Mars"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        elif month["month"] == '04':
+            dic = {}
+            dic["month"] = "Avril"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        elif month["month"] == '05':
+            dic = {}
+            dic["month"] = "Mai"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        elif month["month"] == '06':
+            dic = {}
+            dic["month"] = "Juin"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        elif month["month"] == '07':
+            dic = {}
+            dic["month"] = "Juillet"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        elif month == '08':
+            dic = {}
+            dic["month"] = "Août"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        elif month["month"] == '09':
+            dic = {}
+            dic["month"] = "Septembre"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        elif month["month"] == '10':
+            dic = {}
+            dic["month"] = "Octobre"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        elif month["month"] == '11':
+            dic = {}
+            dic["month"] = "Novembre"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+        else:
+            dic = {}
+            dic["month"] = "Décembre"
+            dic["year"] = month["year"]
+            month_format.append(dic)
+    return month_format  # Retourne la liste des mois
+
+@login_required(login_url='connection/account')  
 @allowed_users(allowed_roles=permission_gestionnaire)
-def renumerations(request):
+def remunerations_enseignants(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
     if setting is None:
         return redirect("settings/maintenance")
     
-    renumerations_users = (Renumeration.objects.values("user_id")
+    remunerations_enseignants_fondamental_group = (Renumeration.objects.values("user_id")
                            .filter(anneeacademique_id=anneeacademique_id)
-                           .annotate(nb_renumerations=Count("user_id"))
+                           .annotate(nombre_renumerations=Count("user_id"))
                            .exclude(type_renumeration="Administrateur scolaire")
+                           .exclude(type_renumeration="Enseignant du cycle secondaire")
     )
-    tabrenumerations = []
-    for ru in renumerations_users:
-        user = User.objects.get(id=ru["user_id"])   
+    remunerations_enseignants_fondamental = []
+    for re in remunerations_enseignants_fondamental_group:
+        user = User.objects.get(id=re["user_id"])   
         dic = {}
         dic["user"] = user
-        renums = Renumeration.objects.filter(user_id=ru["user_id"], anneeacademique_id=anneeacademique_id).exclude(type_renumeration="Administrateur scolaire")
-        dic["renumerations"] = renums
-        dic["nb_renumerations"] = renums.count()
-        tabrenumerations.append(dic)
+        renums = (
+            Renumeration.objects.filter(user_id=re["user_id"], anneeacademique_id=anneeacademique_id)
+                                .exclude(type_renumeration="Administrateur scolaire")
+                                .exclude(type_renumeration="Enseignant du cycle secondaire")
+        )
+        dic["remunerations"] = renums
+        dic["nombre_renumerations"] = renums.count()
+        remunerations_enseignants_fondamental.append(dic)
+        
+    remunerations_enseignants_secondaire_group = (Renumeration.objects.values("user_id")
+                           .filter(anneeacademique_id=anneeacademique_id)
+                           .annotate(nombre_renumerations=Count("user_id"))
+                           .exclude(type_renumeration="Administrateur scolaire")
+                           .exclude(type_renumeration="Enseignant du cycle fondamental")
+    )
+    remunerations_enseignants_secondaire = []
+    for re in remunerations_enseignants_secondaire_group:
+        user = User.objects.get(id=re["user_id"])   
+        dic = {}
+        dic["user"] = user
+        renums = (
+            Renumeration.objects.filter(user_id=re["user_id"], anneeacademique_id=anneeacademique_id)
+                                .exclude(type_renumeration="Administrateur scolaire")
+                                .exclude(type_renumeration="Enseignant du cycle fondamental")
+        )
+        dic["remunerations"] = renums
+        dic["nombre_renumerations"] = renums.count()
+        remunerations_enseignants_secondaire.append(dic)
 
     anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     context = {
         "setting": setting,
-        "renumerations": tabrenumerations,
+        "remunerations_enseignants_fondamental": remunerations_enseignants_fondamental,
+        "remunerations_enseignants_secondaire": remunerations_enseignants_secondaire,
         "anneeacademique": anneeacademique
     }
     
-    return render(request, "renumerations.html", context)
+    return render(request, "remun_enseignant/remunerations_enseignants.html", context)
 
-@login_required(login_url='connection/connexion')  
+@login_required(login_url='connection/account')  
 @allowed_users(allowed_roles=permission_gestionnaire)
-def personnel_renumeration(request):
+def resume_remu_enseignant_seondaire(request):
+    anneeacademique_id = request.session.get('anneeacademique_id')
+    setting = get_setting(anneeacademique_id)
+    if setting is None:
+        return redirect("settings/maintenance")
+    
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer les mois émargés
+    months_emargements = (Emargement.objects.values("month")
+                       .filter(anneeacademique_id=anneeacademique_id)
+                       .annotate(nombre_emargements=Count("month"))
+    )
+        
+    emargements = []
+    for me in months_emargements:
+        dic = {}
+        dic["month"] = me["month"]
+        # Récuperer les enseignant qui ont été émargé pour ce mois
+        enseignants_emargements = (Emargement.objects.values("enseignant_id")
+                                   .filter(anneeacademique_id=anneeacademique_id, month=me["month"])
+                                   .annotate(nombre_emargements=Count("enseignant_id"))
+        ) 
+        nombre_enseignants_impayes = 0
+        enseignants = []
+        for ee in enseignants_emargements:
+            enseignant = User.objects.get(id=ee["enseignant_id"])
+            # Contrat de l'enseignant 
+            contrat = Contrat.objects.filter(user=enseignant, anneeacademique=anneeacademique, type_contrat="Enseignant du cycle secondaire")
+            if contrat.exists() and not Renumeration.objects.filter(user_id=enseignant.id, anneeacademique_id=anneeacademique_id, type_renumeration="Enseignant du cycle secondaire").exists():
+                nombre_enseignants_impayes += 1
+                enseignants.append(enseignant)
+                
+        dic["nombre_enseignants_impayes"] = nombre_enseignants_impayes 
+        dic["enseignants"] = enseignants
+        
+        emargements.append(dic)  
+    
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()        
+    context = {
+        "setting": setting,
+        "emargements": emargements,
+        "anneeacademique": anneeacademique,
+        "contrat": contrat
+    }
+    return render(request, "remun_enseignant/resume_remu_enseignant_seondaire.html", context)
+
+def ajax_detail_teacher_emargement(request, enseignant_id, month, type_contrat):
+    anneeacademique_id = request.session.get('anneeacademique_id')
+    setting = get_setting(anneeacademique_id)
+    
+    if type_contrat == "Secondaire":
+        salles_emargements = (Emargement.objects.values("salle_id")
+                    .filter(enseignant_id=enseignant_id, month=month, anneeacademique_id=anneeacademique_id)
+                    .annotate(nb_emargements=Count("salle_id")))
+        
+        tabEmargements = []
+        total_salle_delta = timedelta(0)
+        montant_payer = 0
+        somme_cout_heure = 0
+        for se in salles_emargements:
+            dic = {}
+            salle_id = se["salle_id"]
+            salle = Salle.objects.get(id=salle_id)
+            dic["salle"] = salle
+            
+            matieres_emargements = (Emargement.objects.values("matiere_id")
+                    .filter(enseignant_id=enseignant_id, salle_id=salle_id, month=month, anneeacademique_id=anneeacademique_id)
+                    .annotate(nb_emargements=Count("matiere_id")))
+            
+            matieres = []
+            total_matiere_delta = timedelta(0)
+            for me in matieres_emargements:
+                dic_matiere = {}
+                matiere_id = me["matiere_id"]
+                matiere = Matiere.objects.get(id=matiere_id)
+                dic_matiere["matiere"] = matiere    
+                
+                # Recupérer le cout par heure de cette matière
+                enseignement = Enseigner.objects.filter(
+                    enseignant_id=enseignant_id, 
+                    salle_id=salle_id, 
+                    matiere_id=matiere_id, 
+                    anneeacademique_id=anneeacademique_id).first()
+                dic_matiere["cout_heure"] = enseignement.cout_heure
+                
+                somme_cout_heure += enseignement.cout_heure
+                
+                emargements = Emargement.objects.filter(enseignant_id=enseignant_id, month=month, salle_id=salle_id, matiere_id=matiere_id, anneeacademique_id=anneeacademique_id)
+                # Initialisation avec une durée nulle
+                total_delta = timedelta(0)
+                list_emargements = []
+                for em in emargements:
+                    dic_em = {}
+                    dic_em["emargement"] = em
+                    # Convertir les objets time en timedelta
+                    start_delta = timedelta(hours=em.heure_debut.hour, minutes=em.heure_debut.minute)
+                    end_delta = timedelta(hours=em.heure_fin.hour, minutes=em.heure_fin.minute)
+                    # Calculer la somme des deux
+                    total_delta +=  end_delta - start_delta
+                        
+                    dic_em["hour"] = format_time(total_delta)
+                    
+                    list_emargements.append(dic_em)     
+                
+                dic_matiere["emargements"] = list_emargements        
+                
+                dic_matiere["total_time"] = format_time(total_delta)
+                
+                # Calculer le montant à payer pour cette matière
+                dic_matiere["montant_total_matiere"] = calculer_montant(enseignement.cout_heure, format_time(total_delta))
+                
+                total_matiere_delta += total_delta
+                
+                matieres.append(dic_matiere)
+            
+            dic["total_matiere_time"] = format_time(total_matiere_delta)
+            dic["matieres"] = matieres
+            
+            montant_total = calculer_montant(somme_cout_heure, format_time(total_matiere_delta))
+            dic["montant_total_salle"] = montant_total
+            tabEmargements.append(dic)
+            total_salle_delta += total_matiere_delta
+            
+            montant_payer += montant_total
+            
+        time_total = format_time(total_salle_delta)
+            
+        enseignant = User.objects.get(id=enseignant_id)
+            
+        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+        contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()      
+        context = {
+            "setting": setting,
+            "emargements": tabEmargements,
+            "enseignant": enseignant,
+            "month": month,
+            "time_total": time_total,
+            "montant_payer": montant_payer,
+            "anneeacademique": anneeacademique,
+            "contrat": contrat,
+            "type_contrat": type_contrat
+        }
+        return render(request, "ajax_detail_teacher_emargement.html", context)
+    else:
+        salles_emargements = (Emargement.objects.values("salle_id")
+                              .filter(enseignant_id=enseignant_id, month=month, anneeacademique_id=anneeacademique_id)
+                              .annotate(nb_salles=Count("salle_id"))
+        )  
+        
+        tabEmargements = []
+        total_salle_delta = timedelta(0)
+        montant_payer = 0
+        for se in salles_emargements:
+            dic = {}
+            salle_id = se["salle_id"]
+            salle = Salle.objects.get(id=salle_id)
+            dic["salle"] = salle  
+             
+            # Initialisation avec une durée nulle
+            total_delta = timedelta(0)
+            liste_emargements = []
+            emargements = Emargement.objects.filter(enseignant_id=enseignant_id, salle_id=salle.id, month=month, anneeacademique_id=anneeacademique_id)        
+            for emarg in emargements:
+                    dic_emarg_enseignant_fondament = {}
+                    dic_emarg_enseignant_fondament["emargement"] = emarg
+                    # Convertir les objets time en timedelta 
+                    # Heure total que l'enseignant a fait 
+                    start_delta_emargement = timedelta(hours=emarg.heure_debut.hour, minutes=emarg.heure_debut.minute)
+                    end_delta_emargement = timedelta(hours=emarg.heure_fin.hour, minutes=emarg.heure_fin.minute)
+                    # Calculer la somme des deux
+                    heure_faite =  end_delta_emargement - start_delta_emargement
+                    # Extraire les heures et les minutes en normalisant (si la somme dépasse 24 heures)
+                    heure_faite_seconds = heure_faite.total_seconds()
+                    heure_faite_hours = int(heure_faite_seconds // 3600) % 24  # Récupérer les heures (modulo 24 pour ne pas dépasser une journée)
+                    heure_faite_minutes = int((heure_faite_seconds % 3600) // 60)
+
+                    # Afficher le résultat au format HH:MM
+                    formatted_time_heure_faite = f"{heure_faite_hours:02}:{heure_faite_minutes:02}"
+                    dic_emarg_enseignant_fondament["heure_faite"] = formatted_time_heure_faite
+                    # Heure totale que l'enseignant est censé faire par jour
+                    emploistemps = EmploiTemps.objects.filter(jour=emarg.jour, enseignant_id=emarg.enseignant.id, anneeacademique_id=anneeacademique_id).first()
+                    start_delta_emploitemps = timedelta(hours=emploistemps.heure_debut.hour, minutes=emarg.heure_debut.minute)
+                    end_delta_emploitemps = timedelta(hours=emploistemps.heure_fin.hour, minutes=emarg.heure_fin.minute)
+                    heure_faire =  end_delta_emploitemps - start_delta_emploitemps
+                    
+                    # Extraire les heures et les minutes en normalisant (si la somme dépasse 24 heures)
+                    heure_faire_seconds = heure_faire.total_seconds()
+                    heure_faire_hours = int(heure_faire_seconds // 3600) % 24  # Récupérer les heures (modulo 24 pour ne pas dépasser une journée)
+                    heure_faire_minutes = int((heure_faire_seconds % 3600) // 60)
+
+                    # Afficher le résultat au format HH:MM
+                    formatted_time_heure_faire = f"{heure_faire_hours:02}:{heure_faire_minutes:02}"
+                    dic_emarg_enseignant_fondament["heure_faire"] = formatted_time_heure_faire
+                    
+                    total_heure = heure_faire - heure_faite # Heure total du retard de l'enseignant 
+                    
+                    # Extraire les heures et les minutes en normalisant (si la somme dépasse 24 heures)
+                    total_heure_seconds = total_heure.total_seconds()
+                    total_heure_hours = int(total_heure_seconds // 3600) % 24  # Récupérer les heures (modulo 24 pour ne pas dépasser une journée)
+                    total_heure_minutes = int((total_heure_seconds % 3600) // 60)
+
+                    # Afficher le résultat au format HH:MM
+                    formatted_time_total_heure = f"{total_heure_hours:02}:{total_heure_minutes:02}"
+                    dic_emarg_enseignant_fondament["total_heure"] = formatted_time_total_heure
+                    
+                    total_delta += total_heure
+                    liste_emargements.append(dic_emarg_enseignant_fondament)
+            
+            # Extraire les heures et les minutes en normalisant (si la somme dépasse 24 heures)
+            total_seconds = total_delta.total_seconds()
+            total_hours = int(total_seconds // 3600) % 24  # Récupérer les heures (modulo 24 pour ne pas dépasser une journée)
+            total_minutes = int((total_seconds % 3600) // 60)
+
+            # Afficher le résultat au format HH:MM
+            formatted_time = f"{total_hours:02}:{total_minutes:02}"
+                        
+            dic["total_time"] = formatted_time                
+            dic["emargements"] = liste_emargements  
+                
+            contrat = Contrat.objects.filter(user_id=enseignant_id, type_contrat="Enseignant du cycle fondamental", anneeacademique_id=anneeacademique_id).first()
+            cout_jour = contrat.amount/20 
+            # Cout par heure
+            moyenne = heure_par_jour_et_moyenne(enseignant_id, salle.id, anneeacademique_id)[1]
+            cout_heure = 0
+            if moyenne > 0:
+                    cout_heure = float(cout_jour) / float(moyenne)
+            # Coût par jour
+            dic["cout_jour"] = cout_jour
+            # Cout par heure
+            dic["cout_heure"] = cout_heure
+            # Nombre d'absences par mois de l'enseignant
+            dic["nombre_absences"] = nombre_absence_enseignant(month, enseignant_id, salle.id, anneeacademique_id)
+            # Montant brute à payer
+            montant = salaire_enseignant_cycle_fondament_avec_absence(month, enseignant_id, salle.id, anneeacademique_id)
+            dic["montant_payer"] =  montant 
+            
+            tabEmargements.append(dic)
+            
+            montant_payer += montant   
+            total_salle_delta += total_delta
+        
+        time_total = format_time(total_salle_delta)
+            
+        enseignant = User.objects.get(id=enseignant_id)
+            
+        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+        contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()      
+        context = {
+            "setting": setting,
+            "emargements": tabEmargements,
+            "enseignant": enseignant,
+            "month": month,
+            "time_total": time_total,
+            "montant_payer": montant_payer,
+            "anneeacademique": anneeacademique,
+            "contrat": contrat,
+            "type_contrat": type_contrat
+        }
+        return render(request, "ajax_detail_teacher_emargement.html", context)
+    
+@login_required(login_url='connection/account')  
+@allowed_users(allowed_roles=permission_gestionnaire)
+def comptabilite_remuneration(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
     if setting is None:
@@ -144,13 +523,191 @@ def personnel_renumeration(request):
     for mr in months_renumerations:
         if mr["month"] not in months:
             months.append(mr["month"])
+            
+    tabcontrats = []
+    nombre_tolal_personnels = 0 
+    for type_contrat in {"Enseignant du cycle fondamental", "Enseignant du cycle secondaire", "Administrateur scolaire"}:       
+        dic = {}
+        # Nombre d'enseignants et d'administrateur
+        nombre_personnels = Contrat.objects.filter(type_contrat=type_contrat, anneeacademique_id=anneeacademique_id).count()
+        dic["type_contrat"] = type_contrat
+        dic["nombre_personnels"] = nombre_personnels
+        if type_contrat == "Enseignant du cycle fondamental":
+            total_paiments = []
+            total_paye = 0
+            total_impaye = 0
+            for month in months:
+                dic_payment = {}
+                nombre_personnels_a_paye = 0 
+                nombre_personnels_paye = 0
+                nombre_personnels_impaye = 0
+                montant_paye = 0
+                montant_impaye = 0
+                contrats = Contrat.objects.filter(type_contrat=type_contrat, anneeacademique_id=anneeacademique_id)
+                for contrat in contrats:
+                    nombre_personnels_a_paye += 1
+                    if month in month_contrat_user(contrat):
+                        if Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration=type_contrat, month=month, anneeacademique_id=anneeacademique_id).exists():
+                            montant_paye += float(Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration=type_contrat, month=month, anneeacademique_id=anneeacademique_id).first().total_amount)
+                            nombre_personnels_paye += 1
+                        else:
+                            montant_impaye += float(contrat.amount)
+                            nombre_personnels_impaye += 1
+                dic_payment["nombre_personnels_a_paye"] = nombre_personnels_a_paye
+                dic_payment["nombre_personnels_paye"] = nombre_personnels_paye
+                dic_payment["nombre_personnels_impaye"] = nombre_personnels_impaye
+                dic_payment["montant_paye"] = montant_paye
+                dic_payment["montant_impaye"] = montant_impaye
+                
+                total_paiments.append(dic_payment)
+                total_paye += montant_paye
+                total_impaye += montant_impaye
+                
+            dic["total_paye"] = total_paye
+            dic["total_impaye"] = total_impaye
+            dic["resumes"] = total_paiments  
+            
+        elif type_contrat == "Enseignant du cycle secondaire":
+            total_paiments = []
+            total_paye = 0
+            total_impaye = 0
+            for month in months:
+                dic_payment = {}
+                nombre_personnels_a_paye = 0 
+                nombre_personnels_paye = 0
+                nombre_personnels_impaye = 0
+                montant_paye = 0
+                montant_impaye = 0
+                contrats = Contrat.objects.filter(type_contrat=type_contrat, anneeacademique_id=anneeacademique_id)
+                for contrat in contrats:
+                    nombre_personnels_a_paye += 1
+                    if Emargement.objects.filter(enseignant_id=contrat.user.id, month=month, anneeacademique_id=anneeacademique_id).exists():
+                        if Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration=type_contrat, month=month, anneeacademique_id=anneeacademique_id).exists():
+                            montant_paye += float(Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration=type_contrat, month=month, anneeacademique_id=anneeacademique_id).first().total_amount)
+                            nombre_personnels_paye += 1
+                        else:
+                            montant_impaye += float(montant_total_emargement(contrat.user.id, month, anneeacademique_id))
+                            nombre_personnels_impaye += 1
+                dic_payment["nombre_personnels_a_paye"] = nombre_personnels_a_paye
+                dic_payment["nombre_personnels_paye"] = nombre_personnels_paye
+                dic_payment["nombre_personnels_impaye"] = nombre_personnels_impaye
+                dic_payment["montant_paye"] = montant_paye
+                dic_payment["montant_impaye"] = montant_impaye
+                total_paiments.append(dic_payment)
+                
+                total_paye += montant_paye
+                total_impaye += montant_impaye
+            dic["total_paye"] = total_paye
+            dic["total_impaye"] = total_impaye
+            dic["resumes"] = total_paiments
+        else:
+            total_paiments = []
+            total_paye = 0
+            total_impaye = 0
+            for month in months:
+                dic_payment = {}
+                nombre_personnels_a_paye = 0 
+                nombre_personnels_paye = 0
+                nombre_personnels_impaye = 0
+                montant_paye = 0
+                montant_impaye = 0
+                contrats = Contrat.objects.filter(type_contrat=type_contrat, anneeacademique_id=anneeacademique_id)
+                for contrat in contrats:
+                    nombre_personnels_a_paye += 1
+                    if month in month_contrat_user(contrat):
+                        if Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration=type_contrat, month=month, anneeacademique_id=anneeacademique_id).exists():
+                            montant_paye += float(Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration=type_contrat, month=month, anneeacademique_id=anneeacademique_id).first().total_amount)
+                            nombre_personnels_paye += 1
+                        else:
+                            montant_impaye += float(contrat.amount)
+                            nombre_personnels_impaye += 1
+                dic_payment["nombre_personnels_a_paye"] = nombre_personnels_a_paye
+                dic_payment["nombre_personnels_paye"] = nombre_personnels_paye
+                dic_payment["nombre_personnels_impaye"] = nombre_personnels_impaye
+                dic_payment["montant_paye"] = montant_paye
+                dic_payment["montant_impaye"] = montant_impaye
+                
+                total_paiments.append(dic_payment)
+                total_paye += montant_paye
+                total_impaye += montant_impaye
+                
+            dic["total_paye"] = total_paye
+            dic["total_impaye"] = total_impaye
+            dic["resumes"] = total_paiments
+            
+        tabcontrats.append(dic)
+        nombre_tolal_personnels += nombre_personnels  
         
+    # Somme totale par mois de toutes les salles 
+    total_paye_impaye = [] 
+    total_paye = 0
+    total_impaye = 0 
+    total_personnel = 0
+    for month in months:   
+        dic = {} 
+        montant_paye = 0 
+        montant_impaye = 0
+        nombre_personnels_a_paye = 0
+        nombre_personnels_paye = 0  
+        nombre_personnels_impaye = 0 
+        contrats_enseignants_cycle_secondaire = Contrat.objects.filter(type_contrat="Enseignant du cycle secondaire", anneeacademique_id=anneeacademique_id)
+        total_personnel += contrats_enseignants_cycle_secondaire.count()
+        for contrat in contrats_enseignants_cycle_secondaire:
+            nombre_personnels_a_paye += 1
+            if Emargement.objects.filter(enseignant_id=contrat.user.id, month=month, anneeacademique_id=anneeacademique_id).exists():
+                if Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration="Enseignant du cycle secondaire", month=month, anneeacademique_id=anneeacademique_id).exists():
+                    montant_paye += float(Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration="Enseignant du cycle secondaire", month=month, anneeacademique_id=anneeacademique_id).first().total_amount)
+                    nombre_personnels_paye += 1
+                else:
+                    montant_impaye += float(montant_total_emargement(contrat.user.id, month, anneeacademique_id))
+                    nombre_personnels_impaye += 1
+                            
+        contrats_enseignants_cycle_fondamental = Contrat.objects.filter(type_contrat="Enseignant du cycle fondamental", anneeacademique_id=anneeacademique_id)
+        total_personnel += contrats_enseignants_cycle_fondamental.count()
+        for contrat in contrats_enseignants_cycle_fondamental:
+            nombre_personnels_a_paye += 1
+            if month in month_contrat_user(contrat):
+                if Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration="Enseignant du cycle fondamental", month=month, anneeacademique_id=anneeacademique_id).exists():
+                    montant_paye += float(Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration="Enseignant du cycle fondamental", month=month, anneeacademique_id=anneeacademique_id).first().total_amount)
+                    nombre_personnels_paye += 1
+                else:
+                    montant_impaye += float(contrat.amount)
+                    nombre_personnels_impaye += 1
+                            
+        contrats_administrateurs = Contrat.objects.filter(type_contrat="Administrateur scolaire", anneeacademique_id=anneeacademique_id)
+        total_personnel += contrats_administrateurs.count()
+        for contrat in contrats_administrateurs:
+            nombre_personnels_a_paye += 1
+            if month in month_contrat_user(contrat):
+                if Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration="Administrateur scolaire", month=month, anneeacademique_id=anneeacademique_id).exists():
+                    montant_paye += float(Renumeration.objects.filter(user_id=contrat.user.id, type_renumeration="Administrateur scolaire", month=month, anneeacademique_id=anneeacademique_id).first().total_amount)
+                    nombre_personnels_paye += 1
+                else:
+                    montant_impaye += float(contrat.amount)
+                    nombre_personnels_impaye += 1
+                    
+        dic["montant_paye"] = montant_paye
+        dic["montant_impaye"] = montant_impaye
+        dic["nombre_personnels_paye"] = nombre_personnels_paye
+        dic["nombre_personnels_impaye"] = nombre_personnels_impaye
+        
+        total_paye_impaye.append(dic)
+        total_paye += montant_paye
+        total_impaye += montant_impaye
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)       
     context = {
         "setting": setting,
-        "months": months
+        "months": months,
+        "contrats": tabcontrats,
+        "total_payments": total_paiments,
+        "total_paye_impaye": total_paye_impaye,
+        "total_paye": total_paye,
+        "total_impaye": total_impaye,
+        "total_personnel": total_personnel,
+        "anneeacademique": anneeacademique
     }
     
-    return render(request, "personnel_renum.html", context)
+    return render(request, "comptabilite_remuneration.html", context)
 
 # Verifier si le mois renseignant fait parti des mois du contrat
 def validite_contrat(user_id, month, anneeacademique_id):
@@ -162,101 +719,95 @@ def validite_contrat(user_id, month, anneeacademique_id):
             status = True
     return status
 
-def get_personnel_renumeration(request, month):
-    etablissement_id = request.session.get('etablissement_id')
-    anneeacademique_id = request.session.get('anneeacademique_id')
-    setting = get_setting(anneeacademique_id)
-    personnels_emargements = (Emargement.objects.values("enseignant_id")
-                              .filter(month=month, anneeacademique_id=anneeacademique_id)
-                              .annotate(nb_emargements=Count("enseignant_id")))
+# Méthode determinant le montant total d'émargement de l'enseignant
+def montant_total_emargement(enseignant_id, month, anneeacademique_id):
     
-    renumerations= []
-    for pe in personnels_emargements:
-        # Verifier si ce mois fait parti du contrat de l'enseignant
-        if validite_contrat(pe["enseignant_id"], month, anneeacademique_id):
-            dic = {}
-            enseignant = User.objects.get(id=pe["enseignant_id"])
-            dic["enseignant"] = enseignant
-            renumeration = Renumeration.objects.filter(user_id=pe["enseignant_id"], month=month, type_renumeration="Enseignant du secondaire", anneeacademique_id=anneeacademique_id)
-            if renumeration.exists():
-                dic["status"] = "Payé"
-            else:
-                dic["status"] = "En cours"
+    salles_emargements = (Emargement.objects.values("salle_id")
+                   .filter(enseignant_id=enseignant_id, month=month, anneeacademique_id=anneeacademique_id)
+                   .annotate(nb_emargements=Count("salle_id")))
+    
+    tabEmargements = []
+    total_salle_delta = timedelta(0)
+    montant_payer = 0
+    somme_cout_heure = 0
+    for se in salles_emargements:
+        dic = {}
+        salle_id = se["salle_id"]
+        salle = Salle.objects.get(id=salle_id)
+        dic["salle"] = salle
+        
+        matieres_emargements = (Emargement.objects.values("matiere_id")
+                   .filter(enseignant_id=enseignant_id, salle_id=salle_id, month=month, anneeacademique_id=anneeacademique_id)
+                   .annotate(nb_emargements=Count("matiere_id")))
+        
+        matieres = []
+        total_matiere_delta = timedelta(0)
+        for me in matieres_emargements:
+            if me["matiere_id"]:
+                dic_matiere = {}
+                matiere_id = me["matiere_id"]
+                matiere = Matiere.objects.get(id=matiere_id)
+                dic_matiere["matiere"] = matiere    
                 
-            dic["type_renumeration"] = "Enseignant du secondaire"
-            
-            renumerations.append(dic)
-        
-    # Récuperer l'établissement
-    etablissement = Etablissement.objects.get(id=etablissement_id)
-    # Récuperer tous utilisateurs
-    users = User.objects.all()
-    enseignants_fondamental = []
-    for user in users:        
-        if etablissement.groups.filter(user=user).exists():
-            groups = etablissement.groups.filter(user=user)
-            for group in groups:
-                if group.name == "Enseignant" and user not in enseignants_fondamental:
-                    if Contrat.objects.filter(user_id=user.id, type_contrat="Enseignant du fondamental", anneeacademique_id=anneeacademique_id).exists():
-                        enseignants_fondamental.append(user)
-    
-    renumerations_senseignants_fondamental = []
-    for user in enseignants_fondamental:
-        if validite_contrat(user.id, month, anneeacademique_id):
-            dic = {}
-            dic["enseignant"] = user
-            renumeration = Renumeration.objects.filter(user_id=user.id, month=month, type_renumeration="Enseignant du fondamental", anneeacademique_id=anneeacademique_id)
-            if renumeration.exists():
-                dic["status"] = "Payé"
-                dic["renumeration"] = renumeration
-            else:
-                dic["status"] = "En cours"
-                dic["renumeration"] = None
-            dic["type_renumeration"] = "Enseignant du fondamental"
-            renumerations_senseignants_fondamental.append(dic)
+                # Recupérer le cout par heure de cette matière
+                enseignement = Enseigner.objects.filter(
+                    enseignant_id=enseignant_id, 
+                    salle_id=salle_id, 
+                    matiere_id=matiere_id, 
+                    anneeacademique_id=anneeacademique_id).first()
+                dic_matiere["cout_heure"] = enseignement.cout_heure
+                
+                somme_cout_heure += enseignement.cout_heure
+                
+                emargements = Emargement.objects.filter(enseignant_id=enseignant_id, month=month, salle_id=salle_id, matiere_id=matiere_id, anneeacademique_id=anneeacademique_id)
+                # Initialisation avec une durée nulle
+                total_delta = timedelta(0)
+                list_emargements = []
+                for em in emargements:
+                    dic_em = {}
+                    dic_em["emargement"] = em
+                    # Convertir les objets time en timedelta
+                    start_delta = timedelta(hours=em.heure_debut.hour, minutes=em.heure_debut.minute)
+                    end_delta = timedelta(hours=em.heure_fin.hour, minutes=em.heure_fin.minute)
+                    # Calculer la somme des deux
+                    total_delta +=  end_delta - start_delta
+                        
+                    dic_em["hour"] = format_time(total_delta)
                     
-    administrateurs = []
-    for user in users:        
-        if etablissement.groups.filter(user=user).exists():
-            groups = etablissement.groups.filter(user=user)
-            for group in groups:
-                if group.name in permission_admin and user not in administrateurs:
-                    administrateurs.append(user)
+                    list_emargements.append(dic_em)     
+                
+                dic_matiere["emargements"] = list_emargements        
+                
+                dic_matiere["total_time"] = format_time(total_delta)
+                
+                # Calculer le montant à payer pour cette matière
+                dic_matiere["montant_total_matiere"] = calculer_montant(enseignement.cout_heure, format_time(total_delta))
+                
+                total_matiere_delta += total_delta
+                
+                matieres.append(dic_matiere)
         
-    renumerations_admin = []
-    for admin in administrateurs:
-        # Verifier si ce mois fait parti des mois du contrat de cet utilisateur
-        if validite_contrat(admin.id, month, anneeacademique_id):
-            dic = {}
-            dic["administrateur"] = admin
-            renumeration = Renumeration.objects.filter(user_id=admin.id, month=month, type_renumeration="Administrateur scolaire", anneeacademique_id=anneeacademique_id)
-            if renumeration.exists():
-                dic["status"] = "Payé"
-                dic["renumeration"] = renumeration.first()
-            else:
-                dic["status"] = "En cours"
-                dic["renumeration"] = None
-            dic["type_renumeration"] = "Administrateur scolaire"
-            renumerations_admin.append(dic)
+        dic["total_matiere_time"] = format_time(total_matiere_delta)
+        dic["matieres"] = matieres
+        
+        montant_total = calculer_montant(somme_cout_heure, format_time(total_matiere_delta))
+        dic["montant_total_salle"] = montant_total
+        tabEmargements.append(dic)
+        total_salle_delta += total_matiere_delta
+        
+        montant_payer += montant_total
     
-    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)    
-    context = {
-        "month": month,
-        "renumerations": renumerations,
-        "renumerations_senseignants_fondamental": renumerations_senseignants_fondamental,
-        "renumerations_admin": renumerations_admin,
-        "anneeacademique": anneeacademique,
-        "setting": setting
-    }       
-    return render(request, "ajax_pers_renum.html", context)
+    return montant_payer
 
-def get_teacher_renumeration(request, month):
+@login_required(login_url='connection/account')  
+@allowed_users(allowed_roles=permission_gestionnaire)
+def ajax_comptabilite_remuneration(request, month):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
     if setting is None:
         return redirect("settings/maintenance")
 
-    renumerations_enseignants_fondamental = Renumeration.objects.filter(month=month,type_renumeration="Enseignant du fondamental", anneeacademique_id=anneeacademique_id)
+    renumerations_enseignants_fondamental = Renumeration.objects.filter(month=month,type_renumeration="Enseignant du cycle fondamental", anneeacademique_id=anneeacademique_id)
     tabRenumerationsEnseignantsFondamental= []
     somme_totale_enseignant_fondamental = 0
     for renumeration in renumerations_enseignants_fondamental:
@@ -267,7 +818,7 @@ def get_teacher_renumeration(request, month):
         
         somme_totale_enseignant_fondamental += float(renumeration.amount) + float(renumeration.indemnite)
         
-    renumerations_enseignants_secondaire = Renumeration.objects.filter(month=month,type_renumeration="Enseignant du secondaire", anneeacademique_id=anneeacademique_id)
+    renumerations_enseignants_secondaire = Renumeration.objects.filter(month=month,type_renumeration="Enseignant du cycle secondaire", anneeacademique_id=anneeacademique_id)
     tabRenumerationsEnseignantsSecondaire= []
     somme_totale_enseignant_secondaire = 0
     for renumeration in renumerations_enseignants_secondaire:
@@ -301,7 +852,7 @@ def get_teacher_renumeration(request, month):
         "total": total,
         "setting": setting
     }       
-    return render(request, "ajax_teacher_renum.html", context)
+    return render(request, "ajax_comptabilite_remuneration.html", context)
 
 # Formatter le temps  
 def format_time(time):
@@ -314,7 +865,7 @@ def format_time(time):
     formatted_time = f"{total_matiere_hours:02}:{total_matiere_minutes:02}"   
     return formatted_time
 
-# Calculter le salaire
+# Calculer le salaire
 def calculer_montant(cout_heure, heure_totale):
     """ Si 60min -> cout_heure
            15min -> x
@@ -328,195 +879,187 @@ def calculer_montant(cout_heure, heure_totale):
     amount = float(cout_min) + float(heure)*float(cout_heure)
     return round(amount, 2)   
 
-def recap_emargement(request, enseignant_id, month):
-    anneeacademique_id = request.session.get('anneeacademique_id')
-    setting = get_setting(anneeacademique_id)
-    if setting is None:
-        return redirect("settings/maintenance")
-
-    en_id = int(dechiffrer_param(str(enseignant_id)))
-    month_cry = dechiffrer_param(str(month))
-    salles_emargements = (Emargement.objects.values("salle_id")
-                   .filter(enseignant_id=en_id, month=month_cry, anneeacademique_id=anneeacademique_id)
-                   .annotate(nb_emargements=Count("salle_id")))
-    
-    tabEmargements = []
-    total_salle_delta = timedelta(0)
-    montant_payer = 0
-    somme_cout_heure = 0
-    for se in salles_emargements:
-        dic = {}
-        salle_id = se["salle_id"]
-        salle = Salle.objects.get(id=salle_id)
-        dic["salle"] = salle
-        
-        matieres_emargements = (Emargement.objects.values("matiere_id")
-                   .filter(enseignant_id=en_id, salle_id=salle_id, month=month_cry, anneeacademique_id=anneeacademique_id)
-                   .annotate(nb_emargements=Count("matiere_id")))
-        
-        matieres = []
-        total_matiere_delta = timedelta(0)
-        for me in matieres_emargements:
-            dic_matiere = {}
-            matiere_id = me["matiere_id"]
-            matiere = Matiere.objects.get(id=matiere_id)
-            dic_matiere["matiere"] = matiere    
-            
-            # Recupérer le cout par heure de cette matière
-            enseignement = Enseigner.objects.filter(
-                enseignant_id=en_id, 
-                salle_id=salle_id, 
-                matiere_id=matiere_id, 
-                anneeacademique_id=anneeacademique_id).first()
-            dic_matiere["cout_heure"] = enseignement.cout_heure
-            
-            somme_cout_heure += enseignement.cout_heure
-            
-            emargements = Emargement.objects.filter(enseignant_id=en_id, month=month_cry, salle_id=salle_id, matiere_id=matiere_id, anneeacademique_id=anneeacademique_id)
-            # Initialisation avec une durée nulle
-            total_delta = timedelta(0)
-            list_emargements = []
-            for em in emargements:
-                dic_em = {}
-                dic_em["emargement"] = em
-                # Convertir les objets time en timedelta
-                start_delta = timedelta(hours=em.heure_debut.hour, minutes=em.heure_debut.minute)
-                end_delta = timedelta(hours=em.heure_fin.hour, minutes=em.heure_fin.minute)
-                # Calculer la somme des deux
-                total_delta +=  end_delta - start_delta
-                    
-                dic_em["hour"] = format_time(total_delta)
-                
-                list_emargements.append(dic_em)     
-            
-            dic_matiere["emargements"] = list_emargements        
-            
-            dic_matiere["total_time"] = format_time(total_delta)
-            
-            # Calculer le montant à payer pour cette matière
-            dic_matiere["montant_total_matiere"] = calculer_montant(enseignement.cout_heure, format_time(total_delta))
-            
-            total_matiere_delta += total_delta
-            
-            matieres.append(dic_matiere)
-        
-        dic["total_matiere_time"] = format_time(total_matiere_delta)
-        dic["matieres"] = matieres
-        
-        montant_total = calculer_montant(somme_cout_heure, format_time(total_matiere_delta))
-        dic["montant_total_salle"] = montant_total
-        tabEmargements.append(dic)
-        total_salle_delta += total_matiere_delta
-        
-        montant_payer += montant_total
-        
-    time_total = format_time(total_salle_delta)
-        
-    enseignant = User.objects.get(id=en_id)
-    # Verifier si l'enseignant a déjà été rénuméré ou pas
-    query = Renumeration.objects.filter(user_id=en_id, month=month_cry, anneeacademique_id=anneeacademique_id)
-    status_paye = False
-    renumeration = query.first()
-    net_payer = 0
-    if query.exists():
-        status_paye = True
-        # Calculer le net
-        net_payer = float(renumeration.amount) + float(renumeration.indemnite) 
-        
-    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
-           
-    context = {
-        "setting": setting,
-        "emargements": tabEmargements,
-        "enseignant": enseignant,
-        "month": month_cry,
-        "time_total": time_total,
-        "montant_payer": montant_payer,
-        "status_paye": status_paye,
-        "renumeration": renumeration,
-        "net_payer": net_payer,
-        "anneeacademique": anneeacademique
-    }       
-    return render(request, "recap_emargement.html", context) 
-
 # Calculer de l'enseignant le montant à payer 
-def montant_payer(anneeacademique_id, enseignant_id, month):
+def montant_payer(anneeacademique_id, enseignant_id, month, type_contrat):
     
-    salles_emargements = (Emargement.objects.values("salle_id")
-                   .filter(enseignant_id=enseignant_id, month=month, anneeacademique_id=anneeacademique_id)
-                   .annotate(nb_emargements=Count("salle_id")))
+    if type_contrat == "Secondaire":
     
-    tabEmargements = []
-    total_salle_delta = timedelta(0)
-    montant_payer = 0
-    for se in salles_emargements:
-        dic = {}
-        salle_id = se["salle_id"]
-        salle = Salle.objects.get(id=salle_id)
-        dic["salle"] = salle
+        salles_emargements = (Emargement.objects.values("salle_id")
+                    .filter(enseignant_id=enseignant_id, month=month, anneeacademique_id=anneeacademique_id)
+                    .annotate(nb_emargements=Count("salle_id")))
         
-        matieres_emargements = (Emargement.objects.values("matiere_id")
-                   .filter(enseignant_id=enseignant_id, salle_id=salle_id, month=month, anneeacademique_id=anneeacademique_id)
-                   .annotate(nb_emargements=Count("matiere_id")))
+        tabEmargements = []
+        total_salle_delta = timedelta(0)
+        montant_payer = 0
+        for se in salles_emargements:
+            dic = {}
+            salle_id = se["salle_id"]
+            salle = Salle.objects.get(id=salle_id)
+            dic["salle"] = salle
+            
+            matieres_emargements = (Emargement.objects.values("matiere_id")
+                    .filter(enseignant_id=enseignant_id, salle_id=salle_id, month=month, anneeacademique_id=anneeacademique_id)
+                    .annotate(nb_emargements=Count("matiere_id")))
+            
+            matieres = []
+            total_matiere_delta = timedelta(0)
+            for me in matieres_emargements:
+                dic_matiere = {}
+                matiere_id = me["matiere_id"]
+                matiere = Matiere.objects.get(id=matiere_id)
+                dic_matiere["matiere"] = matiere    
+                
+                # Recupérer le cout par heure de cette matière
+                enseignement = Enseigner.objects.filter(enseignant_id=enseignant_id, salle_id=salle_id, matiere_id=matiere_id, anneeacademique_id=anneeacademique_id).first()
+                dic_matiere["cout_heure"] = enseignement.cout_heure
+                
+                emargements = Emargement.objects.filter(enseignant_id=enseignant_id, month=month, salle_id=salle_id, matiere_id=matiere_id, anneeacademique_id=anneeacademique_id)
+                # Initialisation avec une durée nulle
+                total_delta = timedelta(0)
+                list_emargements = []
+                for em in emargements:
+                    dic_em = {}
+                    dic_em["emargement"] = em
+                    # Convertir les objets time en timedelta
+                    start_delta = timedelta(hours=em.heure_debut.hour, minutes=em.heure_debut.minute)
+                    end_delta = timedelta(hours=em.heure_fin.hour, minutes=em.heure_fin.minute)
+                    # Calculer la somme des deux
+                    total_delta +=  end_delta - start_delta
+                        
+                    dic_em["hour"] = format_time(total_delta)
+                    
+                    list_emargements.append(dic_em)     
+                
+                dic_matiere["emargements"] = list_emargements        
+                
+                dic_matiere["total_time"] = format_time(total_delta)
+                
+                # Calculer le montant à payer pour cette matière
+                dic_matiere["montant_total_matiere"] = calculer_montant(enseignement.cout_heure, format_time(total_delta))
+                
+                total_matiere_delta += total_delta
+                
+                matieres.append(dic_matiere)
+            
+            dic["total_matiere_time"] = format_time(total_matiere_delta)
+            dic["matieres"] = matieres
+            
+            montant_total = calculer_montant(enseignement.cout_heure, format_time(total_matiere_delta))
+            dic["montant_total_salle"] = montant_total
+            tabEmargements.append(dic)
+            total_salle_delta += total_matiere_delta
+            
+            montant_payer += montant_total
+            
+        time_total = format_time(total_salle_delta)
         
-        matieres = []
-        total_matiere_delta = timedelta(0)
-        for me in matieres_emargements:
-            dic_matiere = {}
-            matiere_id = me["matiere_id"]
-            matiere = Matiere.objects.get(id=matiere_id)
-            dic_matiere["matiere"] = matiere    
-            
-            # Recupérer le cout par heure de cette matière
-            enseignement = Enseigner.objects.filter(enseignant_id=enseignant_id, salle_id=salle_id, matiere_id=matiere_id, anneeacademique_id=anneeacademique_id).first()
-            dic_matiere["cout_heure"] = enseignement.cout_heure
-            
-            emargements = Emargement.objects.filter(enseignant_id=enseignant_id, month=month, salle_id=salle_id, matiere_id=matiere_id, anneeacademique_id=anneeacademique_id)
+        return time_total, montant_payer
+    else:
+        salles_emargements = (Emargement.objects.values("salle_id")
+                              .filter(enseignant_id=enseignant_id, month=month, anneeacademique_id=anneeacademique_id)
+                              .annotate(nb_salles=Count("salle_id"))
+        )  
+        
+        tabEmargements = []
+        total_salle_delta = timedelta(0)
+        montant_payer = 0
+        for se in salles_emargements:
+            dic = {}
+            salle_id = se["salle_id"]
+            salle = Salle.objects.get(id=salle_id)
+            dic["salle"] = salle  
+             
             # Initialisation avec une durée nulle
             total_delta = timedelta(0)
-            list_emargements = []
-            for em in emargements:
-                dic_em = {}
-                dic_em["emargement"] = em
-                # Convertir les objets time en timedelta
-                start_delta = timedelta(hours=em.heure_debut.hour, minutes=em.heure_debut.minute)
-                end_delta = timedelta(hours=em.heure_fin.hour, minutes=em.heure_fin.minute)
-                # Calculer la somme des deux
-                total_delta +=  end_delta - start_delta
-                    
-                dic_em["hour"] = format_time(total_delta)
-                
-                list_emargements.append(dic_em)     
-            
-            dic_matiere["emargements"] = list_emargements        
-            
-            dic_matiere["total_time"] = format_time(total_delta)
-            
-            # Calculer le montant à payer pour cette matière
-            dic_matiere["montant_total_matiere"] = calculer_montant(enseignement.cout_heure, format_time(total_delta))
-            
-            total_matiere_delta += total_delta
-            
-            matieres.append(dic_matiere)
-        
-        dic["total_matiere_time"] = format_time(total_matiere_delta)
-        dic["matieres"] = matieres
-        
-        montant_total = calculer_montant(enseignement.cout_heure, format_time(total_matiere_delta))
-        dic["montant_total_salle"] = montant_total
-        tabEmargements.append(dic)
-        total_salle_delta += total_matiere_delta
-        
-        montant_payer += montant_total
-        
-    time_total = format_time(total_salle_delta)
-    
-    return time_total, montant_payer
-    
+            liste_emargements = []
+            emargements = Emargement.objects.filter(enseignant_id=enseignant_id, salle_id=salle.id, month=month, anneeacademique_id=anneeacademique_id)        
+            for emarg in emargements:
+                    dic_emarg_enseignant_fondament = {}
+                    dic_emarg_enseignant_fondament["emargement"] = emarg
+                    # Convertir les objets time en timedelta 
+                    # Heure total que l'enseignant a fait 
+                    start_delta_emargement = timedelta(hours=emarg.heure_debut.hour, minutes=emarg.heure_debut.minute)
+                    end_delta_emargement = timedelta(hours=emarg.heure_fin.hour, minutes=emarg.heure_fin.minute)
+                    # Calculer la somme des deux
+                    heure_faite =  end_delta_emargement - start_delta_emargement
+                    # Extraire les heures et les minutes en normalisant (si la somme dépasse 24 heures)
+                    heure_faite_seconds = heure_faite.total_seconds()
+                    heure_faite_hours = int(heure_faite_seconds // 3600) % 24  # Récupérer les heures (modulo 24 pour ne pas dépasser une journée)
+                    heure_faite_minutes = int((heure_faite_seconds % 3600) // 60)
 
-@login_required(login_url='connection/connexion')
+                    # Afficher le résultat au format HH:MM
+                    formatted_time_heure_faite = f"{heure_faite_hours:02}:{heure_faite_minutes:02}"
+                    dic_emarg_enseignant_fondament["heure_faite"] = formatted_time_heure_faite
+                    # Heure totale que l'enseignant est censé faire par jour
+                    emploistemps = EmploiTemps.objects.filter(jour=emarg.jour, enseignant_id=emarg.enseignant.id, anneeacademique_id=anneeacademique_id).first()
+                    start_delta_emploitemps = timedelta(hours=emploistemps.heure_debut.hour, minutes=emarg.heure_debut.minute)
+                    end_delta_emploitemps = timedelta(hours=emploistemps.heure_fin.hour, minutes=emarg.heure_fin.minute)
+                    heure_faire =  end_delta_emploitemps - start_delta_emploitemps
+                    
+                    # Extraire les heures et les minutes en normalisant (si la somme dépasse 24 heures)
+                    heure_faire_seconds = heure_faire.total_seconds()
+                    heure_faire_hours = int(heure_faire_seconds // 3600) % 24  # Récupérer les heures (modulo 24 pour ne pas dépasser une journée)
+                    heure_faire_minutes = int((heure_faire_seconds % 3600) // 60)
+
+                    # Afficher le résultat au format HH:MM
+                    formatted_time_heure_faire = f"{heure_faire_hours:02}:{heure_faire_minutes:02}"
+                    dic_emarg_enseignant_fondament["heure_faire"] = formatted_time_heure_faire
+                    
+                    total_heure = heure_faire - heure_faite # Heure total du retard de l'enseignant 
+                    
+                    # Extraire les heures et les minutes en normalisant (si la somme dépasse 24 heures)
+                    total_heure_seconds = total_heure.total_seconds()
+                    total_heure_hours = int(total_heure_seconds // 3600) % 24  # Récupérer les heures (modulo 24 pour ne pas dépasser une journée)
+                    total_heure_minutes = int((total_heure_seconds % 3600) // 60)
+
+                    # Afficher le résultat au format HH:MM
+                    formatted_time_total_heure = f"{total_heure_hours:02}:{total_heure_minutes:02}"
+                    dic_emarg_enseignant_fondament["total_heure"] = formatted_time_total_heure
+                    
+                    total_delta += total_heure
+                    liste_emargements.append(dic_emarg_enseignant_fondament)
+            
+            # Extraire les heures et les minutes en normalisant (si la somme dépasse 24 heures)
+            total_seconds = total_delta.total_seconds()
+            total_hours = int(total_seconds // 3600) % 24  # Récupérer les heures (modulo 24 pour ne pas dépasser une journée)
+            total_minutes = int((total_seconds % 3600) // 60)
+
+            # Afficher le résultat au format HH:MM
+            formatted_time = f"{total_hours:02}:{total_minutes:02}"
+                        
+            dic["total_time"] = formatted_time                
+            dic["emargements"] = liste_emargements  
+                
+            contrat = Contrat.objects.filter(user_id=enseignant_id, type_contrat="Enseignant du cycle fondamental", anneeacademique_id=anneeacademique_id).first()
+            cout_jour = contrat.amount/20 
+            # Cout par heure
+            moyenne = heure_par_jour_et_moyenne(enseignant_id, salle.id, anneeacademique_id)[1]
+            cout_heure = 0
+            if moyenne > 0:
+                    cout_heure = float(cout_jour) / float(moyenne)
+            # Coût par jour
+            dic["cout_jour"] = cout_jour
+            # Cout par heure
+            dic["cout_heure"] = cout_heure
+            # Nombre d'absences par mois de l'enseignant
+            dic["nombre_absences"] = nombre_absence_enseignant(month, enseignant_id, salle.id, anneeacademique_id)
+            # Montant brute à payer
+            montant = salaire_enseignant_cycle_fondament_avec_absence(month, enseignant_id, salle.id, anneeacademique_id)
+            dic["montant_payer"] =  montant 
+            
+            tabEmargements.append(dic)
+            
+            montant_payer += montant   
+            total_salle_delta += total_delta
+            
+        time_total = format_time(total_salle_delta)
+        
+        return time_total, montant_payer    
+            
+    
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
-def add_renumeration(request, enseignant_id, month):
+def add_remun_teacher(request, enseignant_id, month, type_contrat):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
     if setting is None:
@@ -524,9 +1067,10 @@ def add_renumeration(request, enseignant_id, month):
 
     en_id = int(dechiffrer_param(str(enseignant_id)))
     month_cry = dechiffrer_param(month)
+    type_cont = dechiffrer_param(type_contrat)
     
     enseignant = User.objects.get(id=en_id)
-    total_time, mont_payer = montant_payer(anneeacademique_id, en_id, month_cry)
+    total_time, mont_payer = montant_payer(anneeacademique_id, en_id, month_cry, type_cont)
     
     mode_payments = ["Espèce", "Virement", "Mobile"]
     context = {
@@ -535,11 +1079,12 @@ def add_renumeration(request, enseignant_id, month):
         "month": month_cry,
         "montant": mont_payer,
         "total_time": total_time,
-        "mode_payments": mode_payments
+        "mode_payments": mode_payments,
+        "type_contrat": type_cont
     }
-    return render(request, "add_renumeration.html", context)
+    return render(request, "remun_enseignant/add_remun_teacher.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def add_renum(request):
     user_id = request.user.id
@@ -593,7 +1138,7 @@ def add_renum(request):
         if query.exists():
             return JsonResponse({
                     "status": "error",
-                    "message": "Cette rénumeration existe déjà."})
+                    "message": "Cette rémunération existe déjà."})
         else:
             amount_total = float(amount) + float(indemnite)
             renumeration = Renumeration(
@@ -604,7 +1149,7 @@ def add_renum(request):
                 indemnite=indemnite,
                 total_amount=amount_total,
                 mode_payment=mode_payment,
-                type_renumeration="Administrateur scolaire",
+                type_renumeration="Enseignant du cycle secondaire",
                 responsable_id=user_id 
             )
             count0 = Renumeration.objects.all().count()
@@ -620,9 +1165,9 @@ def add_renum(request):
                         "status": "error",
                         "message": "L'opérations a échouée."})
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
-def edit_renum(request,id):
+def edit_remun_teacher(request,id):
     etablissement_id = request.session.get('etablissement_id')
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -667,10 +1212,10 @@ def edit_renum(request,id):
         "months": months,
         "mode_payments": mode_payments
     }
-    return render(request, "edit_renum.html", context)
+    return render(request, "remun_enseignant/edit_remun_teacher.html", context)
    
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_re(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -762,7 +1307,7 @@ def edit_re(request):
                     "status": "success",
                     "message": "Rénumeration modifiée avec succès."})  
                 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def del_renum(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -782,16 +1327,60 @@ def del_renum(request,id):
         messages.success(request, "Elément supprimé avec succès.")
     else:
         messages.error(request, "La suppression a échouée.")
-    return redirect("renumerations")
+    return redirect("remun_enseignant/remunerations_enseignants")
 
 def ajax_delete_renum(request, id):
     renumeration = Renumeration.objects.get(id=id)
     context = {
         "renumeration": renumeration
     }
-    return render(request, "ajax_delete_renum.html", context)             
+    return render(request, "ajax_delete_renum.html", context) 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')  
+@allowed_users(allowed_roles=permission_gestionnaire)
+def resume_remu_enseignant_fondamental(request):
+    anneeacademique_id = request.session.get('anneeacademique_id')
+    setting = get_setting(anneeacademique_id)
+    if setting is None:
+        return redirect("settings/maintenance")
+    
+    # Determiner tous les mois de l'année académique 
+    months = periode_annee_scolaire(anneeacademique_id)
+        
+    emargements = []
+    for month in months:   
+
+        dic = {}
+        dic["month"] = month
+        # Récuperer les contrats des enseignants du cycle fondamental
+        contrats = Contrat.objects.filter(type_contrat="Enseignant du cycle fondamental", anneeacademique_id=anneeacademique_id)
+
+        nombre_enseignants_impayes = 0
+        enseignants = []
+        for contrat in contrats:
+            # Determiner les mois du contrat de l'utilisateur
+            months_contrat = month_contrat_user(contrat)
+            if month in months_contrat:
+                if not Renumeration.objects.filter(user_id=contrat.user.id, anneeacademique_id=anneeacademique_id, type_renumeration="Enseignant du cycle fondamental").exists():
+                    nombre_enseignants_impayes += 1
+                    enseignants.append(contrat.user)
+                
+        dic["nombre_enseignants_impayes"] = nombre_enseignants_impayes 
+        dic["enseignants"] = enseignants
+        
+        emargements.append(dic)  
+    
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()        
+    context = {
+        "setting": setting,
+        "emargements": emargements,
+        "anneeacademique": anneeacademique,
+        "contrat": contrat
+    }
+    return render(request, "remun_enseignant/resume_remu_enseignant_fondamental.html", context)            
+
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_enseignant)
 def mes_renumerations(request):
     user_id = request.user.id
@@ -918,97 +1507,86 @@ def status_contrat(contrat):
 # Statut du contrat
 def status_contrat_user(user_id, anneeacademique_id):
     contrat = Contrat.objects.filter(user_id=user_id, anneeacademique_id=anneeacademique_id).order_by("-id").first()
-    print(contrat)
     return status_contrat(contrat)
-
-# Determiner les mois du contrat de l'utilisateur
-def month_contrat_user(contrat):   
-
-    start_date = contrat.date_debut
-    end_date = contrat.date_fin 
-
-    # Génération des mois dans l'intervalle
-    months = []
-    current_date = start_date.replace(day=1)  # S'assurer de commencer au début du mois
-
-    while current_date <= end_date:
-        months.append(current_date.strftime("%m"))
-        # Passer au mois suivant
-        next_month = current_date.month % 12 + 1
-        next_year = current_date.year + (1 if current_date.month == 12 else 0)
-        current_date = current_date.replace(month=next_month, year=next_year)
-
-    month_format = []
-    for month in months:
-        if month == '01':
-            month_format.append("Janvier")
-        elif month == '02':
-            month_format.append("Février")
-        elif month == '03':
-            month_format.append("Mars")
-        elif month == '04':
-            month_format.append("Avril")
-        elif month == '05':
-            month_format.append("Mai")
-        elif month == '06':
-            month_format.append("Juin")
-        elif month == '07':
-            month_format.append("Juillet")
-        elif month == '08':
-            month_format.append("Août")
-        elif month == '09':
-            month_format.append("Septembre")
-        elif month == '10':
-            month_format.append("Octobre")
-        elif month == '11':
-            month_format.append("Novembre")
-        else:
-            month_format.append("Décembre")
-    return month_format  # Retourne la liste des mois
     
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def contrats(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
     if setting is None:
         return redirect("settings/maintenance")
+    
+    if request.session.get('group_name') in ["Promoteur", "Directeur Général"]:
+        contrats_users = (Contrat.objects.values("user_id")
+                        .filter(type_contrat="Administrateur scolaire", anneeacademique_id=anneeacademique_id)
+                        .annotate(nb_contrats=Count("user_id"))
+        )
+        tabcontrats = []
+        for cu in contrats_users:
+            user = User.objects.get(id=cu["user_id"])   
+            dic = {}
+            dic["user"] = user
+            liste_contrats = Contrat.objects.filter(user_id=user.id, anneeacademique_id=anneeacademique_id).order_by("-date_fin")
+            contrats = []
+            for contrat in liste_contrats:
+                new_dic = {}
+                new_dic["contrat"] = contrat
+                new_dic["status"] = status_contrat(contrat)
+                contrats.append(new_dic)
+                
+            dic["contrats"] = contrats
+            dic["nb_contrats"] = cu["nb_contrats"]
+            # Récuperer le dernier contrat de l'utilisateur pour determiner son statut
+            dernier_contrat = Contrat.objects.filter(user_id=user.id, anneeacademique_id=anneeacademique_id).order_by("-date_fin").first()
+            dic["status"] = status_contrat(dernier_contrat)
+            tabcontrats.append(dic)
 
-    contrats_users = (Contrat.objects.values("user_id")
-                      .filter(anneeacademique_id=anneeacademique_id)
+        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+        contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique)
+        context = {
+            "setting": setting,
+            "contrats": tabcontrats,
+            "anneeacademique": anneeacademique,
+            "contrat": contrat
+        }
+        return render(request, "contrat/contrats.html", context) 
+    else:
+        contrats_users = (Contrat.objects.values("user_id")
+                      .filter(type_contrat__in=["Enseignant du cycle fondamental", "Enseignant du cycle secondaire"], anneeacademique_id=anneeacademique_id)
                       .annotate(nb_contrats=Count("user_id"))
-    )
-    tabcontrats = []
-    for cu in contrats_users:
-        user = User.objects.get(id=cu["user_id"])   
-        dic = {}
-        dic["user"] = user
-        liste_contrats = Contrat.objects.filter(user_id=user.id, anneeacademique_id=anneeacademique_id).order_by("-date_fin")
-        contrats = []
-        for contrat in liste_contrats:
-            new_dic = {}
-            new_dic["contrat"] = contrat
-            new_dic["status"] = status_contrat(contrat)
-            contrats.append(new_dic)
-            
-        dic["contrats"] = contrats
-        dic["nb_contrats"] = cu["nb_contrats"]
-        # Récuperer le dernier contrat de l'utilisateur pour determiner son statut
-        dernier_contrat = Contrat.objects.filter(user_id=user.id, anneeacademique_id=anneeacademique_id).order_by("-date_fin").first()
-        dic["status"] = status_contrat(dernier_contrat)
-        tabcontrats.append(dic)
+        )
+        tabcontrats = []
+        for cu in contrats_users:
+            user = User.objects.get(id=cu["user_id"])   
+            dic = {}
+            dic["user"] = user
+            liste_contrats = Contrat.objects.filter(user_id=user.id, anneeacademique_id=anneeacademique_id).order_by("-date_fin")
+            contrats = []
+            for contrat in liste_contrats:
+                new_dic = {}
+                new_dic["contrat"] = contrat
+                new_dic["status"] = status_contrat(contrat)
+                contrats.append(new_dic)
+                
+            dic["contrats"] = contrats
+            dic["nb_contrats"] = cu["nb_contrats"]
+            # Récuperer le dernier contrat de l'utilisateur pour determiner son statut
+            dernier_contrat = Contrat.objects.filter(user_id=user.id, anneeacademique_id=anneeacademique_id).order_by("-date_fin").first()
+            dic["status"] = status_contrat(dernier_contrat)
+            tabcontrats.append(dic)
 
-    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
-    context = {
-        "setting": setting,
-        "contrats": tabcontrats,
-        "anneeacademique": anneeacademique
-    }
-    return render(request, "contrat/contrats.html", context)    
+        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+        context = {
+            "setting": setting,
+            "contrats": tabcontrats,
+            "anneeacademique": anneeacademique
+        }
+        return render(request, "contrat/contrats.html", context)   
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')  
+@allowed_users(allowed_roles=permission_Promoteur_DG_DE)
 @transaction.atomic
-@allowed_users(allowed_roles=permission_gestionnaire)
 def add_contrat(request):
     etablissement_id = request.session.get('etablissement_id')
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1016,6 +1594,8 @@ def add_contrat(request):
     if setting is None:
         return redirect("settings/maintenance")
     
+    # Récuperer l'année académique 
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     if request.method == "POST":
 
         user_id = request.POST["user"]
@@ -1036,8 +1616,7 @@ def add_contrat(request):
             return JsonResponse({
                 "status": "error",
                 "message": "Le montant doit être un nombre valide."})
-        # Récuperer l'année académique 
-        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+        
         # Récuperer la délibération pour verifier si ses activités ont été cloturées ou pas
         anneescolaire = AnneeCademique.objects.filter(status_cloture=False, id=anneeacademique_id)          
         query = Contrat.objects.filter(user_id=user_id, date_debut=date_debut, date_fin=date_fin, type_contrat=type_contrat, anneeacademique_id=anneeacademique_id)
@@ -1131,23 +1710,40 @@ def add_contrat(request):
                     "message": "La date du début et de fin du contrat doivent situer entre la date du début et de fin de l'année académique."})         
     # Récuperer l'établissement
     etablissement = Etablissement.objects.get(id=etablissement_id)
-    users = User.objects.all()
-    tabUsers = []
-    for user in users:
-        if etablissement.groups.filter(user=user).exists():
-            tabUsers.append(user)
-            
-    types_contrat = ['Administrateur scolaire', 'Enseignant du fondamental', 'Enseignant du secondaire'] 
-    context = {
-        "setting": setting,
-        "users":tabUsers,
-        "type_contrats": types_contrat
-    }
-    return render(request, "contrat/add_contrat.html", context)
+    if request.session.get('group_name') in ["Promoteur", "Directeur Général"]:
+        users = []
+        for role in EtablissementUser.objects.filter(etablissement=etablissement):
+            if role.user not in users and role.group.name in ["Promoteur", "Directeur Général", "Directeur des Etudes", "Gestionnaire", "Surveillant Général"]:
+                users.append(role.user)
+                
+        types_contrat = ['Administrateur scolaire'] 
+        contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
+        context = {
+            "setting": setting,
+            "users": users,
+            "types_contrat": types_contrat,
+            "contrat": contrat
+        }
+        return render(request, "contrat/add_contrat.html", context)
+    else:
+        users = []
+        for role in EtablissementUser.objects.filter(etablissement=etablissement):
+            if role.user not in users and role.group.name == "Enseignant":
+                users.append(role.user)
+                
+        types_contrat = ['Enseignant du cycle fondamental', 'Enseignant du cycle secondaire'] 
+        contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
+        context = {
+            "setting": setting,
+            "users": users,
+            "types_contrat": types_contrat,
+            "contrat": contrat
+        }
+        return render(request, "contrat/add_contrat.html", context)
 
 
-@login_required(login_url='connection/login')
-@allowed_users(allowed_roles=permission_gestionnaire)
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_Promoteur_DG_DE)
 def edit_contrat(request,id):
     etablissement_id = request.session.get('etablissement_id')
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1157,30 +1753,55 @@ def edit_contrat(request,id):
     
     contrat_id = int(dechiffrer_param(str(id)))
     contrat = Contrat.objects.get(id=contrat_id)
+    # Récuperer l'année academique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     # Récuperer l'établissement
-    etablissement = Etablissement.objects.get(id=etablissement_id)  
-    users = User.objects.exclude(id=contrat.user.id)
-    tabUsers = []
-    for user in users:
-        if etablissement.groups.filter(user=user).exists():
-            tabUsers.append(user)
-    
-    types_contrat = ['Administrateur scolaire', 'Enseignant du fondamental', 'Enseignant du secondaire']   
-    tab_types_contrat = []
-    for type_contrat in types_contrat:
-        if contrat.type_contrat != type_contrat:
-            tab_types_contrat.append(type_contrat)
-               
-    context = {
-        "setting": setting,
-        "users": tabUsers,
-        "contrat": contrat,
-        "types_contrat": tab_types_contrat
-    }
-    return render(request, "contrat/edit_contrat.html", context)
+    etablissement = Etablissement.objects.get(id=etablissement_id)
+    if request.session.get('group_name') in ["Promoteur", "Directeur Général", "Directeur des Etudes", "Gestionnaire", "Surveillant Général"]:
+        users = []
+        for role in EtablissementUser.objects.filter(etablissement=etablissement):
+            if role.user !=contrat.user and role.user not in users:
+                users.append(role.user)
+        
+        types_contrat = ['Administrateur scolaire']   
+        tab_types_contrat = []
+        for type_contrat in types_contrat:
+            if contrat.type_contrat != type_contrat:
+                tab_types_contrat.append(type_contrat)
+        
+        contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()        
+        context = {
+            "setting": setting,
+            "users": users,
+            "contrat": contrat,
+            "types_contrat": tab_types_contrat,
+            "contrat": contrat
+        }
+        return render(request, "contrat/edit_contrat.html", context)
+    else:
+        users = []
+        for role in EtablissementUser.objects.filter(etablissement=etablissement):
+            if role.user !=contrat.user and role.user not in users and role.group.name == "Enseignant":
+                users.append(role.user)
+        
+        types_contrat = ['Enseignant du cycle fondamental', 'Enseignant du cycle secondaire']   
+        tab_types_contrat = []
+        for type_contrat in types_contrat:
+            if contrat.type_contrat != type_contrat:
+                tab_types_contrat.append(type_contrat)
+       
+        contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()         
+        context = {
+            "setting": setting,
+            "users": users,
+            "contrat": contrat,
+            "types_contrat": tab_types_contrat,
+            "contrat": contrat
+        }
+        return render(request, "contrat/edit_contrat.html", context)
    
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_ct(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1281,7 +1902,7 @@ def edit_ct(request):
                     "message": "La date du début et de fin du contrat doivent situer entre la date du début et de fin de l'année académique."})         
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def del_contrat(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1290,18 +1911,24 @@ def del_contrat(request, id):
         return redirect("settings/maintenance")
     
     contrat_id = int(dechiffrer_param(str(id)))
-    
-    contrat = Contrat.objects.get(id=contrat_id)
-    # Nombre de contrats avant la suppression
-    count0 = Contrat.objects.all().count()
-    contrat.delete()
-    # Nombre de contrats après la suppression
-    count1 = Contrat.objects.all().count()
-    if count1 < count0: 
-        messages.success(request, "Elément supprimé avec succès.")
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
+    if contrat:
+        contrat = Contrat.objects.get(id=contrat_id)
+        # Nombre de contrats avant la suppression
+        count0 = Contrat.objects.all().count()
+        contrat.delete()
+        # Nombre de contrats après la suppression
+        count1 = Contrat.objects.all().count()
+        if count1 < count0: 
+            messages.success(request, "Elément supprimé avec succès.")
+        else:
+            messages.error(request, "La suppression a échouée.")
+        return redirect("contrat/contrats")
     else:
-        messages.error(request, "La suppression a échouée.")
-    return redirect("contrat/contrats")
+        messages.error(request, "Veuillez signer votre contrat avant de procéder à la suppression d’un contrat.")
+        return redirect("contrat/contrats")
 
 def ajax_type_contrat(request, type_contrat):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1311,7 +1938,7 @@ def ajax_type_contrat(request, type_contrat):
     }
     return render(request, "ajax_type_contrat.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_users)
 def contrats_user(request):
     user_id = request.user.id
@@ -1334,6 +1961,8 @@ def contrats_user(request):
     }
     return render(request, "contrat/contrats_user.html", context) 
 
+@login_required(login_url='connection/account')  
+@allowed_users(allowed_roles=permission_users)
 def signer_contrat(request, contrat_id):
     contrat = Contrat.objects.get(id=contrat_id)
     contrat.status_signature = True
@@ -1355,7 +1984,7 @@ def ajax_delete_contrat(request, id):
 
 #================== Gestion de rénumeration =================================
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def renum_admin(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1363,7 +1992,16 @@ def renum_admin(request):
     if setting is None:
         return redirect("settings/maintenance")
     
-    renumerations_users = Renumeration.objects.values("user_id").filter(anneeacademique_id=anneeacademique_id, type_renumeration="Administrateur scolaire").annotate(nb_renumerations=Count("user_id"))
+    renumerations_users = (
+        Renumeration.objects
+        .values("user_id")
+        .filter(
+            anneeacademique_id=anneeacademique_id,
+            type_renumeration="Administrateur scolaire"
+        )
+        .annotate(nb_renumerations=Count("user_id"))
+    )
+    
     tabrenumerations = []
     for ru in renumerations_users:
         user = User.objects.get(id=ru["user_id"])   
@@ -1381,7 +2019,7 @@ def renum_admin(request):
     }
     return render(request, "renum/renum_admin.html", context)    
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 @transaction.atomic
 def add_renum_admin(request):
@@ -1399,7 +2037,7 @@ def add_renum_admin(request):
         mode_payment = bleach.clean(request.POST["mode_payment"].strip())
         password = bleach.clean(request.POST["password"].strip())
         
-        type_renum = request.POST.get("user")
+        type_renum = request.POST.get("type_renumeration")
         if type_renum is None:
             type_renum = "Administrateur scolaire"
         # Récuperer la délibération pour verifier si ses activités ont été cloturées ou pas
@@ -1483,11 +2121,10 @@ def add_renum_admin(request):
     for uc in users_contrats:
         user = User.objects.get(id=uc["user_id"])
         # Recuperer les groupes de l'utilisateurs
-        groups = etablissement.groups.filter(user=user)
-        for group in groups:
-            if group.name in permission_admin:
-                users.append(user)
-                break
+        roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)
+        for role in roles:
+            if role.user not in users and role.group.name in permission_admin:
+                users.append(role.user)
     
     mode_payments = ["Espèce", "Virement", "Mobile"]
     context = {
@@ -1498,7 +2135,7 @@ def add_renum_admin(request):
     }
     return render(request, "renum/add_renum_admin.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def add_renum_ad(request, id, month, type_renumeration):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1519,8 +2156,8 @@ def add_renum_ad(request, id, month, type_renumeration):
                 amount = contrat.amount
                 break
             
-    if type_renum == "Enseignant du fondamental":
-        contrats = Contrat.objects.filter(user_id=user_id, type_contrat="Enseignant du fondamental", anneeacademique_id=anneeacademique_id).order_by("id")    
+    if type_renum == "Enseignant du cycle fondamental":
+        contrats = Contrat.objects.filter(user_id=user_id, type_contrat="Enseignant du cycle fondamental", anneeacademique_id=anneeacademique_id).order_by("id")    
         for contrat in contrats:
             months = month_contrat_user(contrat) # Récuperer tous les mois de ce contrat
             if mont in months: # Verifier si ce mois fait parti des mois de ce contrat
@@ -1540,7 +2177,7 @@ def add_renum_ad(request, id, month, type_renumeration):
     return render(request, "renum/add_renum_ad.html", context)
     
     
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_renum_admin(request,id):
     etablissement_id = request.session.get('etablissement_id')
@@ -1563,11 +2200,10 @@ def edit_renum_admin(request,id):
         user = User.objects.get(id=uc["user_id"])
         if user.id != renumeration.user.id:
             # Recuperer les groupes de l'utilisateurs
-            groups = etablissement.groups.filter(user=user)
-            for group in groups:
-                if group.name in permission_admin:
-                    users.append(user)
-                    break
+            roles = EtablissementUser.objects.filter(user=user, etablissement=etablissement)
+            for role in roles:
+                if role.user not in users and role.group.name in permission_admin:
+                    users.append(role.user)
         
     tab_months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
     mode_payments = ["Espèce", "Virement", "Mobile"]
@@ -1590,7 +2226,7 @@ def edit_renum_admin(request,id):
     return render(request, "renum/edit_renum_admin.html", context)
    
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_ra(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1684,7 +2320,7 @@ def edit_ra(request):
                     "message": "Rénumeration modifiée avec succès."})
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def del_renum_admin(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1714,7 +2350,7 @@ def ajax_delete_renum_admin(request, id):
     return render(request, "ajax_delete_renum_admin.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def mes_renum_admin(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1729,7 +2365,7 @@ def mes_renum_admin(request):
     }
     return render(request, "renum/mes_renum_admin.html", context)  
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def recapitulatif(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1747,7 +2383,6 @@ def recapitulatif(request):
 def ajax_type_contrat(request, type_contrat):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
-    print(type_contrat)
     context = {
         "type_contrat": type_contrat,
         "setting": setting
@@ -1856,7 +2491,7 @@ def ajax_recapitulatif(request, month):
     liste_salles = get_salles(month, anneeacademique_id)
     salles_secondaire = []
     for salle in liste_salles:
-        if salle.cycle in ["Collège", "Lycée"]:
+        if salle.cycle.libelle in ["Collège", "Lycée"]:
             dic = {}
             # Recuperer la salle
             dic["salle"] = salle
@@ -1886,13 +2521,13 @@ def ajax_recapitulatif(request, month):
     # Recette du collège et du lycée
     recette_college_lycee = float( total_paiement_student) - float(total_renum_enseignant)
     # Total des renumerations des enseignants du fondamental
-    total_renumeration_enseignants_fondamental = (Renumeration.objects.filter(month=month, type_renumeration="Enseignant du fondamental", anneeacademique_id=anneeacademique_id).aggregate(Sum('amount'))['amount__sum'] or 0)
+    total_renumeration_enseignants_fondamental = (Renumeration.objects.filter(month=month, type_renumeration="Enseignant du cycle fondamental", anneeacademique_id=anneeacademique_id).aggregate(Sum('amount'))['amount__sum'] or 0)
     # Recette du cycle prescolaire et primaire      
     recette_prescolaire_primaire = float(total_paiement_student_fondamental) - float(total_renumeration_enseignants_fondamental)
     # Calculer toutes les indemnités des enseignant d'un mois
-    sum_indemnite = (Renumeration.objects.filter(month=month, type_renumeration__in=["Enseignant du fondamental", "Enseignant du secondaire"], anneeacademique_id=anneeacademique_id).aggregate(Sum('indemnite'))['indemnite__sum'] or 0)
+    sum_indemnite = (Renumeration.objects.filter(month=month, type_renumeration__in=["Enseignant du cycle fondamental", "Enseignant du cycle secondaire"], anneeacademique_id=anneeacademique_id).aggregate(Sum('indemnite'))['indemnite__sum'] or 0)
     # Récuperer les renumérations avec indemnités
-    renumerations = Renumeration.objects.filter(month=month, type_renumeration__in=["Enseignant du fondamental", "Enseignant du secondaire"], anneeacademique_id=anneeacademique_id).exclude(indemnite=0)
+    renumerations = Renumeration.objects.filter(month=month, type_renumeration__in=["Enseignant du cycle fondamental", "Enseignant du cycle secondaire"], anneeacademique_id=anneeacademique_id).exclude(indemnite=0)
     
     # Calucler le montant total de renumeration des administrateurs
     total_amount = (Renumeration.objects.filter(month=month, type_renumeration="Administrateur scolaire", anneeacademique_id=anneeacademique_id).aggregate(Sum('amount'))['amount__sum'] or 0)
@@ -1980,7 +2615,7 @@ def month_actifs(anneeacademique_id):
     
     return tabMonths
  
-@login_required(login_url='connection/login')           
+@login_required(login_url='connection/account')           
 @allowed_users(allowed_roles=permission_gestionnaire)       
 def caisse(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2131,7 +2766,7 @@ def comparaison_recette_par_annee_scolaire(id):
         recettes_globales.append(dic_globle)
     return recettes_globales, months_globales
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def apercu_global(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2201,7 +2836,7 @@ def apercu_global(request):
     return render(request, "apercu_global.html", context) 
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire_enseignant)
 def bulletin_paie_enseignant(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2216,10 +2851,18 @@ def bulletin_paie_enseignant(request, id):
     image_path = setting.logo
 
     # Lire l'image en mode binaire et encoder en Base64
-    base64_string = base64.b64encode(image_path.read()).decode('utf-8')
+    base64_string = None
+    if image_path:  
+        base64_string = base64.b64encode(image_path.read()).decode('utf-8')
     # Date actuelle
     date_actuelle = date.today()
     
+    # Récuperer le mois et l'année rémunéré
+    months_years = month_year_periode_annee_scolaire_remuneration(anneeacademique_id)
+    periode = ""
+    for month_year in months_years:
+        if month_year["month"] == renumeration.month:
+            periode = f'{month_year["month"]} { month_year["year"]}'
     # Récuperer le poste
     contrat = Contrat.objects.filter(user_id=renumeration.user.id, anneeacademique_id=anneeacademique_id).order_by("-id").first()
     poste = contrat.poste
@@ -2229,7 +2872,8 @@ def bulletin_paie_enseignant(request, id):
         "base64_image": base64_string, 
         "setting": setting,
         "anneeacademique": anneeacademique,
-        "date_actuelle": date_actuelle
+        "date_actuelle": date_actuelle,
+        "periode": periode
     }
     template = get_template("bulletin_paie_enseignant.html")
     html = template.render(context)
@@ -2242,7 +2886,7 @@ def bulletin_paie_enseignant(request, id):
     reponse['Content-Disposition'] = f"attachment; filename=Bulletin_paie_{ renumeration.user.last_name }_{ renumeration.user.first_name }.pdf"
     return reponse
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire_enseignant)
 def bulletin_paie_admin(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')

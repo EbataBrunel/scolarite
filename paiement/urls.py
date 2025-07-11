@@ -25,9 +25,10 @@ urlpatterns=[
     path("del-autorisation_payment_salle/<str:id>", del_autorisation_payment_salle, name="del_autorisation_payment_salle"),
     path("ajax_delete_autorisation_salle/<int:id>", ajax_delete_autorisation_salle, name="ajax_delete_autorisation_salle"),
     
+    path("autorisation/ajax_student_inscris/<int:id>", get_student_inscris_salle.as_view(), name="ajax_student_inscris"),
+    path("autorisation/edit-payment/ajax_student_inscris/<int:id>", get_student_inscris_salle.as_view(), name="ajax_student_inscris"),
     path("ajax_student_inscris/<int:id>", get_student_inscris_salle.as_view(), name="ajax_student_inscris"),
     path("edit-payment/ajax_student_inscris/<int:id>", get_student_inscris_salle.as_view(), name="ajax_student_inscris"),
-    
     path("contrat_etablissement/contrat_etablissements", contrat_etablissements, name="contrat_etablissement/contrat_etablissements"),
     path("contrat_etablissement/add_contrat_etablissement", add_contrat_etablissement, name="contrat_etablissement/add_contrat_etablissement"),
     path("contrat_etablissement/edit_contrat_etablissement/<str:id>", edit_contrat_etablissement, name="contrat_etablissement/edit_contrat_etablissement"),
@@ -37,6 +38,8 @@ urlpatterns=[
     path("contrat_etablissement/mes_contrats_supuser", mes_contrats_superuser, name="contrat_etablissement/mes_contrats_supuser"),
     path("contrat_etablissement/mes_contrats_promoteur", mes_contrats_promoteur, name="contrat_etablissement/mes_contrats_promoteur"),
     path("contrat_etablissement/signer_contrat_promoteur/<int:contrat_id>", signer_contrat_promoteur, name="signer_contrat_promoteur"),
+    path("contrat_etablissement/ajax_dates_etablissement/<int:id>", ajax_dates_etablissement, name="ajax_dates_etablissement"),
+    path("contrat_etablissement/edit_contrat_etablissement/ajax_dates_etablissement/<int:id>", ajax_dates_etablissement, name="ajax_dates_etablissement"),
     
     path("autorisation_paye_etablissement/autorisation_paye_etablissements", autorisation_paye_etablissements, name="autorisation_paye_etablissement/autorisation_paye_etablissements"),
     path("autorisation_paye_etablissement/add_autorisation_paye_etablissement", add_autorisation_paye_etablissement, name="autorisation_paye_etablissement/add_autorisation_paye_etablissement"),
@@ -62,6 +65,7 @@ urlpatterns=[
     path("payment_etablissement/edit_payment_etablissement/ajax_amount_contrat_etablissement/<str:etablissement_id>", ajax_amount_contrat_etablissement, name="ajax_amount_contrat_etablissement"),
     path("payment_etablissement/ajax_modal_confirmation_payment/<int:id>", ajax_modal_confirmation_payment, name="ajax_modal_confirmation_payment"),
     path("payment_etablissement/confirmation_payment/<int:id>", confirmation_payment, name="confirmation_payment"),
+    path("payment_etablissement/payment_months_etablissement", payments_months_etablissement, name="payment_etablissement/payments_months_etablissement"),
     path("recu-paye-etablissement/<str:id>", recu_paye_etablissement, name="payment_etablissement/recu_paye_etablissement"),
     path("payment_etablissement/comptabilite_supuser", comptabilite_supuser, name="payment_etablissement/comptabilite_supuser"),
     

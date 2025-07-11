@@ -32,7 +32,7 @@
                 {% csrf_token %}
                 
                     <div class="col-12">
-                        <label for="salle_paye" class="form-label">Salle : </label>
+                        <label for="salle_paye" class="form-label">Salle : *</label>
                         <select name="salle" id="salle_paye" class="form-select" aria-label="Default select example">
                             <option value="">-- Selectionnez --</option>
                             {% for salle in salles %}
@@ -44,7 +44,7 @@
                     <div id="studentview"></div>
 
                     <div class="col-12">
-                      <label for="month" class="form-label">Mois : </label>
+                      <label for="month" class="form-label">Mois : *</label>
                       <select name="month" id="month" class="form-select" aria-label="Default select example">
                           <option value="">-- Selectionnez --</option>
                           {% for month in months %}
@@ -53,11 +53,11 @@
                       </select>
                     </div>
                     <div class="col-12">
-                      <label for="amount" class="form-label">Montant : </label>
+                      <label for="amount" class="form-label">Montant : *</label>
                       <input type="number" name="amount" class="form-control" id="amount" required>
                     </div>
                     <div class="col-12">
-                      <label for="mode_paiement" class="form-label">Mode de paiement : </label>
+                      <label for="mode_paiement" class="form-label">Mode de paiement : *</label>
                       <select name="mode_paiement" id="mode_paiement" class="form-select" aria-label="Default select example">
                           <option value="">-- Selectionnez --</option>
                           {% for mode_paiement in mode_paiements %}

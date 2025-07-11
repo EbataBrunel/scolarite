@@ -60,7 +60,7 @@
                                           <th>Noms</th>
                                           <th>Prénoms</th>
                                           <th>Sexe</th>
-                                          <th>Groupes</th>
+                                          <th>Rôles</th>
                                           <th>Action</th>
                                         </tr>
                                         {% for a in administrateurs %}
@@ -93,7 +93,7 @@
                           <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                               <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
-                                <h5 class="modal-title"><i class="bi bi-info-circle"></i> Liste des groupes</h5>
+                                <h5 class="modal-title"><i class="bi bi-info-circle"></i> Liste des rôles</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                                   <span aria-hidden="true" class="badge bg-dark">x</span>
                                 </button>
@@ -146,7 +146,7 @@
                                           <th>Noms</th>
                                           <th>Prénoms</th>
                                           <th>Sexe</th>
-                                          <th>Groupes</th>
+                                          <th>Rôles</th>
                                         </tr>
                                         {% for e in enseignants %}
                                         <tr>
@@ -353,6 +353,22 @@
 
             </div>
           </div><!-- End Recent Activity -->
+
+
+
+          <!-- Start message Modal -->
+              <div class="modal fade" id="alert-signature" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Signature de contrat</h5>
+                    </div>
+                    <div class="modal-body" id="content-alert-signature"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+
+
 
           <!-- Website Traffic -->
           <div class="card">
@@ -933,27 +949,6 @@
 
             </div><!-- End Ressources admin Card -->
 
-            <!-- Reports -->
-            <div class="col-12">
-              <div class="card">
-
-                <br>
-                <div class="row">
-                    <div class="col-md-4"></div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body height_min_max_card">
-                                <h5 class="card-title text-center">Montant actuel</h5>
-                                <h1 class="text-success text-center"><b>{{ montant_payer|floatformat:2 }}{{ setting.devise }}</b></h1>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4"></div>
-                </div>
-
-              </div>
-            </div><!-- End Reports -->
-
             <!-- Top Selling -->
 
           </div>
@@ -1036,56 +1031,31 @@
           <div class="card">
 
             <div class="card-body pb-0">
-              <h5 class="card-title">Inscriptions par années <span>| Aujourd'hui</span></h5>
-
-              <div id="trafficChart" style="min-height: 400px;" class="echart"></div>
-
-              <script>
-                document.addEventListener("DOMContentLoaded", () => {
-                  echarts.init(document.querySelector("#trafficChart")).setOption({
-                    tooltip: {
-                      trigger: 'item'
-                    },
-                    legend: {
-                      top: '5%',
-                      left: 'center'
-                    },
-                    series: [{
-                      name: 'Année scolaire',
-                      type: 'pie',
-                      radius: ['40%', '70%'],
-                      avoidLabelOverlap: false,
-                      label: {
-                        show: false,
-                        position: 'center'
-                      },
-                      emphasis: {
-                        label: {
-                          show: true,
-                          fontSize: '18',
-                          fontWeight: 'bold'
-                        }
-                      },
-                      labelLine: {
-                        show: false
-                      },
-                      data: [
-                        {% for inscriprion in inscriptions %}
-                          {
-                            value: {{ inscriprion.nombre_students }},
-                            name: '{{ inscriprion.anneeacademique }}'
-                          },
-                        {% endfor %}
-                      ]
-                    }]
-                  });
-                });
-              </script>
+              <div class="card">
+                <div class="card-body height_min_max_card">
+                  <h5 class="card-title text-center">Montant actuel</h5>
+                  <h1 class="text-success text-center"><b>{{ montant_payer|floatformat:2 }}{{ setting.devise }}</b></h1>
+                </div>
+              </div>
 
             </div>
           </div><!-- End Website Traffic -->
 
         </div><!-- End Right side columns -->
+
+
+        <!-- Start message Modal -->
+              <div class="modal fade" id="alert-signature" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="bi bi-info-circle"></i> Signature de contrat</h5>
+                    </div>
+                    <div class="modal-body" id="content-alert-signature"></div>
+                  </div>
+                </div>
+              </div><!-- End message Modal-->
+              
 
       </div>
     </section>

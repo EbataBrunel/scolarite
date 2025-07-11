@@ -1,7 +1,8 @@
 {% extends 'global/base.html' %}
-{% block title %} {{ setting.appname }} | Suppression d'un enseignant{% endblock %}
+{% block title %} {{ setting.appname }} | Suppression d'un enseignant {% endblock %}
 {% block content %}
 {% load static %}
+{% load crypto_filters %}
 
   <main id="main" class="main">
 
@@ -145,7 +146,7 @@
                               </div>
                               <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
-                                <a href="{% url 'del_teacher' enseignant.id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
+                                <a href="{% url 'del_teacher' enseignant.id|crypter_id %}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</a>
                               </div>
                             </div>
                           </div>

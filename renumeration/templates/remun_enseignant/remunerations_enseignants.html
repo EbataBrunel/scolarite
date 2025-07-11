@@ -1,0 +1,266 @@
+{% extends 'global/base.html' %}
+{% block title %} {{ setting.appname }} | Rémunérations des enseignants {% endblock %}
+{% block content %}
+{% load static %}
+{% load crypto_filters %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Rémunérations</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'settings/dashboard' request.session.classe_id|crypter_id %}">Tableau de bord</a></li>
+          <li class="breadcrumb-item active">Rémunérations des enseignants</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+      <div class="row">
+
+        <div class="col-xl-12">
+
+          <div class="card">
+            <div class="card-body pt-3">
+              
+              <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                  <div class="card">
+                    <div class="card-body">
+                      <h3 class="card-title">Rémunérations des enseignants </h3>
+                      <!-- Bordered Tabs -->
+                      <ul class="nav nav-tabs nav-tabs-bordered">
+                        <li class="nav-item">
+                          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Cycle fondamental</button>
+                        </li>
+                        <li class="nav-item">
+                          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Cycle secondaire</button>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+              <div class="tab-content pt-2">
+
+                <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                    <h5 class="card-title">Liste des rénumérations des enseignants du cycle fondamental</h5>
+                    {% if anneeacademique.status_cloture %}
+                      <div align="right">
+                        {% if setting.theme == "bg-default" %}
+                        <a href="{% url 'remun_enseignant/resume_remu_enseignant_fondamental' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une rémunération</a>
+                        {% else %}
+                        <a href="{% url 'remun_enseignant/resume_remu_enseignant_fondamental' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une rémunération</a>
+                        {% endif %}
+                      </div>
+                    {% endif%}
+                    <!-- Table with stripped rows -->
+                    <div class="table-responsive">
+                        <table class="table datatable">
+                            <thead>
+                                <tr>
+                                    <th>Noms</th>
+                                    <th>Prénoms</th>
+                                    <th class="white-space">Nombre rémunérations</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for re in remunerations_enseignants_fondamental %}
+                                <tr>
+                                    <td class="white-space">{{ re.user.last_name|title }}</td>
+                                    <td class="white-space">{{ re.user.first_name|title }}</td>
+                                    <td><span class="badge rounded-pill bg-secondary">{{ re.nombre_renumerations }}</span></td>
+                                    <td>
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#remunEnseignantFondamentalModal{{ re.user.id }}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="remunEnseignantFondamentalModal{{ re.user.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                                          <div class="modal-content">
+                                              <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                                  <h5 class="modal-title text-center">Rénumération de {{ re.user.last_name|title }} {{ re.user.first_name|title }}</span></h5>
+                                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                  <div class="card">
+                                                      <div class="card-body">
+                                                          <h3 class="card-title">{{ re.user.last_name|title }} {{ re.user.first_name|title }}</h3>
+                                                          <div class="table-responsive">
+                                                              <table class="table table-bordered">
+                                                              <tr>
+                                                                  <th>Mois</th>
+                                                                  <th class="white-space">Montant ({{ setting.devise }})</th>
+                                                                  <th class="white-space">Indemnité ({{ setting.devise }})</th>
+                                                                  <th class="white-space">Salaire net ({{ setting.devise }})</th>
+                                                                  <th class="white-space">Date de paye</th>
+                                                                  <th class="white-space">Mode paiement</th>
+                                                                  <th>Gestionnaire</th>
+                                                                  <th>Bulletin</th>
+                                                                  {% if anneeacademique.status_cloture %}
+                                                                  <th>Actions</th>
+                                                                  {% endif %}
+                                                              </tr>
+                                                              {% for remuneration in re.remunerations %}
+                                                              <tr>
+                                                                  <td>{{ remuneration.month }}</td>
+                                                                  <td>{{ remuneration.amount }}</td>
+                                                                  <td>{{ remuneration.indemnite }}</td>
+                                                                  <td>{{ remuneration.total_amount|floatformat }}</td>
+                                                                  <td class="white-space">{{ remuneration.date|date:"d/m/Y" }}</td>
+                                                                  <td>{{ remuneration.mode_payment }}</td>
+                                                                  <td class="white-space">{{ remuneration.responsable.last_name|title }} - {{ remuneration.responsable.first_name|title }}</td>
+                                                                  <td><a href="{% url 'bulletin_paie_enseignant' remuneration.id|crypter_id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i></a></td>
+                                                                  {% if anneeacademique.status_cloture %}
+                                                                  <td class="white-space">
+                                                                    <a class="btn btn-danger btn-sm delete-renum" id="{{ remuneration.id }}"><i class="bi bi-trash"></i></a>
+                                                                    <a href="{% url 'remun_enseignant/edit_remun_teacher' remuneration.id|crypter_id %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                                                                  </td>
+                                                                  {% endif %}
+                                                              </tr>
+                                                              {% endfor %}
+                                                              </table>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button></div>
+                                          </div>
+                                          </div>
+                                      </div><!-- Fin de delete Modal-->
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- End Table with stripped rows -->
+
+                </div>
+
+
+
+                <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+                  <h5 class="card-title">Liste des rémunérations des enseignant du cycle secondaire</h5>
+                  {% if anneeacademique.status_cloture %}
+                    <div align="right">
+                      {% if setting.theme == "bg-default" %}
+                      <a href="{% url 'remun_enseignant/resume_remu_enseignant_seondaire' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Enregistrer une rémunération</a>
+                      {% else %}
+                      <a href="{% url 'remun_enseignant/resume_remu_enseignant_seondaire' %}" class="btn btn-default btn-sm {{ setting.theme }} {{ setting.text_color }}"><i class="bi bi-plus-circle"></i> Enregistrer une rémunération</a>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                    <!-- Table with stripped rows -->
+                    <div class="table-responsive">
+                        <table class="table datatable">
+                            <thead>
+                                <tr>
+                                    <th>Noms</th>
+                                    <th>Prénoms</th>
+                                    <th class="white-space">Nombre rémunérations</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for re in remunerations_enseignants_secondaire %}
+                                <tr>
+                                    <td class="white-space">{{ re.user.last_name|title }}</td>
+                                    <td class="white-space">{{ re.user.first_name|title }}</td>
+                                    <td><span class="badge rounded-pill bg-secondary">{{ re.nombre_renumerations }}</span></td>
+                                    <td>
+                                      <a href="#"  data-bs-toggle="modal" data-bs-target="#remunEnseignantSecondaireModal{{ re.user.id }}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                      <!-- Start de delete Modal -->
+                                      <div class="modal fade" id="remunEnseignantSecondaireModal{{ re.user.id }}" tabindex="-1">
+                                          <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+                                          <div class="modal-content">
+                                              <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
+                                                  <h5 class="modal-title">Liste des rémunérations</h5>
+                                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                              </div>
+                                              <div class="modal-body">
+                                                  <div class="card">
+                                                      <div class="card-body">
+                                                          <h3 class="card-title"><b>{{ re.user.last_name|title }} {{ re.user.first_name|title }}</b></h3>
+                                                          <div class="table-responsive">
+                                                              <table class="table table-bordered">
+                                                              <tr>
+                                                                  <th>Mois</th>
+                                                                  <th class="white-space">Montant ({{ setting.devise }})</th>
+                                                                  <th class="white-space">Indemnité ({{ setting.devise }})</th>
+                                                                  <th class="white-space">Salaire net ({{ setting.devise }})</th>
+                                                                  <th class="white-space">Mode paiement</th>
+                                                                  <th class="white-space">Date de paye</th>
+                                                                  <th>Gestionnaire</th>
+                                                                  <th>Bulletin</th>
+                                                                  {% if anneeacademique.status_cloture %}
+                                                                  <th>Actions</th>
+                                                                  {% endif %}
+                                                              </tr>
+                                                              {% for remuneration in re.remunerations %}
+                                                              <tr>
+                                                                  <td>{{ remuneration.month }}</td>
+                                                                  <td>{{ remuneration.amount }}</td>
+                                                                  <td>{{ remuneration.indemnite }}</td>
+                                                                  <td>{{ remuneration.total_amount|floatformat }}</td>
+                                                                  <td>{{ remuneration.mode_payment }}</td>
+                                                                  <td class="white-space">{{ remuneration.date|date:"d/m/Y" }}</td>
+                                                                  <td class="white-space">{{ remuneration.responsable.last_name|title }} - {{ remuneration.responsable.first_name|title }}</td>
+                                                                  <td><a href="{% url 'bulletin_paie_enseignant' remuneration.id|crypter_id %}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i></a></td>
+                                                                  {% if anneeacademique.status_cloture %}
+                                                                  <td class="white-space">
+                                                                      <a class="btn btn-danger btn-sm delete-renum" id="{{ remuneration.id }}"><i class="bi bi-trash"></i></a>
+                                                                      <a href="{% url 'remun_enseignant/edit_remun_teacher' remuneration.id|crypter_id %}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                                                                  </td>
+                                                                  {% endif %}
+                                                              </tr>
+                                                              {% endfor %}
+                                                              </table>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                              <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button></div>
+                                          </div>
+                                          </div>
+                                      </div><!-- Fin de delete Modal-->
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- End Table with stripped rows -->
+
+                </div>
+
+              </div><!-- End Bordered Tabs -->
+
+              <!-- Start groupe Modal -->
+                    <div class="modal fade" id="content_delete" tabindex="-1">
+                      <div class="modal-dialog modal-dialog-centered modal-sm">
+                        <div class="modal-content">
+                          <div class="modal-header bg-danger text-light">
+                            <h5 class="modal-title">Avertissement</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true" class="badge bg-dark">x</span>
+                            </button>
+                          </div>
+                          <div class="modal-body" id="content-delete-item"></div>
+                        </div>
+                      </div>
+                    </div><!-- End group Modal-->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+{% endblock %}

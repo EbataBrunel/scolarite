@@ -11,7 +11,7 @@ from django.db import transaction
 # Importation des modules locaux
 from .models import Etablissement
 from anneeacademique.models import AnneeCademique
-from app_auth.models import Profile
+from app_auth.models import Profile, EtablissementUser
 from app_auth.decorator import allowed_users
 from school.views import get_setting_sup_user
 from scolarite.utils.crypto import dechiffrer_param
@@ -93,16 +93,10 @@ def add_etablissement(request):
             if count0 < count1:
                 # Récuperer le group promoteur
                 group = Group.objects.get(name="Promoteur")
-                # Associer l'établissement à un groupe
-                etablissement.groups.add(group)
-                etablissement.save()
                 # Récuperer l'utilisateur
                 user = User.objects.get(id=promoteur_id)
-                # Récuperer le groupe de l'établissement
-                groupe_etablissement = etablissement.groups.filter(name="Promoteur").first()
-                # Ajouter l'utilisateur à ce groupe
-                user.groups.add(groupe_etablissement)
-                user.save()
+                # Associer l'établissement à l'utilisateur
+                EtablissementUser.objects.create(etablissement=etablissement, user=user, group=group)
                 
                 if Profile.objects.filter(user=user).exists():
                     return JsonResponse({
@@ -110,9 +104,7 @@ def add_etablissement(request):
                         "message": "Etablissement ajouté avec succès."})
                 else:
                     # Enregsitrer le profil
-                    profil = Profile(
-                        user=user
-                    )
+                    profil = Profile(user=user)
                     profil.save()
                     return JsonResponse({
                         "status": "success",
@@ -126,13 +118,16 @@ def add_etablissement(request):
     promoteurs = []
     for user in users:
         if user.groups.exists():
-            groups = user.groups.all()
-            for group in groups:
-                if group.name in ["Promoteur", "Super user", "Super admin"]:
-                    if user not in promoteurs:
-                        promoteurs.append(user) 
+            groups = user.groups.filter(name__in=["Promoteur", "Super user", "Super admin"])
+            if groups.exists() and  user not in promoteurs:
+                promoteurs.append(user) 
         else:
             promoteurs.append(user)
+            
+    for role in EtablissementUser.objects.all():
+        if role.group.name == "Promoteur" and role.user not in promoteurs:
+            promoteurs.append(role.user)
+            
     context = {
         "setting": setting,
         "promoteurs": promoteurs
@@ -141,6 +136,7 @@ def add_etablissement(request):
 
 @login_required(login_url='connection/login')
 @allowed_users(allowed_roles=permission_supuser)
+@transaction.atomic
 def edit_etablissement(request,id):
     setting = get_setting_sup_user()
     
@@ -151,13 +147,17 @@ def edit_etablissement(request,id):
     promoteurs = []
     for user in users:
         if user.groups.exists():
-            groups = user.groups.all()
-            for group in groups:
-                if group.name in ["Promoteur", "Super user", "Super admin"]:
-                    if user not in promoteurs:
-                        promoteurs.append(user) 
+            groups = user.groups.filter(name__in=["Promoteur", "Super user", "Super admin"])
+            if groups.exists() and user not in promoteurs :
+                promoteurs.append(user) 
         else:
-            promoteurs.append(user)
+            if user not in promoteurs :
+                promoteurs.append(user)
+            
+    for role in EtablissementUser.objects.all():
+        if role.group.name == "Promoteur" and role.user not in promoteurs:
+            if role.user.id != etablissement.promoteur.id:
+                promoteurs.append(role.user)
              
     context = {
         "setting": setting,
@@ -221,9 +221,20 @@ def edit_et(request):
                 etablissement.ville = ville
                 etablissement.address = address
                 etablissement.save()
+                
+               # Récuperer le promoteur
+                user = User.objects.get(id=promoteur_id)
+                
+                roles = EtablissementUser.objects.filter(etablissement=etablissement)
+                for role in roles:
+                    if role.group.name == "Promoteur":
+                        role.user = user
+                        role.save()
+                        break
+                
                 return JsonResponse({
                     "status": "success",
-                    "message": "Etablissement modifiée avec succès."})
+                    "message": "Etablissement modifié avec succès."})
 
 @login_required(login_url='connection/login')
 @allowed_users(allowed_roles=permission_supuser)
@@ -268,3 +279,4 @@ def delete_etablissement(request, id):
     }
     return render(request, "delete_etablissement.html", context)
 
+    

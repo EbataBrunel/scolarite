@@ -10,6 +10,7 @@ from django.db.models import Count
 from .models import Classe
 from salle.models import Salle
 from anneeacademique.models import AnneeCademique
+from paiement.models import ContratEtablissement
 from cycle.models import Cycle
 from school.views import get_setting
 from app_auth.decorator import allowed_users
@@ -17,7 +18,7 @@ from scolarite.utils.crypto import dechiffrer_param
 
 permission_promoteur_DG = ['Promoteur', 'Directeur Général']
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def classes(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -46,7 +47,7 @@ def classes(request):
     }
     return render(request, "classes.html", context=context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def add_class(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -87,34 +88,60 @@ def add_class(request):
                         "status": "error",
                         "message": "L'insertion a échouée."})
         
-        cycles = Cycle.objects.filter(anneeacademique_id=anneeacademique_id)    
+        cycles = Cycle.objects.filter(anneeacademique_id=anneeacademique_id) 
+        # Récuperer l'année académique de l'établissement
+        anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+        # Récuperer l'année académique de l'année académique
+        anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+        contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                       
         context = {
             "setting": setting,
-            "cycles": cycles
+            "cycles": cycles,
+            "contrat": contrat
         }
         return render(request, "add_class.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_class(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
     if setting is None:
         return redirect("settings/maintenance")
+    
+    classe_id = int(dechiffrer_param(str(id)))
+        
+    classe = Classe.objects.get(id=classe_id)
+        
+    cycles = Cycle.objects.filter(anneeacademique_id=anneeacademique_id).exclude(id=classe.cycle.id)  
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                         
+    libelles = []
+    if classe.cycle == "Prescolaire":    
+        names = ["P1", "P2", "P3"]
+        libelles = [libelle for libelle in names if libelle != classe.libelle ]
+    elif classe.cycle == "Primaire":
+        names == ["CP1", "CP2", "CE1", "CE2", "CM1", "CM2"]
+        libelles = [libelle for libelle in names if libelle != classe.libelle ]
+    elif classe.cycle == "Collège":
+        names = ["6ème", "5ème", "4ème", "5ème"]
+        libelles = [libelle for libelle in names if libelle != classe.libelle ]
     else:
-        classe_id = int(dechiffrer_param(str(id)))
-        
-        classe = Classe.objects.get(id=classe_id)
-        
-        cycles = Cycle.objects.filter(anneeacademique_id=anneeacademique_id).exclude(id=classe.cycle.id)       
-        context = {
-            "classe": classe,
-            "cycles": cycles,
-            "setting": setting
-        }
-        return render(request, "edit_class.html", context)
+        names = ["Seconde", "Première", "Terminale"]
+        libelles = [libelle for libelle in names if libelle != classe.libelle ]
+    context = {
+        "classe": classe,
+        "cycles": cycles,
+        "contrat": contrat,
+        "libelles": libelles,
+        "setting": setting
+    }
+    return render(request, "edit_class.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_cl(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -155,7 +182,7 @@ def edit_cl(request):
                     "status": "success",
                     "message": "Classe enregistrée avec succès."})
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def del_class(request, id):
     try:
@@ -176,7 +203,7 @@ def del_class(request, id):
             messages.error(request, "La suppression a échouée.")
     return redirect("classes")
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def delete_classe(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -200,4 +227,22 @@ def delete_classe(request, id):
         "nombre": nombre
     }
     return render(request, "delete_classe.html", context)
+
+def ajax_name_classe(request, id):
+    # Récuperer le cycle
+    cycle = Cycle.objects.get(id=id)
+    
+    libelles = []
+    if cycle.libelle == "Prescolaire":    
+        libelles = ["P1", "P2", "P3"]
+    elif cycle.libelle == "Primaire":
+        libelles = ["CP1", "CP2", "CE1", "CE2", "CM1", "CM2"]
+    elif cycle.libelle == "Collège":
+        libelles = ["6ème", "5ème", "4ème", "5ème"]
+    else:
+        libelles = ["Seconde", "Première", "Terminale"]
+    context = {
+        "libelles": libelles 
+    }
+    return render(request, "ajax_name_classe.html", context)
 

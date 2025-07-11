@@ -25,107 +25,18 @@ from django.conf import settings
 #from django.urls import reverse
 # Importation des modules locaux
 from .models import*
-from school.utils import send_email_with_html_body
-from school.views import get_setting, get_setting_sup_user
 from inscription.models import Inscription
 from anneeacademique.models import AnneeCademique
 from app_auth.models import Parent, Student
+from school.utils import send_email_with_html_body
+from school.views import get_setting, get_setting_sup_user
+from school.methods import format_month, periode_annee_scolaire, debut_month_actuel
 from app_auth.decorator import allowed_users, unauthenticated_customer
 from scolarite.utils.crypto import chiffrer_param, dechiffrer_param
 
 permission_supuser = ["Super user", "Super admin"]
-permission_Supuser_Promoteur_DG = ['Promoteur', 'Directeur Général']
+permission_promoteur_DG = ['Promoteur', 'Directeur Général']
 permission_gestionnaire = ['Promoteur', 'Directeur Général', 'Gestionnaire']
-#=================================== Définition des mois ===================================== 
-def format_month(month):
-    if month == "01":
-        return "Janvier"
-    elif month == "02":
-        return "Février"
-    elif month == "03":
-        return "Mars"
-    elif month == "04":
-        return "Avril"
-    elif month == "05":
-        return "Mai"
-    elif month == "06":
-        return "Juin"
-    elif month == "07":
-        return "Juillet"
-    elif month == "08":
-        return "Août"
-    elif month == "Septembre":
-        return "09"
-    elif month == "10":
-        return "Octobre"
-    elif month == "11":
-        return "Novembre"
-    else:
-        return "Décembre"
-    
-def periode_annee_scolaire(anneeacademique_id):
-    try:
-        anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
-    except ObjectDoesNotExist:
-        return []  # Retourne une liste vide si l'année académique n'existe pas
-
-    start_date = anneeacademique.start_date
-    end_date = anneeacademique.end_date
-
-    # Génération des mois dans l'intervalle
-    months = []
-    current_date = start_date.replace(day=1)  # S'assurer de commencer au début du mois
-
-    while current_date <= end_date:
-        months.append(current_date.strftime("%m"))
-        # Passer au mois suivant
-        next_month = current_date.month % 12 + 1
-        next_year = current_date.year + (1 if current_date.month == 12 else 0)
-        current_date = current_date.replace(month=next_month, year=next_year)
-
-    month_format = []
-    for month in months:
-        if month == '01':
-            month_format.append("Janvier")
-        elif month == '02':
-            month_format.append("Février")
-        elif month == '03':
-            month_format.append("Mars")
-        elif month == '04':
-            month_format.append("Avril")
-        elif month == '05':
-            month_format.append("Mai")
-        elif month == '06':
-            month_format.append("Juin")
-        elif month == '07':
-            month_format.append("Juillet")
-        elif month == '08':
-            month_format.append("Août")
-        elif month == '09':
-            month_format.append("Septembre")
-        elif month == '10':
-            month_format.append("Octobre")
-        elif month == '11':
-            month_format.append("Novembre")
-        else:
-            month_format.append("Décembre")
-    return month_format  # Retourne la liste des mois
-
-def debut_month_actuel(anneeacademique_id): # Liste des mois du début de la peéiode de l'année scolaire jusqu'au mois actuel
-    # Récuperer tous les mois de l'année académique
-    months = periode_annee_scolaire(anneeacademique_id)
-    date_actuel = date.today() # date actuelle
-    month_actuel = date_actuel.strftime("%m") # Mois actuel
-    month_actuel = format_month(month_actuel)
-    # Récuperer les tous mois du début de la rentrée jusqu'au mois actuel
-    tabMonths = []
-    for month in months:
-        if month == month_actuel:
-            tabMonths.append(month)
-            break
-        else:
-            tabMonths.append(month)
-    return tabMonths
 
 # Recuperer les mois aux quels les élèves ont payé dans cette période scolaire
 def month_payment(anneeacademique_id):
@@ -218,7 +129,7 @@ def payment_next_month_etablissement(month, etablissement_id, anneeacademique_id
     return status_paiement 
 # ====================================== Gestion de paiements ======================================
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def payments(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -237,7 +148,7 @@ def payments(request):
         if salle.classe.id == classe_id:
             # Compter le nombre d'étudiants qui ont payé
             students_payments = (Payment.objects.values("student_id")
-                                 .filter(anneeacademique_id = anneeacademique_id, salle_id=salle.id)
+                                 .filter(anneeacademique_id=anneeacademique_id, salle_id=salle.id)
                                  .annotate(nb_payment=Count('student_id')))
             nb_students = 0
             for st in students_payments:
@@ -255,7 +166,7 @@ def payments(request):
     }
     return render(request, "payments.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def students_payments(request, salle_id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -286,7 +197,7 @@ def students_payments(request, salle_id):
     }
     return render(request, "students_payments.html", context)  
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def detail_payment(request, salle_id, student_id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -354,7 +265,7 @@ def detail_payment(request, salle_id, student_id):
     return render(request, "detail_payment.html", context)
     
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def add_payment(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -397,11 +308,17 @@ def add_payment(request):
         query_autorisation = AutorisationPayment.objects.filter(salle_id=salle_id, student_id=student_id, anneeacademique_id=anneeacademique_id, month=month)
         # Verifier si les étudiants ne sont pas autorisés à payer ce mois pour cette salle
         query_autorisation_salle = AutorisationPaymentSalle.objects.filter(salle_id=salle_id, anneeacademique_id=anneeacademique_id, month=month)
-        query = Payment.objects.filter(salle_id=salle_id, student_id=student_id, anneeacademique_id=anneeacademique_id, month=month)        
+        query = Payment.objects.filter(salle_id=salle_id, student_id=student_id, anneeacademique_id=anneeacademique_id, month=month) 
+        # Récuperer l'inscription de l'étudiant
+        inscription = Inscription.objects.filter(student_id=student_id, anneeacademique_id=anneeacademique_id).first()               
         if anneescolaire.exists(): # Verifier si on a déjà cloturé les opérations de cette année
                 return JsonResponse({
                     "status": "error",
                     "message": "Les opérations de cette année académique ont été déjà clôturées."})
+        if inscription.status_block == False:
+            return JsonResponse({
+                "status": "error",
+                "message": "Le compte de cet élève a été définitivement bloqué. Vous ne pouvez donc effectuer aucune opération le concernant."})     
         if query_autorisation_salle.exists():
             return JsonResponse({
                     "status": "error",
@@ -447,7 +364,7 @@ def add_payment(request):
     salles = Salle.objects.filter(classe_id=classe_id, anneeacademique_id=anneeacademique_id)
     months = periode_annee_scolaire(anneeacademique_id)
     mode_paiements = ["Espèce", "Virement", "Mobile"]
-    context={
+    context = {
         "setting": setting,
         "salles": salles,
         "months": months,
@@ -455,7 +372,7 @@ def add_payment(request):
     }
     return render(request, "add_payment.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_payment(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -470,35 +387,26 @@ def edit_payment(request,id):
     salles = Salle.objects.filter(classe_id=classe_id, anneeacademique_id=anneeacademique_id).exclude(id=payment.salle.id)
     # Recuperer tous les étudints de cette salle
     inscriptions = Inscription.objects.filter(salle_id=payment.salle.id, anneeacademique_id=anneeacademique_id)
-    students = []
-    for inscription in inscriptions:
-        if payment.student.id != inscription.student.id:
-            students.append(inscription.student)
+    students = [inscription.student for inscription in inscriptions if payment.student.id != inscription.student.id]
     
     months = periode_annee_scolaire(anneeacademique_id)
-    tabMonths = []
-    for month in months:
-        if month != months:
-            tabMonths.append(month)
+    tabMonths = [month for month in months if month != months]
 
     mode_paiements = ["Espèce", "Virement", "Mobile"]
-    tab_mode_paiements = []
-    for mode_paiement in mode_paiements:
-        if mode_paiement != payment.mode_paiement:
-            tab_mode_paiements.append(mode_paiement)
-         
+    tab_mode_paiements = [mode_paiement for mode_paiement in mode_paiements if mode_paiement != payment.mode_paiement]
+    
     context = {
         "setting": setting,
         "payment": payment,
         "salles": salles,
         "students": students,
-        "months": months,
+        "months": tabMonths,
         "mode_paiements": tab_mode_paiements
     }
     return render(request, "edit_payment.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_py(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -553,10 +461,16 @@ def edit_py(request):
             query_autorisation = AutorisationPayment.objects.filter(salle_id=salle_id, student_id=student_id, anneeacademique_id=anneeacademique_id, month=month)
             # Verifier si les étudiants ne sont pas autorisés à payer ce mois pour cette salle
             query_autorisation_salle = AutorisationPaymentSalle.objects.filter(salle_id=salle_id, anneeacademique_id=anneeacademique_id, month=month)
+            # Récuperer l'inscription de l'étudiant
+            inscription = Inscription.objects.filter(student_id=student_id, anneeacademique_id=anneeacademique_id).first()        
             if anneescolaire.exists(): # Verifier si on a déjà cloturé les opérations de cette année
                 return JsonResponse({
                     "status": "error",
                     "message": "Les opérations de cette année académique ont été déjà clôturées."})
+            if inscription.status_block == False:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Le compte de cet élève a été définitivement bloqué. Vous ne pouvez donc effectuer aucune opération le concernant."})     
             if query_autorisation_salle.exists():
                 return JsonResponse({
                         "status": "error",
@@ -581,7 +495,7 @@ def edit_py(request):
                     "status": "success",
                     "message": "Paiement modifié avec succès."})
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def del_payment(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -609,7 +523,7 @@ def del_payment(request, id):
 
 
 #============================ Gestion des autorisations de payments ==================================
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def autorisation_payments(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -642,7 +556,7 @@ def autorisation_payments(request):
     }
     return render(request, "autorisation/autorisation_payments.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def detail_autorisation_payments(request, salle_id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -675,7 +589,7 @@ def detail_autorisation_payments(request, salle_id):
     return render(request, "autorisation/detail_autorisation_payments.html", context)
     
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def add_autorisation_payment(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -693,15 +607,21 @@ def add_autorisation_payment(request):
         justification = bleach.clean(request.POST["justification"].strip())
         # Récuperer la délibération pour verifier si ses activités ont été cloturées ou pas
         anneescolaire = AnneeCademique.objects.filter(status_cloture=False, id=anneeacademique_id) 
-        query = AutorisationPayment.objects.filter(salle_id=salle_id, student_id=student_id, anneeacademique_id=anneeacademique_id, month=month)        
+        query = AutorisationPayment.objects.filter(salle_id=salle_id, student_id=student_id, anneeacademique_id=anneeacademique_id, month=month) 
+        # Récuperer l'inscription de l'étudiant
+        inscription = Inscription.objects.filter(student_id=student_id, anneeacademique_id=anneeacademique_id).first()                      
         if anneescolaire.exists(): # Verifier si on a déjà cloturé les opérations de cette année
-                return JsonResponse({
-                    "status": "error",
-                    "message": "Les opérations de cette année académique ont été déjà clôturées."})
+            return JsonResponse({
+                "status": "error",
+                "message": "Les opérations de cette année académique ont été déjà clôturées."})
+        if inscription.status_block == False:
+            return JsonResponse({
+                "status": "error",
+                "message": "Le compte de cet élève a été définitivement bloqué. Vous ne pouvez donc effectuer aucune opération le concernant."})     
         if query.exists():
             return JsonResponse({
-                    "status": "error",
-                    "message": "Cette autorisation de paiement existe déjà."})
+                "status": "error",
+                "message": "Cette autorisation de paiement existe déjà."})
         else:
             autorisation = AutorisationPayment(
                 salle_id=salle_id, 
@@ -728,14 +648,14 @@ def add_autorisation_payment(request):
 
     salles = Salle.objects.filter(classe_id=classe_id, anneeacademique_id=anneeacademique_id)
     months = periode_annee_scolaire(anneeacademique_id)
-    context={
+    context = {
         "setting": setting,
         "salles": salles,
         "months": months
     }
     return render(request, "autorisation/add_autorisation_payment.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_autorisation_payment(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -750,28 +670,23 @@ def edit_autorisation_payment(request,id):
     salles = Salle.objects.filter(classe_id=classe_id, anneeacademique_id=anneeacademique_id).exclude(id=autorisation.salle.id)
     # Recuperer tous les étudints de cette salle
     inscriptions = Inscription.objects.filter(salle_id=autorisation.salle.id, anneeacademique_id=anneeacademique_id)
-    students = []
-    for inscription in inscriptions:
-        if autorisation.student.id != inscription.student.id:
-            students.append(inscription.student)
+    students = [inscription.student for inscription in inscriptions if autorisation.student.id != inscription.student.id]
+    
     
     months = periode_annee_scolaire(anneeacademique_id)
-    tabMonths = []
-    for month in months:
-        if month != months:
-            tabMonths.append(month)
+    tabMonths = [month for month in months if month != months]
 
     context={
         "setting": setting,
         "autorisation": autorisation,
         "salles": salles,
         "students": students,
-        "months": months
+        "months": tabMonths
     }
     return render(request, "autorisation/edit_autorisation_payment.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_ap(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -794,7 +709,9 @@ def edit_ap(request):
             justification = bleach.clean(request.POST["justification"].strip())
              
             # Récuperer la délibération pour verifier si ses activités ont été cloturées ou pas
-            anneescolaire = AnneeCademique.objects.filter(status_cloture=False, id=anneeacademique_id)    
+            anneescolaire = AnneeCademique.objects.filter(status_cloture=False, id=anneeacademique_id)   
+            # Récuperer l'inscription de l'étudiant
+            inscription = Inscription.objects.filter(student_id=student_id, anneeacademique_id=anneeacademique_id).first()                
             # Verifier l'existence du paiement
             autorisations = AutorisationPayment.objects.filter(anneeacademique_id=anneeacademique_id, student_id=student_id).exclude(id=id)
             tabAutorisations = []
@@ -814,6 +731,10 @@ def edit_ap(request):
                 return JsonResponse({
                     "status": "error",
                     "message": "Les opérations de cette année académique ont été déjà clôturées."})
+            if inscription.status_block == False:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Le compte de cet élève a été définitivement bloqué. Vous ne pouvez donc effectuer aucune opération le concernant."})     
             if new_dic in tabAutorisations:
                 return JsonResponse({
                     "status": "error",
@@ -829,7 +750,7 @@ def edit_ap(request):
                     "status": "success",
                     "message": "Autorisation de paiement modifiée avec succès."})
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def del_autorisation_payment(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -864,7 +785,7 @@ def ajax_delete_autorisation_student(request, id):
     return render(request, "ajax_delete_autorisation_student.html", context)
 
 # ====================================== Gestion d'autorisation de paiements d'une salle  
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def autorisation_payments_salle(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -900,7 +821,7 @@ def autorisation_payments_salle(request):
     return render(request, "autorisation_paye_salle/autorisation_payments_salle.html", context)
     
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def add_autorisation_payment_salle(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -958,7 +879,7 @@ def add_autorisation_payment_salle(request):
     }
     return render(request, "autorisation_paye_salle/add_autorisation_payment_salle.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_autorisation_payment_salle(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -973,21 +894,17 @@ def edit_autorisation_payment_salle(request, id):
     salles = Salle.objects.filter(classe_id=classe_id, anneeacademique_id=anneeacademique_id).exclude(id=autorisation.salle.id)
     
     months = periode_annee_scolaire(anneeacademique_id)
-    tabMonths = []
-    for month in months:
-        if month != months:
-            tabMonths.append(month)
-
+    tabMonths = [month for month in months if month != months]
     context = {
         "setting": setting,
         "autorisation": autorisation,
         "salles": salles,
-        "months": months
+        "months": tabMonths
     }
     return render(request, "autorisation_paye_salle/edit_autorisation_payment_salle.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def edit_aps(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1041,7 +958,7 @@ def edit_aps(request):
                     "status": "success",
                     "message": "Autorisation de paiement de la salle modifiée avec succès."})
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_gestionnaire)
 def del_autorisation_payment_salle(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -1111,6 +1028,8 @@ def add_contrat_etablissement(request):
         etablissement_id = request.POST["etablissement"]
         description = bleach.clean(request.POST["description"].strip())
         amount = bleach.clean(request.POST["amount"].strip())
+        start_date = bleach.clean(request.POST["start_date"].strip())
+        end_date = bleach.clean(request.POST["end_date"].strip())
         
         # Nettoyer la valeur (supprimer les espaces et remplacer la virgule par un point)
         amount = re.sub(r'\xa0', '', amount)  # Supprime les espaces insécables
@@ -1134,7 +1053,9 @@ def add_contrat_etablissement(request):
                     description=description,
                     amount=amount,
                     anneeacademique_id=anneeacademique_id,
-                    etablissement_id=etablissement_id
+                    etablissement_id=etablissement_id,
+                    start_date=start_date,
+                    end_date=end_date
             )
             # Nombre de contrats avant l'ajout
             count0 = ContratEtablissement.objects.all().count()
@@ -1151,11 +1072,12 @@ def add_contrat_etablissement(request):
                             "status": "error",
                             "message": "Insertion a échouée."})
                 
-
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     etablissements = Etablissement.objects.all()
     tabEtablissement = []
     for e in etablissements:
-        if AnneeCademique.objects.filter(etablissement_id=e.id).exists():
+        if AnneeCademique.objects.filter(annee_debut=anneeacademique.annee_debut, annee_fin=anneeacademique.annee_fin, etablissement_id=e.id).exists():
             tabEtablissement.append(e)
 
     context = {
@@ -1204,6 +1126,8 @@ def edit_ce(request):
             etablissement_id = request.POST["etablissement"]
             description = bleach.clean(request.POST["description"].strip())
             amount = bleach.clean(request.POST["amount"].strip())
+            start_date = bleach.clean(request.POST["start_date"].strip())
+            end_date = bleach.clean(request.POST["end_date"].strip())
             
             # Nettoyer la valeur (supprimer les espaces et remplacer la virgule par un point)
             amount = re.sub(r'\xa0', '', amount)  # Supprime les espaces insécables
@@ -1237,6 +1161,8 @@ def edit_ce(request):
                 contrat.description = description
                 contrat.amount = amount
                 contrat.etablissement_id=etablissement_id
+                contrat.start_date=start_date
+                contrat.end_date=end_date
                 contrat.save()
                 
                 return JsonResponse({
@@ -1287,15 +1213,13 @@ def mes_contrats_superuser(request):
     return render(request, "contrat_etablissement/mes_contrats_supuser.html", context)
     
 
-@login_required(login_url='connection/login')
-@allowed_users(allowed_roles=permission_Supuser_Promoteur_DG)
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=["Promoteur", "Directeur Général"])
 def mes_contrats_promoteur(request):
-    
+    setting_supuser = get_setting_sup_user()
     user_id = request.user.id
-    
     anneeacademique_id = request.session.get('anneeacademique_id')
     anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
-        
     setting = get_setting(anneeacademique_id)
     contrats = ContratEtablissement.objects.all().order_by("-id")
     tabcontrats = []
@@ -1305,20 +1229,35 @@ def mes_contrats_promoteur(request):
 
     context = {
             "setting": setting,
+            "setting_supuser": setting_supuser,
             "contrats": tabcontrats
     }
     return render(request, "contrat_etablissement/mes_contrats_promoteur.html", context)
 
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def signer_contrat_promoteur(request, contrat_id):
-    contrat = ContratEtablissement.objects.get(id=contrat_id)
-    contrat.status_signature = True
-    contrat.date_signature = date.today()
-    contrat.save()
+    try:
+        contrat = ContratEtablissement.objects.get(id=contrat_id)
+        contrat.status_signature = True
+        contrat.date_signature = date.today()
+        contrat.save()
+    except:
+        contrat = None
     
     context = {
         "contrat": contrat
     }
     return render(request, "signer_mon_contrat.html", context)
+
+def ajax_dates_etablissement(request, id):
+    anneeacademique_id = request.session.get('annee_id')
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    anneeacademique_etablissement = AnneeCademique.objects.filter(annee_debut=anneeacademique.annee_debut, annee_fin=anneeacademique.annee_fin, etablissement_id=id).first()
+    context = {
+        "anneeacademique": anneeacademique_etablissement
+    }
+    return render(request, "ajax_dates_etablissement.html", context)
     
 #============================ Gestion des autorisations de payments des établissements ==================================
 @login_required(login_url='connection/login')
@@ -1416,16 +1355,13 @@ def edit_autorisation_paye_etablissement(request,id):
             tabEtablissement.append(e)
     
     months = periode_annee_scolaire(anneeacademique_id)
-    tabMonths = []
-    for month in months:
-        if month != months:
-            tabMonths.append(month)
-
+    tabMonths = [month for month in months if month != months]
+    
     context = {
         "setting": setting,
         "autorisation": autorisation,
         "etablissements": etablissements,
-        "months": months
+        "months": tabMonths
     }
     return render(request, "autorisation_paye_etablissement/edit_autorisation_paye_etablissement.html", context)
 
@@ -1523,6 +1459,7 @@ def payment_etablissements(request):
         etablissement = Etablissement.objects.get(id=eg["etablissement_id"])
         dic["etablissement"] = etablissement
         dic["nombre_payments"] = eg["nombre_payments"]
+        dic["nombre_nouvaux_payments"] = etablissement.payment_etablissements.filter(anneeacademique_id=anneeacademique_id, status=False).count()
         dic["payments"] = etablissement.payment_etablissements.filter(anneeacademique_id=anneeacademique_id)
         etablissements.append(dic)
         
@@ -1567,8 +1504,8 @@ def generate_momo_api_key(unique_ref, subscription_key):
         print("Erreur lors de la génération de la clé API:", response.json())
         return None
 
-@login_required(login_url='connection/login')
-@allowed_users(allowed_roles=["Promoteur", "Directeur Général"])
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def mes_payment_etablissement(request):
     
     etablissement_id = request.session.get('etablissement_id')
@@ -1628,8 +1565,8 @@ def mes_payment_etablissement(request):
     }
     return render(request, "payment_etablissement/mes_payment_etablissement.html", context)
 
-@login_required(login_url='connection/login')
-@allowed_users(allowed_roles=["Promoteur", "Directeur Général"])
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def validate_payment_etablissement(request, month):
     
     etablissement_id = request.session.get('etablissement_id')
@@ -1711,7 +1648,8 @@ def validate_payment_etablissement(request, month):
     }
     return render(request, "payment_etablissement/validate_payment_etablissement.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 @transaction.atomic
 def payment_successful(request, transaction_id, month):
     etablissement_id = request.session.get('etablissement_id')
@@ -1744,7 +1682,8 @@ def payment_successful(request, transaction_id, month):
     return redirect("payment_etablissement/payment_etablissement_success", month)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 @transaction.atomic
 def payment_etablissement_success(request, month):
     etablissement_id = request.session.get('etablissement_id')
@@ -1791,7 +1730,8 @@ def payment_etablissement_success(request, month):
     }
     return render(request, "payment_etablissement/payment_etablissement_success.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def payment_etablissement_echec(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -1930,22 +1870,16 @@ def edit_payment_etablissement(request,id):
             tabEtablissement.append(e)
     
     months = periode_annee_scolaire(anneeacademique_id)
-    tabMonths = []
-    for month in months:
-        if month != months:
-            tabMonths.append(month)
+    tabMonths = [month for month in months if month != months]
 
     mode_paiements = ["Espèce", "Virement", "Mobile"]
-    tab_mode_paiements = []
-    for mode_paiement in mode_paiements:
-        if mode_paiement != payment.mode_payment:
-            tab_mode_paiements.append(mode_paiement)
-         
+    tab_mode_paiements = [mode_paiement for mode_paiement in mode_paiements if mode_paiement != payment.mode_payment]
+    
     context = {
         "setting": setting,
         "payment": payment,
         "etablissements": tabEtablissement,
-        "months": months,
+        "months": tabMonths,
         "mode_paiements": tab_mode_paiements
     }
     return render(request, "payment_etablissement/edit_payment_etablissement.html", context)
@@ -2207,12 +2141,14 @@ def nombre_montant_total(anneeacademique_id, etablissement_id, month):
 
     #Récuperer le contrat de l'établissement
     contrat = ContratEtablissement.objects.filter(etablissement_id=etablissement_id, anneeacademique_id=anneeacademique_id).first()
-    # Montant que chaque étudiant paye par mois
-    montant_student = float(contrat.amount)
-    # Calculer le montant
-    montant = nombre_students * montant_student    
+    montant_student = 0
+    montant = 0
+    if contrat:
+        # Montant que chaque étudiant paye par mois
+        montant_student = float(contrat.amount)
+        # Calculer le montant
+        montant = nombre_students * montant_student    
     return nombre_students, montant_student, montant
-
 
 def ajax_amount_contrat_etablissement(request, etablissement_id, month):
     setting = get_setting_sup_user()
@@ -2251,14 +2187,71 @@ def ajax_modal_confirmation_payment(request, id):
     }
     return render(request, "ajax_modal_confirmation_payment.html", context)
 
+@login_required(login_url='connection/login') 
+@allowed_users(allowed_roles=permission_supuser)
 def confirmation_payment(request, id):
     payment = PaymentEtablissement.objects.get(id=id)
     payment.status = True
     payment.save()
+    
+    # Nombre de nouveaux paiements
+    number_new_payments = PaymentEtablissement.objects.filter(etablissement=payment.etablissement, status=False, anneeacademique=payment.anneeacademique).count()
     return JsonResponse({
-        "status": payment.status
+        "status": payment.status,
+        "number_new_payments": number_new_payments,
+        "etablissement_id": payment.etablissement.id
     })
 
+@login_required(login_url='connection/login')
+@allowed_users(allowed_roles=permission_supuser)    
+def payments_months_etablissement(request):
+    anneeacademique_id = request.session.get('annee_id')
+    # Récuperer l'année académique du groupe
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    setting = get_setting_sup_user()
+    months = debut_month_actuel(anneeacademique_id)
+    payments = []
+    for month in months:
+        dic = {}
+        dic["month"] = month
+        etablissements = Etablissement.objects.all()
+        nombre_etablissements = 0
+        tabEtablissements = []
+        montant_total = 0
+        montant_encaisse = 0
+        for etablissement in etablissements:
+            new_dic = {}
+            if AnneeCademique.objects.filter(annee_debut=anneeacademique.annee_debut, annee_fin=anneeacademique.annee_fin, etablissement=etablissement).exists():
+                if AutorisationPaymentEtablissement.objects.filter(etablissement=etablissement, anneeacademique=anneeacademique, month=month).exists(): continue
+                else:
+                   nombre_etablissements += 1
+                   new_dic["etablissement"] = etablissement
+                   nombre_students, montant_student, montant = nombre_montant_total(anneeacademique_id, etablissement.id, month)
+                   new_dic["nombre_students"] = nombre_students
+                   new_dic["montant_student"] = montant_student
+                   new_dic["montant"] = montant
+                   if PaymentEtablissement.objects.filter(etablissement=etablissement, anneeacademique=anneeacademique, month=month).exists():
+                       montant_encaisse += montant
+                       new_dic["status"] = "Payé"
+                   else:
+                       new_dic["status"] = "Impayé"
+                   montant_total += montant
+            tabEtablissements.append(new_dic)
+        dic["montant_total"] = montant_total
+        dic["montant_encaisse"] = montant_encaisse
+        dic["montant_restant"] = float(montant_total) - float(montant_encaisse)
+        dic["etablissements"] = tabEtablissements
+        dic["nombre_etablissements"] = nombre_etablissements
+        payments.append(dic)
+       
+    context = {
+      "setting": setting,  
+      "payments": payments
+    }
+    return render(request, "payment_etablissement/payments_months_etablissement.html", context)
+
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission_promoteur_DG)
 def recu_paye_etablissement(request, id):
     setting = get_setting_sup_user()
     payment_id = int(dechiffrer_param(str(id)))
@@ -2355,8 +2348,7 @@ def nombre_student_inscris_paye_month(salle_id, month, anneeacademique_id):
     nb_inscriptions = 0
     for inscription in inscriptions:
         query = AutorisationPayment.objects.filter(salle_id=salle_id, student_id=inscription.student.id, month=month, anneeacademique_id=anneeacademique_id)
-        if query.exists(): continue
-        else: 
+        if not query.exists():
             nb_inscriptions += 1
     return nb_inscriptions
 
@@ -2366,14 +2358,12 @@ def summ_total_a_payer_month_all_sall(anneeacademique_id, month):
     salles = Salle.objects.filter(anneeacademique_id=anneeacademique_id)
     total = 0
     for salle in salles:
-        if AutorisationPaymentSalle.objects.filter(anneeacademique_id=anneeacademique_id, salle_id=salle.id, month=month).exists():
-            continue
-        else:
+        if not AutorisationPaymentSalle.objects.filter(anneeacademique_id=anneeacademique_id, salle_id=salle.id, month=month).exists():
             total = total + salle.price * nombre_student_inscris_paye_month(salle.id, month, anneeacademique_id)
     
     return total      
             
-@login_required(login_url='connection/login') 
+@login_required(login_url='connection/account') 
 @allowed_users(allowed_roles=permission_gestionnaire)   
 def comptabilite_payment(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2680,6 +2670,8 @@ def dossier_financier_parent(request):
     }
     return render(request, "dossier_financier_parent.html", context)
 
+@login_required(login_url='connection/account') 
+@allowed_users(allowed_roles=permission_gestionnaire)
 def recu_paye(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -2738,7 +2730,9 @@ def echeancier(request, student_id):
     image_path = setting.logo
 
     # Lire l'image en mode binaire et encoder en Base64
-    base64_string = base64.b64encode(image_path.read()).decode('utf-8')
+    base64_string = None
+    if image_path:
+        base64_string = base64.b64encode(image_path.read()).decode('utf-8')
     # Date actuelle
     date_actuelle = date.today()
     
@@ -2769,12 +2763,12 @@ def echeancier(request, student_id):
     reponse['Content-Disposition'] = f"attachment; filename=Echeancier_{ inscription.student.lastname }_{ inscription.student.firstname }.pdf"
     return reponse
 
+@unauthenticated_customer
 def status_paye_parent(request, student_id):
-    st_id = int(dechiffrer_param(str(student_id)))
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
     # Recuperer la salle
-    inscription = Inscription.objects.filter(student_id=st_id, anneeacademique_id=anneeacademique_id).first()
+    inscription = Inscription.objects.filter(student_id=student_id, anneeacademique_id=anneeacademique_id).first()
     # Récuperer tous les mois de l'année académique
     months = periode_annee_scolaire(anneeacademique_id)
     date_actuel = date.today() # date actuelle
@@ -2796,13 +2790,13 @@ def status_paye_parent(request, student_id):
         dic = {}
         dic["month"] = month
         # Verifier s'il est autoriser à payer ce mois ou pas
-        autorisation = AutorisationPayment.objects.filter(salle_id=inscription.salle.id, student_id=st_id, month=month, anneeacademique_id=anneeacademique_id)
+        autorisation = AutorisationPayment.objects.filter(salle_id=inscription.salle.id, student_id=student_id, month=month, anneeacademique_id=anneeacademique_id)
         # Verifier si les élèves de cette salles sont autorisés à payer ce mois
         query_autorisation_salle = AutorisationPayment.objects.filter(salle_id=inscription.salle.id, month=month, anneeacademique_id=anneeacademique_id)
         if autorisation.exists() or query_autorisation_salle.exists():
             dic["status"] = "Ne paye pas"
         else:
-            payment = Payment.objects.filter(salle_id=inscription.salle.id, student_id=st_id, month=month, anneeacademique_id=anneeacademique_id)
+            payment = Payment.objects.filter(salle_id=inscription.salle.id, student_id=student_id, month=month, anneeacademique_id=anneeacademique_id)
             if payment.exists():
                 paye = payment.first()
                 if paye.amount < inscription.salle.price:
@@ -2823,7 +2817,7 @@ def status_paye_parent(request, student_id):
     }
     return render(request, "status_paye_parent.html", context)
 
-@login_required(login_url='connection/login') 
+@login_required(login_url='connection/account') 
 @allowed_users(allowed_roles=permission_gestionnaire)
 def dette_parents(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -2912,7 +2906,7 @@ def dette_parents(request):
     }
     return render(request, "dette_parents.html", context)
 
-@login_required(login_url='connection/login') 
+@login_required(login_url='connection/account') 
 @allowed_users(allowed_roles=permission_gestionnaire)
 def add_notification(request, parent_id, montant):
     

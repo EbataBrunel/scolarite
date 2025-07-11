@@ -1,0 +1,9 @@
+<div class="col-12">
+    <label for="libelle" class="form-label">Libellé : </label>
+    <select name="libelle" id="libelle" class="form-select" aria-label="Default select example" required>
+        <option value="">-- Selectionnez --</option>
+        {% for libelle in libelles %}
+        <option value="{{ libelle }}">{{ libelle }}</option>
+        {% endfor %}
+    </select>
+</div>

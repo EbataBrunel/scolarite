@@ -13,7 +13,7 @@ from .models import *
 from classe.models import Classe
 from programme.models import Programme
 from enseignement.models import Enseigner
-from paiement.models import Payment, AutorisationPayment, AutorisationPaymentSalle
+from paiement.models import Payment, AutorisationPayment, AutorisationPaymentSalle, ContratEtablissement
 from inscription.models import Inscription
 from emploi_temps.models import EmploiTemps
 from composition.models import Composer, Deliberation
@@ -28,7 +28,7 @@ from scolarite.utils.crypto import dechiffrer_param
 permission_promoteur_DG = ['Promoteur', 'Directeur Général']
 permission_admin = ['Promoteur', 'Directeur Général', 'Directeur des Etudes', 'Gestionnaire']
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def salles(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -65,7 +65,7 @@ def salles(request):
     }
     return render(request, "salles.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_admin)
 def salles_admin(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -85,7 +85,7 @@ def salles_admin(request):
     }
     return render(request, "salles_admin.html", context)
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def detail_salle(request, classe_id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -107,7 +107,7 @@ def detail_salle(request, classe_id):
     return render(request, "detail_salle.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def add_salle(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -220,15 +220,21 @@ def add_salle(request):
     
     cycles = Cycle.objects.filter(anneeacademique_id=anneeacademique_id)
     numbers = ["", "1","2","3","4","5","6","7","8","10","11","12","13","14","15","16","17","19","20","21","22","23","24","25","26","27","28","29","30"]
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                    
     context = {
         "setting": setting,
         "cycles": cycles,
-        "numbers": numbers
+        "numbers": numbers,
+        "contrat": contrat
     }
     return render(request, "add_salle.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_salle(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -241,11 +247,13 @@ def edit_salle(request, id):
     cycles = Cycle.objects.filter(anneeacademique_id=anneeacademique_id).exclude(id=salle.classe.cycle.id)   
     classes = Classe.objects.filter(cycle_id=salle.classe.cycle.id, anneeacademique_id=anneeacademique_id).exclude(id=salle.classe.id)
     numbers = ["","1","2","3","4","5","6","7","8","10","11","12","13","14","15","16","17","19","20","21","22","23","24","25","26","27","28","29","30"]
-    tabNumeber = []
-    for number in numbers:
-        if number != salle.number:
-            tabNumeber.append(number)
-            
+    tabNumeber = [number for number in numbers if number != salle.number]
+    
+    # Récuperer l'année académique de l'établissement
+    anneeacademique_etablissement = AnneeCademique.objects.get(id=anneeacademique_id)
+    # Récuperer l'année académique de l'année académique
+    anneeacademique_group = AnneeCademique.objects.filter(annee_debut=anneeacademique_etablissement.annee_debut, annee_fin=anneeacademique_etablissement.annee_fin, etablissement=None).first()
+    contrat = ContratEtablissement.objects.filter(anneeacademique=anneeacademique_group, etablissement=anneeacademique_etablissement.etablissement).first()                           
     if salle.cycle.libelle == "Lycée":
         series = Serie.objects.filter(anneeacademique_id=anneeacademique_id).exclude(id=salle.serie.id)
         context = {
@@ -254,7 +262,8 @@ def edit_salle(request, id):
             "salle": salle,
             "series": series,
             "classes": classes,
-            "numbers": tabNumeber
+            "numbers": tabNumeber,
+            "contrat": contrat
         }
     else:
         context = {
@@ -262,12 +271,13 @@ def edit_salle(request, id):
             "cycles": cycles,
             "salle": salle,
             "classes": classes,
-            "numbers": tabNumeber
+            "numbers": tabNumeber,
+            "contrat": contrat
         }
     return render(request, "edit_salle.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def edit_sl(request):
     anneeacademique_id = request.session.get('anneeacademique_id') 
@@ -385,7 +395,7 @@ def edit_sl(request):
                         "status": "success",
                         "message": "Salle modifiée avec succès."})
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def del_salle(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
@@ -412,7 +422,7 @@ def del_salle(request,id):
     return redirect("salles")
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
 @allowed_users(allowed_roles=permission_promoteur_DG)
 def delete_salle(request, id):
     anneeacademique_id = request.session.get('anneeacademique_id')

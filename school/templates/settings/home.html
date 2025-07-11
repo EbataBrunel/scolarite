@@ -29,7 +29,7 @@
                         <a href="{% url 'emploitemps_student' %}">
                           <div class="info-box card text-center bg-secondary height_min_max_home">
                             <i class="bi bi-building text-light"></i>
-                            <h3>Mon emploi de temps</h3>
+                            <h3>Mon emploi du temps</h3>
                           </div>
                         </a>
                       </div>
@@ -137,7 +137,11 @@
                         <a href="{% url 'cours_ligne' %}">
                           <div class="info-box card text-center bg-dark height_min_max_home text-light">
                             <i class="bi bi-file-earmark-text-fill text-light"></i>
+                            {% if nombre_cours > 0 %}
+                            <h3><th><span class="badge rounded-pill bg-success">{{ nombre_cours }}</span> Cours en ligne</h3>
+                            {% else %}
                             <h3>Cours en ligne</h3>
+                            {% endif %}
                           </div>
                         </a>
                       </div>
@@ -216,12 +220,28 @@
                                           <th>Noms</th>
                                           <th>Prénoms</th>
                                           <th>Salle</th>
+                                          <th>Accès</th>
+                                          <th>Compte</th>
                                         </tr>
                                         {% for inscription in inscriptions_parents %}
                                         <tr>
                                           <td>{{ inscription.student.lastname|title }}</td>
                                           <td>{{ inscription.student.firstname|title }}</td>
                                           <td>{{ inscription.salle }}</td>
+                                          <td>
+                                            {% if inscription.status_access %}
+                                            <span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i> Activé</span>
+                                            {% else %}
+                                            <span class="badge rounded-pill bg-danger"><i class="bi bi-x-circle"></i> Désactivé</span>
+                                            {% endif %}
+                                          </td>
+                                          <td>
+                                            {% if inscription.status_block %}
+                                            <span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i> Activé</span>
+                                            {% else %}
+                                            <span class="badge rounded-pill bg-danger"><i class="bi bi-x-circle"></i> Bloqué</span>
+                                            {% endif %}
+                                          </td>
                                         </tr>
                                         {% endfor %}
                                       </table>
@@ -240,7 +260,7 @@
                         <a href="{% url 'emploitemps_parent' %}">
                           <div class="info-box card text-center bg-secondary height_min_max_home">
                             <i class="bi bi-building text-light"></i>
-                            <h3>Mon emploi de temps</h3>
+                            <h3>Emplois du temps</h3>
                           </div>
                         </a>
                       </div>

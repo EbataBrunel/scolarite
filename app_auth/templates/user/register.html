@@ -85,7 +85,7 @@
                     {% if setting.logo %}
                     <img src="{{ setting.logo.url }}" width="{{ setting.width_logo }}" height="{{ setting.height_logo }}" style="border-radius:100px" alt="Logo">
                     {% else %}
-                    <span class="d-none d-lg-block">{{ setting.appname }}</span>
+                    <span class="d-none d-lg-block text-warning"><b>{{ setting.appname }}</b></span>
                     {% endif %}
                   {% endif %}
                 </a>
@@ -108,10 +108,19 @@
                   <form method="post" action="" class="row g-3 needs-validation" novalidate>
                     {% csrf_token %}
                     <div class="col-12">
+                        <select name="etablissement" id="etablissement" class="form-select" aria-label="Default select example" required>
+                            <option value="">-- Selectionnez un établissement --</option>
+                            {% for etablissement in etablissements %}
+                            <option value="{{ etablissement.id }}">{{ etablissement }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <hr>
+                    <div class="col-12">
                       <label for="lbl" class="form-label">{{ form.username.label }} *</label>
                       <div class="input-group has-validation">
                         {{ form.username }}
-                        <div class="invalid-feedback">Please choose a username.</div>
+                        <div class="invalid-feedback">Entrer votre nom utilisateur !</div>
                       </div>
                     </div>
 
@@ -119,32 +128,36 @@
                       <label for="lbl" class="form-label">{{ form.last_name.label }}* </label>
                       <div class="input-group has-validation">
                         {{ form.last_name }}
-                        <div class="invalid-feedback">Please, enter your name!</div>
+                        <div class="invalid-feedback">Entrer votre nom !</div>
                       </div>
                     </div>
 
                     <div class="col-12">
                       <label for="lbl" class="form-label"> {{ form.first_name.label }}  </label>
-                      {{ form.first_name }}
-                      <div class="invalid-feedback">Please, enter your name!</div>
+                      <div class="input-group has-validation">
+                        {{ form.first_name }}
+                        <div class="invalid-feedback">Entrer votre prénom !</div>
+                      </div>
                     </div>
 
                     <div class="col-12">
                       <label for="lbl" class="form-label">{{ form.email.label }}</label>
-                      {{ form.email }}
-                      <div class="invalid-feedback">Please enter a valid Email adddress!</div>
+                      <div class="input-group has-validation">
+                        {{ form.email }}
+                        <div class="invalid-feedback">Entrer une adresse mail valide !</div>
+                      </div>
                     </div>
 
                     <div class="col-12">
                       <label for="lbl" class="form-label">{{ form.password1.label }} *</label><br>
                       {{ form.password1 }}
-                      <div class="invalid-feedback">Entrer votre mot de passe!</div>
+                      <div class="invalid-feedback">Entrer votre mot de passe !</div>
                     </div>
 
                     <div class="col-12">
                       <label for="lbl" class="form-label">{{ form.password2.label }} *</label><br>
                       {{ form.password2 }}
-                      <div class="invalid-feedback">Entrer votre mot de passe!</div>
+                      <div class="invalid-feedback">Entrer votre mot de passe !</div>
                     </div>
 
                     <div class="col-12">
@@ -162,7 +175,7 @@
                       {% endif %}
                     </div>
                     <div class="col-12">
-                      <p class="small mb-0">Avez-vous déjà un compte ? <a href="{% url 'connection/account' etablissement_abreviation %}">Se connecter</a></p>
+                      <p class="small mb-0">Avez-vous déjà un compte ? <a href="{% url 'connection/account' %}">Se connecter</a></p>
                     </div>
                   </form>
 

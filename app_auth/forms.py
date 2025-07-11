@@ -26,10 +26,10 @@ class UserForm(UserCreationForm):
         
 
         widgets = {
-            'last_name': forms.TextInput(attrs={'class':'design'}),
-            'first_name': forms.TextInput(attrs={'class':'design'}),
-            'username': forms.TextInput(attrs={'class':'design'}),
-            'email': forms.TextInput(attrs={'class':'design'}),
+            'last_name': forms.TextInput(attrs={'class':'design', 'required':True}),
+            'first_name': forms.TextInput(attrs={'class':'design', 'required':True}),
+            'username': forms.TextInput(attrs={'class':'design', 'required':True}),
+            'email': forms.TextInput(attrs={'class':'design','required':True}),
             'password1': forms.PasswordInput(attrs={'required':True}),
             'password2': forms.PasswordInput(attrs={'required':True})
             

@@ -8,10 +8,15 @@ from django.db.models import Count
 from django.contrib import messages
 # Importation locaux
 from .models import*
+from renumeration.models import Contrat
+from app_auth.decorator import allowed_users
 from school.views import get_setting
-from scolarite.utils.crypto import dechiffrer_param
+from scolarite.utils.crypto import chiffrer_param, dechiffrer_param
 
-@login_required(login_url='connection/login')
+permission = ["Promoteur", "Directeur Général", "Directeur des Etudes"]
+
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def programmes(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -38,7 +43,8 @@ def programmes(request):
     return render(request, "programmes.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def detail_programme(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -47,18 +53,19 @@ def detail_programme(request,id):
     
     salle_id = int(dechiffrer_param(str(id)))  
     salle = Salle.objects.get(id=salle_id)
-    programmes = Programme.objects.filter(salle_id=salle_id)
-    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)    
+    programmes = Programme.objects.filter(salle_id=salle_id).select_related("matiere")
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)  
     context = {
         "setting": setting,
         "programmes": programmes,
         "salle": salle,
-        "anneeacademique": anneeacademique
+        "anneeacademique": anneeacademique,
     }
     return render(request, "detail_programme.html", context)
     
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def add_programme(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     cycle_id = request.session.get('cycle_id')
@@ -102,18 +109,22 @@ def add_programme(request):
                     "status": "error",
                     "message": "L'insertion a échouée."}) 
 
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     salles = Salle.objects.filter(classe_id=classe_id, anneeacademique_id=anneeacademique_id)
     matieres = Matiere.objects.filter(cycle_id=cycle_id, anneeacademique_id=anneeacademique_id)
-
-    context={
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
+    context = {
         "setting": setting,
         "salles": salles,
-        "matieres":matieres
+        "matieres": matieres,
+        "contrat": contrat
     }
     return render(request, "add_programme.html", context)
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def edit_programme(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     cycle_id = request.session.get('cycle_id')
@@ -127,17 +138,21 @@ def edit_programme(request,id):
         
     salles = Salle.objects.filter(classe_id=classe_id, anneeacademique_id=anneeacademique_id).exclude(id=programme.salle.id)
     matieres = Matiere.objects.filter(cycle_id=cycle_id, anneeacademique_id=anneeacademique_id).exclude(id=programme.matiere.id)
-
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
     context = {
         "setting": setting,
         "programme": programme,
         "salles": salles,
-        "matieres": matieres
+        "matieres": matieres,
+        "contrat": contrat
     }
     return render(request, "edit_programme.html", context)
    
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def edit_pg(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     if request.method == "POST":
@@ -192,7 +207,8 @@ def edit_pg(request):
                     "message": "Programme modifié avec succès."})
 
 
-@login_required(login_url='connection/login')
+@login_required(login_url='connection/account')
+@allowed_users(allowed_roles=permission)
 def del_programme(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -201,13 +217,20 @@ def del_programme(request,id):
     
     programme_id = int(dechiffrer_param(str(id)))
     programme = Programme.objects.get(id=programme_id)
-    # Nombre de programmes avant la suppression
-    count0 = Programme.objects.all().count()
-    programme.delete()
-    # Nombre de programmes après la suppression
-    count1 = Programme.objects.all().count()
-    if count1 < count0: 
-        messages.success(request, "Elément supprimé avec succès.")
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
+    if contrat and contrat.status_signature:
+        # Nombre de programmes avant la suppression
+        count0 = Programme.objects.all().count()
+        programme.delete()
+        # Nombre de programmes après la suppression
+        count1 = Programme.objects.all().count()
+        if count1 < count0: 
+            messages.success(request, "Elément supprimé avec succès.")
+        else:
+            messages.error(request, "La suppression a échouée.")
+        return redirect("detail_programme", chiffrer_param(programme.salle.id))
     else:
-        messages.error(request, "La suppression a échouée.")
-    return redirect("detail_programme", programme.salle.id)
+        messages.error(request, "Veuillez signer votre contrat avant de procéder à la suppression d’un programme.")
+        return redirect("detail_programme", chiffrer_param(programme.salle.id))

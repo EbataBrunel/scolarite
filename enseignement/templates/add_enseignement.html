@@ -24,67 +24,77 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Enregistrer un enseignement</h5>
-              {% if salles and enseignants %}
-              <!-- On inclut l'image de chargement -->
-              {% include 'global/_loading.html' %}
-              <!-- Vertical Form -->
-              <form method="post" action="" id="formEnseignement" class="row g-3">
-                {% csrf_token %}
-                <div class="row">
-                  <div class="col-md-6">
-                    <div class="col-12 margin-bottom">
-                        <label for="Salle" class="form-label">Salle : </label>
-                        <select name="salle" id="Salle" class="form-select" aria-label="Default select example">
+              {% if contrat.status_signature %}
+                {% if salles and enseignants %}
+                <!-- On inclut l'image de chargement -->
+                {% include 'global/_loading.html' %}
+                <!-- Vertical Form -->
+                <form method="post" action="" id="formEnseignement" class="row g-3">
+                  {% csrf_token %}
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="col-12 margin-bottom">
+                          <label for="Salle" class="form-label">Salle : </label>
+                          <select name="salle" id="Salle" class="form-select" aria-label="Default select example">
+                              <option value="">-- Selectionnez --</option>
+                              {% for salle in salles %}
+                              <option value="{{ salle.id }}">{{ salle }}</option>
+                              {% endfor %}
+                          </select>
+                      </div>
+
+                      <div id="matiereview"></div>
+
+                      <div class="col-12 margin-bottom">
+                        <label for="Trimestre" class="form-label">Trimestre : </label>
+                        <select name="trimestre" id="Trimestre" class="form-select" aria-label="Default select example">
                             <option value="">-- Selectionnez --</option>
-                            {% for salle in salles %}
-                            <option value="{{ salle.id }}">{{ salle }}</option>
+                            {% for trimestre in trimestres %}
+                            <option value="{{ trimestre }}">{{ trimestre }}</option>
                             {% endfor %}
                         </select>
+                      </div>
                     </div>
-
-                    <div id="matiereview"></div>
-
-                    <div class="col-12 margin-bottom">
-                      <label for="Trimestre" class="form-label">Trimestre : </label>
-                      <select name="trimestre" id="Trimestre" class="form-select" aria-label="Default select example">
-                          <option value="">-- Selectionnez --</option>
-                          {% for trimestre in trimestres %}
-                          <option value="{{ trimestre }}">{{ trimestre }}</option>
-                          {% endfor %}
-                      </select>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="col-12 margin-bottom">
-                        <label for="Volumehoraire" class="form-label">Volume horaire : </label>
-                        <input type="number" name="volumehoraire" class="form-control" id="Volumehoraire" required>
-                    </div>
-                    <div class="col-12 margin-bottom">
-                        <label for="Cout_heure" class="form-label">Cout heure : </label>
-                        <input type="number" name="cout_heure" class="form-control" id="Cout_heure" required>
-                    </div>
-
-                    <div class="col-12 margin-bottom">
-                        <label for="Enseignant" class="form-label">Enseignant : </label>
-                        <select name="enseignant" id="Enseignant" class="form-select" aria-label="Default select example">
-                            <option value="">-- Selectionnez --</option>
-                            {% for enseignant in enseignants %}
-                            <option value="{{ enseignant.id }}">{{ enseignant.last_name|upper }} {{ enseignant.first_name|title }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="col-md-6">
+                      <div class="col-12 margin-bottom">
+                          <label for="Volumehoraire" class="form-label">Volume horaire : </label>
+                          <input type="number" name="volumehoraire" class="form-control" id="Volumehoraire" required>
+                      </div>
+                      {% if request.session.cycle_lib == "Collège" or request.session.cycle_lib == "Lycée" %}
+                      <div class="col-12 margin-bottom">
+                          <label for="Cout_heure" class="form-label">Cout heure : </label>
+                          <input type="number" name="cout_heure" class="form-control" id="Cout_heure" required>
+                      </div>
+                      {% endif %}
+                      <div class="col-12 margin-bottom">
+                          <label for="Enseignant" class="form-label">Enseignant : </label>
+                          <select name="enseignant" id="Enseignant" class="form-select" aria-label="Default select example">
+                              <option value="">-- Selectionnez --</option>
+                              {% for enseignant in enseignants %}
+                              <option value="{{ enseignant.id }}">{{ enseignant.last_name|upper }} {{ enseignant.first_name|title }}</option>
+                              {% endfor %}
+                          </select>
+                      </div>
                     </div>
                   </div>
+                  <div class="text-center">
+                      <a href="{% url 'enseignements' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                      <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                  </div>
+                </form><!-- Vertical Form -->
+                {% else %}
+                <div class="card">
+                  <div class="card-body">
+                    <br>
+                    <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord enregistrer une salle, une matière, un enseignant et un contrat de enseignant, s'ils n'ont pas encore été crées, avant d'enregistrer un enseignement.</h4>
+                  </div>
                 </div>
-                <div class="text-center">
-                    <a href="{% url 'enseignements' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
-                </div>
-              </form><!-- Vertical Form -->
+                {% endif %}
               {% else %}
               <div class="card">
                 <div class="card-body">
                   <br>
-                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord enregistrer une salle, une matière, un enseignant et un contrat, s'ils n'ont pas encore été crées, avant d'enregistrer un enseignement.</h4>
+                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord signé le contrat, s'il n'a pas encore été fait, avant d'enregistrer un cycle. <a href="{% url 'contrat_etablissement/mes_contrats_promoteur' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Je signe le contrat</a></h4>
                 </div>
               </div>
               {% endif %}

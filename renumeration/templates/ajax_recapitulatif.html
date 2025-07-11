@@ -32,7 +32,7 @@
 
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Récapitulatif de paiements des élèves et des rénumerations des enseignants du fondamental</h5>
+                            <h5 class="card-title">Résumé des paiements des élèves et des rémunérations des enseignants du cycle fondamental.</h5>
                             <!-- Table with stripped rows -->
                             <div class="table-responsive">
                                         <table class="table datatable">
@@ -40,7 +40,7 @@
                                                 <tr>
                                                     <th class="{{ setting.theme }} {{ setting.text_color }}">Salles</th>
                                                     <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Paiement Elèves ({{ setting.devise }})</th>
-                                                    <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Paiement Enseigants ({{ setting.devise }})</th>
+                                                    <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Rémunération Enseigants ({{ setting.devise }})</th>
                                                     <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Recette ({{ setting.devise }})</th>
                                                 </tr>
                                             </thead>
@@ -81,7 +81,7 @@
                     <br>
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Récapitulatif de paiements des élèves et des rénumerations des enseignants du secondaires</h5>
+                            <h5 class="card-title">Résumé des paiements des élèves et des rémunérations des enseignants du cycle secondaire</h5>
                             <!-- Table with stripped rows -->
                             <div class="table-responsive">
                                         <table class="table datatable">
@@ -89,7 +89,7 @@
                                                 <tr>
                                                     <th class="{{ setting.theme }} {{ setting.text_color }}">Salles</th>
                                                     <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Paiement Elèves ({{ setting.devise }})</th>
-                                                    <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Rénum Enseignants ({{ setting.devise }})</th>
+                                                    <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Rémunération Enseignants ({{ setting.devise }})</th>
                                                     <th class="{{ setting.theme }} {{ setting.text_color }} white-space">Recette ({{ setting.devise }})</th>
                                                 </tr>
                                             </thead>
@@ -141,14 +141,14 @@
                                             <tbody>
                                                 <tr>
                                                     <td class="{{ setting.theme }} {{ setting.text_color }} white-space"><b>Total ({{ setting.devise }})</b></td>
-                                                    <td class="{{ setting.theme }} {{ setting.text_color }}">{{ sum_indemnite }}</td>
+                                                    <td class="{{ setting.theme }} {{ setting.text_color }}">{{ sum_indemnite|floatformat:2 }}</td>
                                                     <td class="{{ setting.theme }} {{ setting.text_color }}">
-                                                        <a href="#"  data-bs-toggle="modal" data-bs-target="#indemniteModal" title="Détail" class="btn btn-warning btn-sm text-center"><i class="bi bi-eye"></i></a>
+                                                        <a href="#"  data-bs-toggle="modal" data-bs-target="#indemniteModal" title="Détail" class="btn btn-light btn-sm text-center"><i class="bi bi-eye"></i></a>
                                                         <!-- Start de delete Modal -->
                                                         <div class="modal fade" id="indemniteModal" tabindex="-1">
                                                             <div class="modal-dialog modal-lg">
                                                                 <div class="modal-content">
-                                                                    <div class="modal-header bg-warning text-dark">
+                                                                    <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
                                                                         <h5 class="modal-title text-center">Détails des indemnité de <span>{{ month }}</span></h5>
                                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                                     </div>
@@ -231,7 +231,7 @@
                                                 <td>{{ d.signe }}</td>
                                                 <td>{{ d.sum_depense }}</td>
                                                 <td>
-                                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#depenseModal{{ d.signe }}" title="Détail" class="btn btn-info btn-sm text-center"><i class="bi bi-eye"></i> Voir plus </a>
+                                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#depenseModal{{ d.signe }}" title="Détail" class="btn btn-info btn-sm text-center"><i class="bi bi-eye"></i></a>
                                                     <!-- Start de delete Modal -->
                                                     <div class="modal fade" id="depenseModal{{ d.signe }}" tabindex="-1">
                                                         <div class="modal-dialog modal-lg">
@@ -263,7 +263,7 @@
                                                                     </div>
                                                                 </div>
                                                                 <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer la fênetre</button>
+                                                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer</button>
                                                                 </div>
                                                             </div>
                                                         </div>

@@ -12,11 +12,12 @@ from django.contrib import messages
 from app_auth.decorator import unauthenticated_customer
 from .models import Activity
 from anneeacademique.models import AnneeCademique
+from renumeration.models import Contrat
 from school.views import get_setting
 from scolarite.utils.crypto import dechiffrer_param
 
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
 def activities(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -34,7 +35,7 @@ def activities(request):
         dic["nb_activities"] = activity["nb_activities"]
         activities.append(activity)
     
-    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id) 
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     context = {
         "setting": setting,
         "activities": activities,
@@ -42,7 +43,7 @@ def activities(request):
     }
     return render(request, "activities.html", context=context)
         
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
 def detail_activity(request, type):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -50,8 +51,8 @@ def detail_activity(request, type):
         return redirect("settings/maintenance")
     
     type_crypt = dechiffrer_param(type)
-    activities = Activity.objects.filter(anneeacademique_id=anneeacademique_id, type=type_crypt).order_by('-id')
-    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id) 
+    activities = Activity.objects.filter(anneeacademique_id=anneeacademique_id, type=type_crypt).select_related("user").order_by('-id')
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
     context = {
         "setting": setting,
         "activities": activities,
@@ -59,7 +60,7 @@ def detail_activity(request, type):
     }
     return render(request, "detail_activity.html", context=context)
     
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
 def add_activity(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -97,14 +98,18 @@ def add_activity(request):
                 return JsonResponse({
                         "status": "error",
                         "message": "L'insertion a échouée."})
-                
+    
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()           
     context = {
-        "setting": setting
+        "setting": setting,
+        "contrat": contrat
     }
     return render(request, "add_activity.html", context)
                 
                 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
 def edit_activity(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
@@ -113,15 +118,18 @@ def edit_activity(request,id):
     
     activity_id = int(dechiffrer_param(str(id)))
     activity = Activity.objects.get(id=activity_id)   
-    
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
     context = {
         "setting": setting,
-        "activity": activity
+        "activity": activity,
+        "contrat": contrat
     }
     return render(request, "edit_activity.html", context)
 
 
-@login_required(login_url='connection/connexion')
+@login_required(login_url='connection/account')
 def edit_ac(request):
     anneeacademique_id = request.session.get('anneeacademique_id')
     if request.method == "POST":
@@ -150,25 +158,32 @@ def edit_ac(request):
                         "status": "success",
                         "message": "Activité modifiée avec succès."})
 
-@login_required(login_url='connection/connexion')     
+@login_required(login_url='connection/account')     
 def del_activity(request,id):
     anneeacademique_id = request.session.get('anneeacademique_id')
     setting = get_setting(anneeacademique_id)
     if setting is None:
         return redirect("settings/maintenance")
     
-    activity_id = int(dechiffrer_param(str(id))) 
-    activity = Activity.objects.get(id=activity_id)
-    # Nombre d'activités avant la suppression
-    count0 = Activity.objects.all().count()
-    activity.delete()
-    # Nombre d'activités après la suppression
-    count1 = Activity.objects.all().count()
-    if count1 < count0: 
-        messages.success(request, "Elément supprimé avec succès.")
+    # Récuperer l'année académique
+    anneeacademique = AnneeCademique.objects.get(id=anneeacademique_id)
+    contrat = Contrat.objects.filter(user=request.user, anneeacademique=anneeacademique).first()
+    if contrat and contrat.status_signature:
+        activity_id = int(dechiffrer_param(str(id))) 
+        activity = Activity.objects.get(id=activity_id)
+        # Nombre d'activités avant la suppression
+        count0 = Activity.objects.all().count()
+        activity.delete()
+        # Nombre d'activités après la suppression
+        count1 = Activity.objects.all().count()
+        if count1 < count0: 
+            messages.success(request, "Elément supprimé avec succès.")
+        else:
+            messages.error(request, "La suppression a échouée.")
+        return redirect("activities")
     else:
-        messages.error(request, "La suppression a échouée.")
-    return redirect("activities")
+        messages.error(request, "Veuillez signer votre contrat avant de procéder à la suppression d’un programme.")
+        return redirect("activities")
 
 
 @unauthenticated_customer

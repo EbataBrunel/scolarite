@@ -32,6 +32,7 @@
                                 <p>{{ c.comment }}</p>
                                 <p>
                                     <small class="text-secondary">Publier le <span>{{ c.date|date:"d/m/Y" }} à {{ c.date|date:"h:m" }}</small>
+                                    {% if anneeacademique.status_cloture and contrat.status_signature %}
                                     <span style="float:right">
                                       <a href="{% url 'edit_cours' c.id|crypter_id %}" title="Edition" class="text-warning"><i class="bi bi-pencil"></i></a>&nbsp;|
                                       <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ c.id }}" title="Supprimer" class="text-danger"><i class="bi bi-trash"></i></a>
@@ -54,6 +55,7 @@
                                           </div>
                                         </div>
                                     </div><!-- Fin de delete Modal-->
+                                    {% endif %}
                                 </p>
                                 <a href="{% url 'detail_coursligne' salle.id matiere.id|crypter_id %}">Commentaire | {{ m.nb_newcomment }}</a>
                             </div>

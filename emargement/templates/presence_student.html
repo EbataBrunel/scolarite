@@ -31,12 +31,14 @@
                                     <table class="table">
                                         <tr>
                                             <th>Salle :</th>
-                                            <td>{{ emargement.salle }} {{ emploitemps.enseignant.first_name }}</td>
+                                            <td class="white-space">{{ emargement.salle }}</td>
                                         </tr>
+                                        {% if emargement.salle.cycle.libelle == "Collège" or emargement.salle.cycle.libelle == "Lycée" %}
                                         <tr>
                                             <th>Matière :</th>
-                                            <td>{{ emargement.matiere }}</td>
+                                            <td class="white-space">{{ emargement.matiere }}</td>
                                         </tr>
+                                        {% endif %}
                                         <tr>
                                             <th>Mois :</th>
                                             <td>{{ emargement.month }}</td>
@@ -53,20 +55,22 @@
                                     <table class="table">
                                         <tr>
                                             <th>Horaire :</th>
-                                            <td>{{ emargement.heure_debut }}-{{ emargement.heure_fin }}</td>
+                                            <td class="white-space">{{ emargement.heure_debut }}-{{ emargement.heure_fin }}</td>
                                         </tr>
                                         <tr>
-                                            <th>Date d'absence :</th>
+                                            <th class="white-space">Date d'absence :</th>
                                             <td>{{ emargement.date_emargement|date:"d/m/Y" }}</td>
                                         </tr>
+                                        {% if emargement.salle.cycle.libelle == "Collège" or emargement.salle.cycle.libelle == "Lycée" %}
                                         <tr>
                                             <th>Séance :</th>
                                             <td>{{ emargement.seance }}</td>
                                         </tr>
                                         <tr>
-                                            <th> Titre du cours :</th>
+                                            <th class="white-space"> Titre du cours :</th>
                                             <td>{{ emargement.titre }}</td>
                                         </tr>
+                                        {% endif %}
                                     </table>
                                 </div>
                             </div>
@@ -91,21 +95,29 @@
                                 <td>{{ s.student.lastname|title }}</td>
                                 <td>{{ s.student.firstname|title }}</td>
                                 <td>
-                                    <span class="button-absence absence{{s.student.id}}" id="{{ s.student.id }}" data-ema="{{ emargement.id }}">
-                                    {% if s.presence == "Présent" %}
+                                    {% if s.presence == "Bloqué" %}
                                         {% if s.student.gender == "Masculin" %}
-                                        <a href="#"><span class="badge rounded-pill bg-success">Présent</span></a>
+                                            <span class="badge rounded-pill bg-warning">Bloqué</span>
                                         {% else %}
-                                        <a href="#"><span class="badge rounded-pill bg-success">Présente</span></a>
+                                            <span class="badge rounded-pill bg-warning">Bloquée</span>
                                         {% endif %}
                                     {% else %}
-                                        {% if s.student.gender == "Masculin" %}
-                                        <a href="#"><span class="badge rounded-pill bg-danger">Absent</span></a>
+                                        <span class="button-absence absence{{s.student.id}}" id="{{ s.student.id }}" data-ema="{{ emargement.id }}">
+                                        {% if s.presence == "Présent" %}
+                                            {% if s.student.gender == "Masculin" %}
+                                            <a href="#"><span class="badge rounded-pill bg-success">Présent</span></a>
+                                            {% else %}
+                                            <a href="#"><span class="badge rounded-pill bg-success">Présente</span></a>
+                                            {% endif %}
                                         {% else %}
-                                        <a href="#"><span class="badge rounded-pill bg-danger">Absente</span></a>
+                                            {% if s.student.gender == "Masculin" %}
+                                            <a href="#"><span class="badge rounded-pill bg-danger">Absent</span></a>
+                                            {% else %}
+                                            <a href="#"><span class="badge rounded-pill bg-danger">Absente</span></a>
+                                            {% endif %}
                                         {% endif %}
-                                    {% endif %}
-                                    </span>
+                                        </span>
+                                    {% endif%}
                                 </span>
                                 </td>
                             </tr>

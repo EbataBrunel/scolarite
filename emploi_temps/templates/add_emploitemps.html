@@ -24,54 +24,63 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Enregistrer un emploi du temps</h5>
-              {% if salles %}
-              <!-- On inclut l'image de chargement -->
-              {% include 'global/_loading.html' %}
-              <!-- Vertical Form -->
-              <form method="post" action="" id="formEmploitemps" class="row g-3">
-                {% csrf_token %}
-                <div class="col-12">
-                    <label for="Salle" class="form-label">Salle : </label>
-                    <select name="salle" id="Salle" class="form-select" aria-label="Default select example" required>
-                        <option value="">-- Selectionnez --</option>
-                        {% for salle in salles %}
-                        <option value="{{ salle.id }}">{{ salle }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div id="enseignantview"></div>
-                <div id="matiereview"></div>
-                <div class="col-12">
-                    <label for="Jour" class="form-label">Jour : </label>
-                    <select name="jour" id="Jour" class="form-select" aria-label="Default select example" required>
-                        <option value="">-- Selectionnez --</option>
-                        {% for jour in jours %}
-                        <option value="{{ jour }}">{{ jour }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+              {% if contrat.status_signature %}
+                {% if salles %}
+                <!-- On inclut l'image de chargement -->
+                {% include 'global/_loading.html' %}
+                <!-- Vertical Form -->
+                <form method="post" action="" id="formEmploitemps" class="row g-3">
+                  {% csrf_token %}
+                  <div class="col-12">
+                      <label for="Salle" class="form-label">Salle : *</label>
+                      <select name="salle" id="Salle" class="form-select" aria-label="Default select example" required>
+                          <option value="">-- Selectionnez --</option>
+                          {% for salle in salles %}
+                          <option value="{{ salle.id }}">{{ salle }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
+                  <div id="enseignantview" style="display:none"></div>
+                  <div id="matiereview" style="display:none"></div>
+                  <div class="col-12">
+                      <label for="Jour" class="form-label">Jour : *</label>
+                      <select name="jour" id="Jour" class="form-select" aria-label="Default select example" required>
+                          <option value="">-- Selectionnez --</option>
+                          {% for jour in jours %}
+                          <option value="{{ jour }}">{{ jour }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
 
-                <div class="col-12">
-                    <label for="Heure_debut" class="form-label">Heure début : </label>
-                    <input type="time" name="heure_debut" class="form-control" id="Heure_debut" required>
-                </div>
-                <div class="col-12">
-                    <label for="Heure_fin" class="form-label">Heure fin: </label>
-                    <input type="time" name="heure_fin" class="form-control" id="Heure_fin" required>
-                </div>
+                  <div class="col-12">
+                      <label for="Heure_debut" class="form-label">Heure début : *</label>
+                      <input type="time" name="heure_debut" class="form-control" id="Heure_debut" required>
+                  </div>
+                  <div class="col-12">
+                      <label for="Heure_fin" class="form-label">Heure fin: *</label>
+                      <input type="time" name="heure_fin" class="form-control" id="Heure_fin" required>
+                  </div>
 
-                <div class="text-center">
-                    <a href="{% url 'emploitemps' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                  <div class="text-center">
+                      <a href="{% url 'emploitemps' %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                      <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                  </div>
+                </form><!-- Vertical Form -->
+                {% else %}
+                <div class="card">
+                  <div class="card-body">
+                    <br>
+                    <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord enregistrer une salle, une matière et un enseignant, s'ils n'ont pas encore été crées, avant d'enregistrer un emploi du temps.</h4>
+                  </div>
                 </div>
-              </form><!-- Vertical Form -->
+                {% endif %}
               {% else %}
-              <div class="card">
-                <div class="card-body">
-                  <br>
-                  <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord enregistrer une salle, une matière et un enseignant, s'ils n'ont pas encore été crées, avant d'enregistrer un emploi du temps.</h4>
+                <div class="card">
+                  <div class="card-body">
+                    <br>
+                    <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord signé le contrat, s'il n'a pas encore été fait, avant d'enregistrer un cycle. <a href="{% url 'contrat_etablissement/mes_contrats_promoteur' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Je signe le contrat</a></h4>
+                  </div>
                 </div>
-              </div>
               {% endif %}
               <!-- Start message Modal -->
               <div class="modal fade" id="message" tabindex="-1">

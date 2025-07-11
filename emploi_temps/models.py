@@ -17,7 +17,7 @@ class EmploiTemps(models.Model):
     
     anneeacademique = models.ForeignKey(AnneeCademique, on_delete=models.CASCADE, null=False)
     salle = models.ForeignKey(Salle, on_delete=models.CASCADE, null=False)
-    matiere = models.ForeignKey(Matiere, on_delete=models.CASCADE, null=False)
+    matiere = models.ForeignKey(Matiere, on_delete=models.CASCADE, null=True, blank=True)
     enseignant = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     jour = models.CharField(max_length=10, choices=JOUR_CHOICES)
     heure_debut = models.TimeField()

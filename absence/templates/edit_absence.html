@@ -40,10 +40,12 @@
                                         <th>Classe :</th>
                                         <td>{{ absence.salle }}</td>
                                     </tr>
+                                    {% if absence.salle.cycle.libelle == "Collège" or absence.salle.cycle.libelle == "Lycée" %}
                                     <tr>
                                         <th>Matière :</th>
                                         <td>{{ absence.matiere }}</td>
                                     </tr>
+                                    {% endif %}
                                     <tr>
                                         <th>Jour :</th>
                                         <td>{{ absence.jour }}</td>
@@ -74,31 +76,35 @@
               
               <div class="card-body">
                 <div class="row">
-                  <div class="row">
-                    <div class="col-md-4"></div>
-                    <div class="col-md-4">
-                    <!-- On inclut l'image de chargement -->
-                    {% include 'global/_loading.html' %}
-                    <!-- Vertical Form -->
-                    <form method="post" action="" id="formUpdateAbsence" class="row g-3">
-                      {% csrf_token %}
-                      <input type="text" name="id" value="{{ absence.id }}" hidden>
-                      <div class="col-12">
-                        <label for="date_absence" class="form-label">Date d'absence : </label>
-                        <input type="date" name="date_absence" value="{{ absence.date_absence|date:"Y-m-d" }}" class="form-control" id="date_absence" required>
+                    <div class="col-md-3"></div>
+                    <div class="col-md-6">
+                    {% if contrat.status_signature %}
+                      <!-- On inclut l'image de chargement -->
+                      {% include 'global/_loading.html' %}
+                      <!-- Vertical Form -->
+                      <form method="post" action="" id="formUpdateAbsence" class="row g-3">
+                        {% csrf_token %}
+                        <input type="text" name="id" value="{{ absence.id }}" hidden>
+                        <div class="col-12">
+                          <label for="date_absence" class="form-label">Date d'absence : </label>
+                          <input type="date" name="date_absence" value="{{ absence.date_absence|date:"Y-m-d" }}" class="form-control" id="date_absence" required>
+                        </div>
+                      
+                        <div class="text-center">
+                          <a href="{% url 'detail_absences' absence.enseignant.id|crypter_id absence.salle.id|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
+                          <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
+                        </div>
+                      </form><!-- Vertical Form -->
+                    {% else %}
+                      <div class="card">
+                        <div class="card-body">
+                          <br>
+                          <h4 class="text-center"><i class="bi bi-circle-fill text-warning"></i> Veuillez d'abord signé le contrat, s'il n'a pas encore été fait, avant d'enregistrer un cycle. <a href="{% url 'contrat_etablissement/mes_contrats_promoteur' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Je signe le contrat</a></h4>
+                        </div>
                       </div>
-                      <div class="col-12">
-                        <label for="motif" class="form-label">Motif : </label>
-                        <textarea class="form-control" name="motif" id="motif" style="height: 50px;">{{ absence.motif }}</textarea>
+                    {% endif %}
                     </div>
-                    
-                      <div class="text-center">
-                        <a href="{% url 'detail_absences' absence.enseignant.id|crypter_id absence.salle.id|crypter_id %}" class="btn btn-secondary btn-sm"><i class="bi bi-list"></i> Afficher </a>
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle"></i> Valider </button>
-                      </div>
-                    </form><!-- Vertical Form -->
-                    <div class="col-md-4"></div>
-                  </div>
+                    <div class="col-md-3"></div>
                 </div>
               </div>
 

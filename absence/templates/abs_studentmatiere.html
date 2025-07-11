@@ -32,10 +32,17 @@
                           <th>Salle </th>
                           <td class="padding-left">: {{ salle }}</td>
                         </tr>
+                        {% if salle.cycle.libelle == "Collège" or salle.cycle.libelle == "Lycée" %}
                         <tr>
                           <th>Matière </th>
                           <td class="padding-left">: {{ matiere }}</td>
                         </tr>
+                        {% else %}
+                        <tr>
+                          <th>Mois </th>
+                          <td class="padding-left">: {{ month }}</td>
+                        </tr>
+                        {% endif %}
                       </table>
                     </div>
                   </div>
@@ -61,30 +68,30 @@
                                 <td>{{ s.student.firstname|title }}</td>
                                 <td class="text-center"><span class="badge rounded-pill bg-secondary">{{ s.nb_absences }}</span></td>
                                 <td>
-                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ s.student.id }}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i> Détail</a>
+                                    <a href="#"  data-bs-toggle="modal" data-bs-target="#deleteModal{{ s.student.id }}" title="Détail" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
                                     <!-- Start de delete Modal -->
                                     <div class="modal fade" id="deleteModal{{ s.student.id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-lg">
+                                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                                           <div class="modal-content">
                                             <div class="modal-header {{ setting.theme }} {{ setting.text_color }}">
-                                              <h5 class="modal-title text-center">Historiques d'absences de {{ s.student.lastname|title }} {{ s.student.firstname|title }}</h5>
+                                              <h5 class="modal-title text-center">Historiques d'absences de <b>{{ s.student.lastname|title }} {{ s.student.firstname|title }}</b></h5>
                                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
                                               <table class="table">
                                                 <tr>
-                                                  <th>Séances</th>
+                                                  <th>Crénaux</th>
+                                                  <th>Séance</th>
                                                   <th>Titre</th>
-                                                  <th>Dates</th>
-                                                  <th>Crenaux</th>
+                                                  <th>Date</th>
                                                   <th class="white-space">Statut d'absence</th>
                                                 </tr>
                                                 {% for absence in s.absences %}
                                                 <tr>
+                                                  <td class="white-space">{{ absence.emargement.heure_debut }}-{{ absence.emargement.heure_fin }}</td>
                                                   <td>{{ absence.emargement.seance }}</td>
                                                   <td>{{ absence.emargement.titre }}</td>
-                                                  <td>{{ absence.emargement.date_emargement|date:"d/m/Y" }}</td>
-                                                  <td>{{ absence.emargement.heure_debut }}-{{ absence.emargement.heure_fin }}</td>
+                                                  <td class="white-space">{{ absence.emargement.date_emargement|date:"d/m/Y" }}</td>
                                                   {% if absence.motif %}
                                                   <td><span class="badge rounded-pill bg-success">Justifiée</span></td>
                                                   {% else %}
@@ -95,7 +102,7 @@
                                               </table>
                                             </div>
                                             <div class="modal-footer">
-                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fermer la fênetre</button></div>
+                                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Fênetre</button></div>
                                           </div>
                                         </div>
                                     </div><!-- Fin de delete Modal-->

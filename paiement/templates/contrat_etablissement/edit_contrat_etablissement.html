@@ -1,5 +1,5 @@
 {% extends 'global/base_supuser.html' %}
-{% block title %} {{ setting.appname }} | Ajout d'un contrat d'établissement {% endblock %}
+{% block title %} {{ setting.appname }} | Edition d'un contrat d'établissement {% endblock %}
 {% block content %}
 {% load static %}
 
@@ -10,8 +10,8 @@
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'settings/db_supuser' %}">Tableau de bord</a></li>
-          <li class="breadcrumb-item"><a href="{% url 'contrat_etablissement/add_contrat_etablissement' %}" > Contrats </a></li>
-          <li class="breadcrumb-item active">Ajout</li>
+          <li class="breadcrumb-item"><a href="{% url 'contrat_etablissement/contrat_etablissements' %}" > Contrats </a></li>
+          <li class="breadcrumb-item active">Edition</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -20,7 +20,7 @@
         <div class="col-md-12">
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Enregistrer un contrat</h5>
+              <h5 class="card-title">Edition d'un contrat</h5>
               <!-- On inclut l'image de chargement -->
               {% include 'global/_loading.html' %}
               <!-- Vertical Form -->
@@ -42,11 +42,21 @@
                         <label for="amount" class="form-label">Montant par élève ({{ setting.devise }}) : </label>
                         <input type="text" name="amount" value="{{ contrat.amount}}" class="form-control" id="amount" required>
                     </div>
+                    <div id="datesview">
+                      <div class="col-12">
+                          <label for="start_date" class="form-label">Date de fin : </label>
+                          <input type="date" name="start_date" value="{{ contrat.start_date|date:"Y-m-d" }}"  class="form-control" id="start_date" required readonly>
+                      </div>
+                      <div class="col-12">
+                          <label for="end_date" class="form-label">Date du début : </label>
+                          <input type="date" name="end_date" value="{{ contrat.end_date|date:"Y-m-d" }}" class="form-control" id="end_date" required readonly>
+                      </div>
+                    </div>
                   </div>
                   <div class="col-md-6">
                     <div class="col-12">
                         <label for="description" class="form-label">Description : </label>
-                        <textarea class="form-control" name="description" id="description" style="height: 50px;">{{ contrat.description }}</textarea>
+                        <textarea class="form-control" name="description" id="description" style="height: 120px;">{{ contrat.description }}</textarea>
                     </div>
                   </div>
                 </div>

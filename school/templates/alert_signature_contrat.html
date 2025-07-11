@@ -1,0 +1,62 @@
+{% if request.session.group_name == "Promoteur" %}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Contrat du {{ contrat.date_contrat|date:"d/m/Y" }} </h5>
+        <table class="table">
+            <tr>
+                <th class="white-space">Etablissement </th><td> : {{ contrat.etablissement }}</td>
+            </tr>
+            <tr>
+                <th>Description</th><td> : {{ contrat.description }}</td>
+            </tr>
+            <tr>
+                <th class="white-space">Montant par élève ({{ setting.devise }})</th><td> : {{ contrat.amount|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <th class="white-space">Date début</th><td> : {{ contrat.start_date|date:"d/m/Y" }}</td>
+            </tr>
+            <tr>
+                <th class="white-space">Date fin</th><td> : {{ contrat.end_date|date:"d/m/Y" }}</td>
+            </tr>
+            <tr>
+                <th class="white-space">Super utilisateur </th><td> : {{ contrat.user.last_name|title }} {{ contrat.user.first_name|title }}</td>
+            </tr>
+        </table>
+        <div class="card">
+            <div class="card-body">
+                <br>
+                <p class="text-center"><a href="{% url 'contrat_etablissement/mes_contrats_promoteur' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> J'accepte de signer ce contrat</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Contrat du {{ contrat.date_contrat|date:"d/m/Y" }} </h5>
+        <table class="table">
+            <tr>
+                <th>Description</th><td> : {{ contrat.description }}</td>
+            </tr>
+            <tr>
+                <th class="white-space">Montant estimé par heure ({{ setting.devise }})</th><td> : {{ contrat.amount|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <th class="white-space">Date début</th><td> : {{ contrat.date_debut|date:"d/m/Y" }}</td>
+            </tr>
+            <tr>
+                <th class="white-space">Date fin</th><td> : {{ contrat.date_fin|date:"d/m/Y" }}</td>
+            </tr>
+            <tr>
+                <th class="white-space">Enregistrer par </th><td> : {{ contrat.admin.last_name|title }} {{ contrat.admin.first_name|title }}</td>
+            </tr>
+        </table>
+        <div class="card">
+            <div class="card-body">
+                <br>
+                <p class="text-center"><a href="{% url 'contrat/contrats_user' %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> J'accepte de signer ce contrat</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
